@@ -1,0 +1,8 @@
+spring:
+  profiles:
+    include: secret
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: ${h2.username}
+    password: ${h2.password}
