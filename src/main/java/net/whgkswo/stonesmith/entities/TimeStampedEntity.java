@@ -1,5 +1,6 @@
 package net.whgkswo.stonesmith.entities;
 
+import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -8,8 +9,8 @@ import java.time.LocalDateTime;
 
 @NoArgsConstructor
 @Getter
-public class Entity {
-    private Long id;
+@MappedSuperclass
+public class TimeStampedEntity extends BaseEntity {
     private LocalDateTime createdAt = LocalDateTime.now();
     @Setter
     private LocalDateTime modifiedAt = LocalDateTime.now();

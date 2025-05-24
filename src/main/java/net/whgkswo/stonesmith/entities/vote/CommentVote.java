@@ -1,11 +1,18 @@
 package net.whgkswo.stonesmith.entities.vote;
 
-import net.whgkswo.stonesmith.entities.Entity;
+import jakarta.persistence.*;
+import net.whgkswo.stonesmith.entities.TimeStampedEntity;
 import net.whgkswo.stonesmith.entities.comments.Comment;
-import net.whgkswo.stonesmith.entities.users.User;
+import net.whgkswo.stonesmith.entities.members.Member;
 
-public class CommentVote extends Entity {
+@Entity
+public class CommentVote extends TimeStampedEntity {
+    @Enumerated(EnumType.STRING)
     private VoteType type;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comment_id")
     private Comment comment;
-    private User user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private Member member;
 }
