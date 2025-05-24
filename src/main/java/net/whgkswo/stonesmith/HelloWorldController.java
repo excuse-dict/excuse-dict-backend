@@ -1,7 +1,6 @@
-package net.whgkswo.stonesmith.api.v1;
+package net.whgkswo.stonesmith;
 
 import net.whgkswo.stonesmith.responses.Response;
-import net.whgkswo.stonesmith.responses.SimpleTextDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
