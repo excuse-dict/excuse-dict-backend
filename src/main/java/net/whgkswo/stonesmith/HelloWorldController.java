@@ -13,7 +13,7 @@ public class HelloWorldController {
     @GetMapping("")
     public ResponseEntity<?> handleHelloWorldRequest(){
         return ResponseEntity.ok(
-                Response.simpleText("돌장장이 프로젝트 시작합니다~")
+                Response.simpleString("돌장장이 프로젝트 시작합니다~")
         );
     }
 }

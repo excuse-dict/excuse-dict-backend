@@ -5,17 +5,17 @@ import net.whgkswo.stonesmith.entities.members.rank.RankRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class MemberService {
     private MemberMapper memberMapper;
     private MemberRepository memberRepository;
-    private RankRepository rankRepository;
     private PasswordEncoder passwordEncoder;
 
-    public MemberService(MemberMapper memberMapper, MemberRepository memberRepository, RankRepository rankRepository, PasswordEncoder passwordEncoder){
+    public MemberService(MemberMapper memberMapper, MemberRepository memberRepository, PasswordEncoder passwordEncoder){
         this.memberMapper = memberMapper;
         this.memberRepository = memberRepository;
-        this.rankRepository = rankRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -30,5 +30,14 @@ public class MemberService {
         member.setRank(rank);
 
         return memberRepository.save(member);
+    }
+
+    public boolean isEmailDuplicated(String email){
+        List<Member> members = memberRepository.findAll();
+
+        for(Member member : members){
+            if(member.getEmail().equals(email)) return true;
+        }
+        return false;
     }
 }

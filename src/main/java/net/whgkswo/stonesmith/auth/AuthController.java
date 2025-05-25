@@ -4,12 +4,10 @@ import net.whgkswo.stonesmith.entities.members.Member;
 import net.whgkswo.stonesmith.entities.members.MemberController;
 import net.whgkswo.stonesmith.entities.members.MemberDto;
 import net.whgkswo.stonesmith.entities.members.MemberService;
+import net.whgkswo.stonesmith.responses.Response;
 import net.whgkswo.stonesmith.responses.UriHelper;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 
@@ -26,11 +24,20 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?>handleSignupRequest(@RequestBody MemberDto dto){
+    public ResponseEntity<?> handleSignupRequest(@RequestBody MemberDto dto){
         Member member = memberService.createUser(dto);
         // 회원가입은 AuthController가 처리하지만 URI는 UserController 기준으로
         URI uri = UriHelper.createURI(MemberController.BASE_PATH, member.getId());
 
         return ResponseEntity.created(uri).build();
+    }
+
+    @GetMapping("/check-email")
+    public ResponseEntity<?> handleEmailDuplicationCheckRequest(@RequestParam String email){
+        boolean isEmailDuplicated = memberService.isEmailDuplicated(email);
+
+        return ResponseEntity.ok(
+                Response.simpleBoolean(isEmailDuplicated)
+        );
     }
 }

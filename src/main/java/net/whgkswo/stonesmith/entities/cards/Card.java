@@ -9,8 +9,11 @@ import net.whgkswo.stonesmith.entities.members.Member;
 @Getter
 @Setter
 @Entity
-// 통합 검색을 위해 카드 타입 분류하지 않고 싱글 테이블 사용
+// 통합 검색을 위해 카드 타입 분리하지 않고 싱글 테이블 사용
 public class Card extends TimeStampedEntity {
+
+    @Enumerated(EnumType.STRING)
+    private Type type;
 
     private String name;
 
@@ -45,5 +48,13 @@ public class Card extends TimeStampedEntity {
         RARE,
         EPIC,
         LEGEND
+    }
+
+    public enum Type{
+        MINION,
+        SPELL,
+        WEAPON,
+        LOCATION,
+        HERO
     }
 }
