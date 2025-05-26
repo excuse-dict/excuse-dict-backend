@@ -28,9 +28,12 @@ public class EmailService {
         this.environment = environment;
     }
 
-    public void sendVerificationEmail(String email){
+    public LocalDateTime sendVerificationEmail(String email){
         // 인증 코드 생성
         String code = generateVerificationCode();
+
+        // 코드 만료시간 계산
+        LocalDateTime expiryTime = getCodeExpiryTime();
 
         // redis에 코드 저장(5분 후 만료)
         try{
@@ -44,7 +47,9 @@ public class EmailService {
         }
 
         // 메일 발송
-        sendEmail(email, code);
+        sendEmail(email, code, expiryTime);
+
+        return expiryTime;
     }
 
     // 인증 코드 검증
@@ -85,14 +90,14 @@ public class EmailService {
     }
 
     // 메일 발송
-    private void sendEmail(String email, String code){
+    private void sendEmail(String email, String code, LocalDateTime expiryTime){
         try{
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setTo(email);
             helper.setSubject("[돌장장이] 메일 인증 코드");
-            helper.setText(createMail(code), true);
+            helper.setText(createMail(code, expiryTime), true);
             helper.setFrom(getAdminEmail());
 
             // 메일 전송
@@ -109,9 +114,7 @@ public class EmailService {
     }
 
     // 메일 생성
-    private String createMail(String code){
-        // 만료시간 계산
-        LocalDateTime expiryTime = getCodeExpiryTime();
+    private String createMail(String code, LocalDateTime expiryTime){
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
         String fExpiryTime = expiryTime.format(formatter);
@@ -137,6 +140,4 @@ public class EmailService {
             </html>
             """.formatted(code, fExpiryTime);
     }
-
-
 }
