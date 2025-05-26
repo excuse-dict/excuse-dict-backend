@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import net.whgkswo.stonesmith.entities.TimeStampedEntity;
+import net.whgkswo.stonesmith.entities.cards.sets.CardSet;
 import net.whgkswo.stonesmith.entities.members.Member;
 
 @Getter
@@ -25,6 +26,10 @@ public class Card extends TimeStampedEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "card_set_id")
+    private CardSet cardSet;
 
     // 하수인 전용
     private int attack;

@@ -14,3 +14,20 @@ spring:
     console:
       enabled: true
       path: /h2
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${mail.username}
+    password: ${mail.password} # 구글 앱 비밀번호
+    properties:
+      mail:
+        debug: true # 콘솔 디버깅
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.security.web.access: DEBUG

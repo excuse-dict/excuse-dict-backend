@@ -1,5 +1,6 @@
-package net.whgkswo.stonesmith.auth;
+package net.whgkswo.stonesmith.auth.controllers;
 
+import jakarta.validation.Valid;
 import net.whgkswo.stonesmith.entities.members.Member;
 import net.whgkswo.stonesmith.entities.members.MemberController;
 import net.whgkswo.stonesmith.entities.members.MemberDto;
@@ -23,15 +24,7 @@ public class AuthController {
         this.memberService = memberService;
     }
 
-    @PostMapping("/signup")
-    public ResponseEntity<?> handleSignupRequest(@RequestBody MemberDto dto){
-        Member member = memberService.createUser(dto);
-        // 회원가입은 AuthController가 처리하지만 URI는 UserController 기준으로
-        URI uri = UriHelper.createURI(MemberController.BASE_PATH, member.getId());
-
-        return ResponseEntity.created(uri).build();
-    }
-
+    // 이메일 중복 검증
     @GetMapping("/check-email")
     public ResponseEntity<?> handleEmailDuplicationCheckRequest(@RequestParam String email){
         boolean isEmailDuplicated = memberService.isEmailDuplicated(email);
@@ -39,5 +32,15 @@ public class AuthController {
         return ResponseEntity.ok(
                 Response.simpleBoolean(isEmailDuplicated)
         );
+    }
+
+    // 회원가입
+    @PostMapping("/signup")
+    public ResponseEntity<?> handleSignupRequest(@Valid @RequestBody MemberDto dto){
+        Member member = memberService.createUser(dto);
+        // 회원가입은 AuthController가 처리하지만 URI는 UserController 기준으로
+        URI uri = UriHelper.createURI(MemberController.BASE_PATH, member.getId());
+
+        return ResponseEntity.created(uri).build();
     }
 }
