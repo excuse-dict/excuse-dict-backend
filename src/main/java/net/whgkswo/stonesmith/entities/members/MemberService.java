@@ -1,7 +1,6 @@
 package net.whgkswo.stonesmith.entities.members;
 
 import net.whgkswo.stonesmith.entities.members.rank.Rank;
-import net.whgkswo.stonesmith.entities.members.rank.RankRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -32,12 +31,12 @@ public class MemberService {
         return memberRepository.save(member);
     }
 
-    public boolean isEmailDuplicated(String email){
+    public boolean isEmailAvailable(String email){
         List<Member> members = memberRepository.findAll();
 
         for(Member member : members){
-            if(member.getEmail().equals(email)) return true;
+            if(member.getEmail().equals(email)) return false;
         }
-        return false;
+        return true;
     }
 }

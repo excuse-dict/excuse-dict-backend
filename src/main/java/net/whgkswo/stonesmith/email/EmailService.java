@@ -44,7 +44,7 @@ public class EmailService {
                     Duration.ofSeconds(CODE_DURATION_SEC)
             );
         } catch (Exception e) {
-            throw new BusinessLogicException("Redis 서버 연결 불가");
+            throw new BusinessLogicException(500, "Redis 서버 연결 불가");
         }
 
         // 메일 발송
@@ -86,7 +86,7 @@ public class EmailService {
             mailSender.send(message);
 
         }catch (MessagingException e){
-            throw new BusinessLogicException("메일 전송 실패!");
+            throw new BusinessLogicException(500, "메일 전송 실패!");
         }
     }
 

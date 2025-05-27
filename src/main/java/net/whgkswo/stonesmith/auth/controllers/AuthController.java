@@ -7,6 +7,7 @@ import net.whgkswo.stonesmith.entities.members.Member;
 import net.whgkswo.stonesmith.entities.members.MemberController;
 import net.whgkswo.stonesmith.entities.members.MemberDto;
 import net.whgkswo.stonesmith.entities.members.MemberService;
+import net.whgkswo.stonesmith.exception.BusinessLogicException;
 import net.whgkswo.stonesmith.responses.Response;
 import net.whgkswo.stonesmith.responses.UriHelper;
 import org.springframework.http.ResponseEntity;
@@ -33,8 +34,10 @@ public class AuthController {
     public ResponseEntity<?> handleVerifyRequest(@RequestBody VerifyDto dto){
         boolean isValid = authService.verifyCode(dto.email(), dto.verificationCode());
 
+        if(!isValid) throw new BusinessLogicException(400, "인증 코드가 틀리거나 만료되었습니다.");
+
         return ResponseEntity.ok(
-                Response.simpleBoolean(isValid)
+                Response.simpleString("인증 코드 검증이 완료되었습니다.")
         );
     }
 

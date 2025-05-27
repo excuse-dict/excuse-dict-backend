@@ -35,7 +35,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 프리플라이트는 모두 허용
                         .requestMatchers("/error").permitAll() // 에러 페이지 허용
                         .requestMatchers(AuthController.BASE_PATH + "/**").permitAll() // 회원가입은 예외
-                        .requestMatchers(EmailController.BASE_PATH + "/verification-code").permitAll() // 이메일 인증은 예외
+                        .requestMatchers(EmailController.BASE_PATH + "/**").permitAll() // 이메일 인증은 예외
                         .requestMatchers("/h2/**").permitAll() // h2 볼때는 예외
                         //.requestMatchers(HttpMethod.GET, PostController.BASE_PATH + "/**").permitAll() // 비회원도 조회는 허용
                         .anyRequest().authenticated() // 위에 명시하지 않은 요청은 전부 인증 필요

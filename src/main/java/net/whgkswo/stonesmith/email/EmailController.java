@@ -26,7 +26,7 @@ public class EmailController {
     // 이메일 중복 검증
     @GetMapping("/check-availability")
     public ResponseEntity<?> handleEmailDuplicationCheckRequest(@RequestParam String email){
-        boolean isEmailAvailable = memberService.isEmailDuplicated(email);
+        boolean isEmailAvailable = memberService.isEmailAvailable(email);
 
         return ResponseEntity.ok(
                 Response.simpleBoolean(isEmailAvailable)
