@@ -17,7 +17,7 @@ import java.util.List;
 @Entity
 public class Member extends TimeStampedEntity {
 
-    private String username;
+    private String nickname;
 
     private String email;
 
@@ -29,11 +29,11 @@ public class Member extends TimeStampedEntity {
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)
     private Rank rank;
 
-    public Member(String username,
+    public Member(String nickname,
                   String email,
                   String password
                 ){
-        this.username = username;
+        this.nickname = nickname;
         this.email = email;
         this.password = password;
     }

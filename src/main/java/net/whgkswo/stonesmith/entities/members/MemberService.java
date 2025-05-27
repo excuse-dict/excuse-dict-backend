@@ -1,6 +1,7 @@
 package net.whgkswo.stonesmith.entities.members;
 
 import net.whgkswo.stonesmith.entities.members.rank.Rank;
+import net.whgkswo.stonesmith.exception.BusinessLogicException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,7 @@ public class MemberService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    // 멤버 가입
     public Member createUser(MemberDto dto){
         Member member = memberMapper.dtoToUser(dto);
 
@@ -31,6 +33,7 @@ public class MemberService {
         return memberRepository.save(member);
     }
 
+    // 이메일 중복 검사
     public boolean isEmailAvailable(String email){
         List<Member> members = memberRepository.findAll();
 
