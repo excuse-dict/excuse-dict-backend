@@ -5,6 +5,7 @@ import net.whgkswo.stonesmith.responses.dtos.SimpleStringDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -29,8 +30,12 @@ public class MemberController {
         return ResponseEntity.ok("사용할 수 있는 닉네임입니다.");
     }
 
-    /*// 회원가입
-    public ResponseEntity<?> handleRegisterRequest(MemberDto){
+    // 회원가입
+    @PostMapping
+    public ResponseEntity<?> handleRegisterRequest(@RequestBody MemberDto dto){
+        long memberId = memberService.createMember(dto);
+        URI uri = URI.create(BASE_PATH + "/" + memberId);
 
-    }*/
+        return ResponseEntity.created(uri).build();
+    }
 }

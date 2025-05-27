@@ -1,8 +1,10 @@
-package net.whgkswo.stonesmith.email;
+package net.whgkswo.stonesmith.entities.members.email;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import net.whgkswo.stonesmith.auth.service.AuthService;
+import net.whgkswo.stonesmith.entities.members.Member;
+import net.whgkswo.stonesmith.entities.members.MemberRepository;
 import net.whgkswo.stonesmith.exception.BusinessLogicException;
 import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Random;
 
 @Service
@@ -20,13 +23,24 @@ public class EmailService {
     private JavaMailSender mailSender;
     private RedisTemplate<String, String> redisTemplate;
     private Environment environment;
+    private MemberRepository memberRepository;
 
     private static final long CODE_DURATION_SEC = 300;
 
-    public EmailService(JavaMailSender mailSender, RedisTemplate<String, String> redisTemplate, Environment environment){
+    public EmailService(JavaMailSender mailSender, RedisTemplate<String, String> redisTemplate, Environment environment, MemberRepository memberRepository){
         this.mailSender = mailSender;
         this.redisTemplate = redisTemplate;
         this.environment = environment;
+        this.memberRepository = memberRepository;
+    }
+
+    // 이메일 중복 검사
+    public void validateEmail(String email){
+        List<Member> members = memberRepository.findAll();
+
+        for(Member member : members){
+            if(member.getEmail().equals(email)) throw new BusinessLogicException(400, "이미 가입하신 이메일입니다.");
+        }
     }
 
     public LocalDateTime sendVerificationEmail(String email){

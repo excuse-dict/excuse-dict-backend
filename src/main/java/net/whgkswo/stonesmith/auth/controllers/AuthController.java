@@ -44,9 +44,9 @@ public class AuthController {
     // 회원가입
     @PostMapping("/signup")
     public ResponseEntity<?> handleSignupRequest(@Valid @RequestBody MemberDto dto){
-        Member member = memberService.createUser(dto);
+        long memberId = memberService.createMember(dto);
         // 회원가입은 AuthController가 처리하지만 URI는 UserController 기준으로
-        URI uri = UriHelper.createURI(MemberController.BASE_PATH, member.getId());
+        URI uri = UriHelper.createURI(MemberController.BASE_PATH, memberId);
 
         return ResponseEntity.created(uri).build();
     }

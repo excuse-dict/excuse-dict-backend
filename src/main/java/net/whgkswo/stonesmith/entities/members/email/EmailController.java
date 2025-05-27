@@ -1,4 +1,4 @@
-package net.whgkswo.stonesmith.email;
+package net.whgkswo.stonesmith.entities.members.email;
 
 import jakarta.validation.Valid;
 import net.whgkswo.stonesmith.entities.members.MemberService;
@@ -26,11 +26,9 @@ public class EmailController {
     // 이메일 중복 검증
     @GetMapping("/check-availability")
     public ResponseEntity<?> handleEmailDuplicationCheckRequest(@RequestParam String email){
-        boolean isEmailAvailable = memberService.isEmailAvailable(email);
+        emailService.validateEmail(email);
 
-        return ResponseEntity.ok(
-                Response.simpleBoolean(isEmailAvailable)
-        );
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/verification-code")

@@ -1,7 +1,7 @@
 package net.whgkswo.stonesmith.auth.config;
 
 import net.whgkswo.stonesmith.auth.controllers.AuthController;
-import net.whgkswo.stonesmith.email.EmailController;
+import net.whgkswo.stonesmith.entities.members.email.EmailController;
 import net.whgkswo.stonesmith.entities.members.MemberController;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,8 +35,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 프리플라이트는 모두 허용
                         .requestMatchers("/error").permitAll() // 에러 페이지 허용
-                        .requestMatchers(AuthController.BASE_PATH + "/**").permitAll() // 회원가입은 예외
-                        .requestMatchers(EmailController.BASE_PATH + "/**").permitAll() // 이메일 인증은 예외
+                        .requestMatchers(HttpMethod.POST, MemberController.BASE_PATH).permitAll() // 회원가입은 예외
+                        .requestMatchers(EmailController.BASE_PATH + "/**").permitAll() // 이메일 관련 API는 예외
+                        .requestMatchers(AuthController.BASE_PATH + "/verify").permitAll() // 코드 인증은 예외
                         .requestMatchers(MemberController.BASE_PATH + "/nicknames/**").permitAll() // 닉네임 검증은 예외
                         .requestMatchers("/h2/**").permitAll() // h2 볼때는 예외
                         //.requestMatchers(HttpMethod.GET, PostController.BASE_PATH + "/**").permitAll() // 비회원도 조회는 허용
