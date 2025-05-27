@@ -8,5 +8,6 @@ public class BusinessLogicException extends RuntimeException {
 
     public BusinessLogicException(int status, String message) {
         super(message);
+        this.status = status;
     }
 }
