@@ -24,6 +24,8 @@ spring:
         debug: true # 콘솔 디버깅
         smtp:
           auth: true
+          timeout: 10000 # 10초
+          connection-timeout: 5000 # 5초
           starttls:
             enable: true
             required: true

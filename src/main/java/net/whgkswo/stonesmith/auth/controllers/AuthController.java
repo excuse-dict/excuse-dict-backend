@@ -1,6 +1,8 @@
 package net.whgkswo.stonesmith.auth.controllers;
 
 import jakarta.validation.Valid;
+import net.whgkswo.stonesmith.auth.dto.VerifyDto;
+import net.whgkswo.stonesmith.auth.service.AuthService;
 import net.whgkswo.stonesmith.entities.members.Member;
 import net.whgkswo.stonesmith.entities.members.MemberController;
 import net.whgkswo.stonesmith.entities.members.MemberDto;
@@ -16,21 +18,23 @@ import java.net.URI;
 @RequestMapping(AuthController.BASE_PATH)
 public class AuthController {
     private MemberService memberService;
+    private AuthService authService;
 
     public static final String BASE_PATH = "/api/v1/auth";
 
-    // 생성자 주입
-    public AuthController(MemberService memberService){
+
+    public AuthController(MemberService memberService, AuthService authService){
         this.memberService = memberService;
+        this.authService = authService;
     }
 
-    // 이메일 중복 검증
-    @GetMapping("/check-email")
-    public ResponseEntity<?> handleEmailDuplicationCheckRequest(@RequestParam String email){
-        boolean isEmailDuplicated = memberService.isEmailDuplicated(email);
+    // 인증 코드 검증
+    @PostMapping("/verify")
+    public ResponseEntity<?> handleVerifyRequest(@RequestBody VerifyDto dto){
+        boolean isValid = authService.verifyCode(dto.email(), dto.verificationCode());
 
         return ResponseEntity.ok(
-                Response.simpleBoolean(isEmailDuplicated)
+                Response.simpleBoolean(isValid)
         );
     }
 

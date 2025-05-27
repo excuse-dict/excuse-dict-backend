@@ -1,9 +1,11 @@
-package net.whgkswo.stonesmith.responses.dtos;
+package net.whgkswo.stonesmith.auth.dto;
+
+import net.whgkswo.stonesmith.responses.dtos.Dto;
 
 import java.time.LocalDateTime;
 
 public record VerificationCodeResponseDto(
         String email,
         LocalDateTime expiryTime
-) implements Dto{
+) implements Dto {
 }

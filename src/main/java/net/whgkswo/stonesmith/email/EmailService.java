@@ -2,6 +2,7 @@ package net.whgkswo.stonesmith.email;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import net.whgkswo.stonesmith.auth.service.AuthService;
 import net.whgkswo.stonesmith.exception.BusinessLogicException;
 import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -38,7 +39,7 @@ public class EmailService {
         // redis에 코드 저장(5분 후 만료)
         try{
             redisTemplate.opsForValue().set(
-                    getRedisKey(email),
+                    AuthService.getRedisKeyForVerificationCode(email),
                     code,
                     Duration.ofSeconds(CODE_DURATION_SEC)
             );
@@ -50,25 +51,6 @@ public class EmailService {
         sendEmail(email, code, expiryTime);
 
         return expiryTime;
-    }
-
-    // 인증 코드 검증
-    public boolean verifyCode(String email, String code){
-        String key = getRedisKey(email);
-        String redisCode = redisTemplate.opsForValue().get(key);
-
-        // 일치하면
-        if(code.equals(redisCode)){ // nullable한 값이 우측 -> null체크도 됨
-            // 레디스에서 키 삭제
-            redisTemplate.delete(key);
-            return true;
-        }
-        return false;
-    }
-
-    // 레디스 키 생성
-    private String getRedisKey(String email){
-        return "verification:" + email;
     }
 
     // 인증 코드 생성
