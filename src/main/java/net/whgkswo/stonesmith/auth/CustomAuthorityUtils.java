@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 // 사용자가 설계한 Role 객체와 스프링에서 사용하는 GrantedAuthority 사이의 변환기
@@ -14,7 +15,7 @@ import java.util.stream.Collectors;
 public class CustomAuthorityUtils {
 
     // 회원의 role을 받아 GrantedAuthority로 변환
-    public List<GrantedAuthority> createAuthorities(List<Member.Role> roles){
+    public List<GrantedAuthority> createAuthorities(Set<Member.Role> roles){
         return roles.stream()
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
                 .collect(Collectors.toList());

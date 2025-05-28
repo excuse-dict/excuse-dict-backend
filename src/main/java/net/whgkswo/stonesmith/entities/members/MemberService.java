@@ -1,8 +1,11 @@
 package net.whgkswo.stonesmith.entities.members;
 
+import net.whgkswo.stonesmith.auth.service.AuthService;
 import net.whgkswo.stonesmith.entities.members.email.EmailService;
 import net.whgkswo.stonesmith.entities.members.nicknames.NicknameService;
 import net.whgkswo.stonesmith.entities.members.rank.Rank;
+import net.whgkswo.stonesmith.exception.BusinessLogicException;
+import net.whgkswo.stonesmith.exception.ExceptionType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -13,19 +16,29 @@ public class MemberService {
     private PasswordEncoder passwordEncoder;
     private NicknameService nicknameService;
     private EmailService emailService;
+    private AuthService authService;
 
-    public MemberService(MemberMapper memberMapper, MemberRepository memberRepository, PasswordEncoder passwordEncoder, NicknameService nicknameService, EmailService emailService){
+    public MemberService(MemberMapper memberMapper,
+                         MemberRepository memberRepository,
+                         PasswordEncoder passwordEncoder,
+                         NicknameService nicknameService,
+                         EmailService emailService,
+                         AuthService authService){
         this.memberMapper = memberMapper;
         this.memberRepository = memberRepository;
         this.passwordEncoder = passwordEncoder;
         this.nicknameService = nicknameService;
         this.emailService = emailService;
+        this.authService = authService;
     }
 
     // 멤버 가입
     public long createMember(MemberDto dto){
-        // 이메일 중복 검사
+        // 이메일 유효성 검사
         emailService.validateEmail(dto.email());
+        // 이메일 인증여부 검사
+        authService.checkEmailVerified(dto.email());
+
         // 닉네임 유효성 검증
         nicknameService.validateNickname(dto.nickname());
 
@@ -39,10 +52,9 @@ public class MemberService {
         member.setRank(rank);
 
         // 권한 설정
+        authService.giveRoles(member);
 
         memberRepository.save(member);
         return member.getId();
     }
-
-
 }

@@ -2,6 +2,7 @@ package net.whgkswo.stonesmith.entities.members.email;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import net.whgkswo.stonesmith.auth.redis.RedisService;
 import net.whgkswo.stonesmith.auth.service.AuthService;
 import net.whgkswo.stonesmith.entities.members.Member;
 import net.whgkswo.stonesmith.entities.members.MemberRepository;
@@ -22,23 +23,23 @@ import java.util.Random;
 @Service
 public class EmailService {
     private JavaMailSender mailSender;
-    private RedisTemplate<String, String> redisTemplate;
     private Environment environment;
     private MemberRepository memberRepository;
+    private RedisService redisService;
 
-    private static final long CODE_DURATION_SEC = 300;
+    private static final int CODE_DURATION_SEC = 300;
 
-    public EmailService(JavaMailSender mailSender, RedisTemplate<String, String> redisTemplate, Environment environment, MemberRepository memberRepository){
+    public EmailService(JavaMailSender mailSender, RedisService redisService, Environment environment, MemberRepository memberRepository){
         this.mailSender = mailSender;
-        this.redisTemplate = redisTemplate;
+        this.redisService = redisService;
         this.environment = environment;
         this.memberRepository = memberRepository;
     }
 
-    // 이메일 중복 검사
+    // 이메일 유효성 검사
     public void validateEmail(String email){
         List<Member> members = memberRepository.findAll();
-
+        // 이메일 중복 검사
         for(Member member : members){
             if(member.getEmail().equals(email)) throw new BusinessLogicException(ExceptionType.DUPLICATED_EMAIL);
         }
@@ -52,15 +53,8 @@ public class EmailService {
         LocalDateTime expiryTime = getCodeExpiryTime();
 
         // redis에 코드 저장(5분 후 만료)
-        try{
-            redisTemplate.opsForValue().set(
-                    AuthService.getRedisKeyForVerificationCode(email),
-                    code,
-                    Duration.ofSeconds(CODE_DURATION_SEC)
-            );
-        } catch (Exception e) {
-            throw new BusinessLogicException(ExceptionType.REDIS_CONNECTION_LOST);
-        }
+        String redisKey = redisService.getKeyForVerificationCode(email);
+        redisService.put(redisKey, code, CODE_DURATION_SEC);
 
         // 메일 발송
         sendEmail(email, code, expiryTime);
