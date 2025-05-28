@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AuthService {
@@ -24,20 +25,20 @@ public class AuthService {
     }
 
     // 인증 코드 검증
-    public boolean verifyCode(String email, String code){
+    public void verifyCode(String email, String code){
         String key = redisService.getKeyForVerificationCode(email);
-        String storedCode = redisService.get(key);
+        Optional<String> storedCode = redisService.get(key);
 
-        // 일치하면
-        if(code.equals(storedCode)){ // nullable한 값이 우측 -> null체크도 됨
-            // 레디스에서 인증코드 삭제
-            redisService.remove(key);
-            // 이메일 인증 완료 정보 저장
-            addVerificationToRedis(email);
-            return true;
-        }
-        // 일치하는 값이 없으면(틀렸거나 만료)
-        return false;
+        // 인증 코드가 없거나 만료됨
+        if(storedCode.isEmpty()) throw new BusinessLogicException(ExceptionType.VERIFICATION_CODE_EXPIRED);
+
+        // 코드가 일치하지 않음
+        if(!code.equals(storedCode.get())) throw new BusinessLogicException(ExceptionType.WRONG_VERIFICATION_CODE);
+
+        // 일치하면 레디스에서 인증코드 삭제
+        redisService.remove(key);
+        // 이메일 인증 완료 정보 저장
+        addVerificationToRedis(email);
     }
 
     // 이메일 인증 완료 정보 저장

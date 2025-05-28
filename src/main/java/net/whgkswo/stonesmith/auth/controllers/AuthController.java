@@ -33,9 +33,7 @@ public class AuthController {
     // 인증 코드 검증
     @PostMapping("/verify")
     public ResponseEntity<?> handleVerifyRequest(@RequestBody VerifyDto dto){
-        boolean isValid = authService.verifyCode(dto.email(), dto.verificationCode());
-
-        if(!isValid) throw new BusinessLogicException(ExceptionType.WRONG_VERIFICATION_CODE);
+        authService.verifyCode(dto.email(), dto.verificationCode());
 
         return ResponseEntity.ok(
                 Response.simpleString("인증 코드 검증이 완료되었습니다.")

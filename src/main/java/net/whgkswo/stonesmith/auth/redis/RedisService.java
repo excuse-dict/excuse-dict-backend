@@ -6,6 +6,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.Optional;
 
 @Service
 public class RedisService {
@@ -32,9 +33,10 @@ public class RedisService {
     }
 
     // 조회
-    public String get(String key){
+    public Optional<String> get(String key){
         try{
-            return redisTemplate.opsForValue().get(key);
+            String value = redisTemplate.opsForValue().get(key);
+            return Optional.ofNullable(value);
         } catch (Exception e) {
             throw new BusinessLogicException(ExceptionType.REDIS_CONNECTION_LOST);
         }
