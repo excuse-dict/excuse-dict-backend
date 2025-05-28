@@ -2,6 +2,7 @@ package net.whgkswo.stonesmith.entities.members.rank;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.whgkswo.stonesmith.entities.BaseEntity;
 import net.whgkswo.stonesmith.entities.members.Member;
@@ -10,6 +11,7 @@ import net.whgkswo.stonesmith.entities.members.Member;
 @Getter
 @Setter
 @Entity
+@NoArgsConstructor
 public class Rank extends BaseEntity {
 
     @OneToOne

@@ -4,6 +4,7 @@ import net.whgkswo.stonesmith.entities.members.Member;
 import net.whgkswo.stonesmith.entities.members.MemberRepository;
 import net.whgkswo.stonesmith.entities.members.MemberService;
 import net.whgkswo.stonesmith.exception.BusinessLogicException;
+import net.whgkswo.stonesmith.exception.ExceptionType;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -43,12 +44,13 @@ public class NicknameService {
     public void validateNickname(String nickname){
         boolean isLengthValid = isNicknameLengthValid(nickname);
         if(!isLengthValid) throw new BusinessLogicException(
-                400, String.format("닉네임은 %d~%d자 사이어야 합니다.", MIN_NICKNAME_LENGTH, MAX_NICKNAME_LENGTH));
+                ExceptionType.of(400, String.format("닉네임은 %d~%d자 사이어야 합니다.", MIN_NICKNAME_LENGTH, MAX_NICKNAME_LENGTH))
+                );
 
         boolean isUnique = isNicknameUnique(nickname);
-        if(!isUnique) throw new BusinessLogicException(400, "이미 사용중인 닉네임입니다.");
+        if(!isUnique) throw new BusinessLogicException(ExceptionType.DUPLICATED_EMAIL);
 
         boolean isValid = isNicknameValid(nickname);
-        if(!isValid) throw new BusinessLogicException(400, "닉네임에 사용할 수 없는 문자가 있습니다.");
+        if(!isValid) throw new BusinessLogicException(ExceptionType.WRONG_CHARACTER_IN_NICKNAME);
     }
 }

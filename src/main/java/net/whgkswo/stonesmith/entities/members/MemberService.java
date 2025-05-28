@@ -38,6 +38,8 @@ public class MemberService {
         Rank rank = new Rank(Rank.Tier.BRONZE, 10);
         member.setRank(rank);
 
+        // 권한 설정
+
         memberRepository.save(member);
         return member.getId();
     }

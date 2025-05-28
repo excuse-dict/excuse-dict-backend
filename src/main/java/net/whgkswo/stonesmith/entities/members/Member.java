@@ -29,6 +29,9 @@ public class Member extends TimeStampedEntity {
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)
     private Rank rank;
 
+    @Enumerated(EnumType.STRING)
+    private List<Role> roles = new ArrayList<>();
+
     public Member(String nickname,
                   String email,
                   String password
@@ -41,5 +44,10 @@ public class Member extends TimeStampedEntity {
     public void setRank(Rank rank){
         this.rank = rank;
         if(rank.getMember() == null) rank.setMember(this);
+    }
+
+    public enum Role {
+        ADMIN,
+        USER
     }
 }

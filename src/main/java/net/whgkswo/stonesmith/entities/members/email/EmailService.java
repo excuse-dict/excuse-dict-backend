@@ -6,6 +6,7 @@ import net.whgkswo.stonesmith.auth.service.AuthService;
 import net.whgkswo.stonesmith.entities.members.Member;
 import net.whgkswo.stonesmith.entities.members.MemberRepository;
 import net.whgkswo.stonesmith.exception.BusinessLogicException;
+import net.whgkswo.stonesmith.exception.ExceptionType;
 import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -39,7 +40,7 @@ public class EmailService {
         List<Member> members = memberRepository.findAll();
 
         for(Member member : members){
-            if(member.getEmail().equals(email)) throw new BusinessLogicException(400, "이미 가입하신 이메일입니다.");
+            if(member.getEmail().equals(email)) throw new BusinessLogicException(ExceptionType.DUPLICATED_EMAIL);
         }
     }
 
@@ -58,7 +59,7 @@ public class EmailService {
                     Duration.ofSeconds(CODE_DURATION_SEC)
             );
         } catch (Exception e) {
-            throw new BusinessLogicException(500, "Redis 서버 연결 불가");
+            throw new BusinessLogicException(ExceptionType.REDIS_CONNECTION_LOST);
         }
 
         // 메일 발송
@@ -100,7 +101,7 @@ public class EmailService {
             mailSender.send(message);
 
         }catch (MessagingException e){
-            throw new BusinessLogicException(500, "메일 전송 실패!");
+            throw new BusinessLogicException(ExceptionType.FAILED_TO_SEND_MAIL);
         }
     }
 

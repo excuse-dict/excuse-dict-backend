@@ -1,13 +1,19 @@
 package net.whgkswo.stonesmith.auth.config;
 
 import net.whgkswo.stonesmith.auth.controllers.AuthController;
+import net.whgkswo.stonesmith.auth.handlers.MemberAuthenticationFaliureHandler;
+import net.whgkswo.stonesmith.auth.handlers.MemberAuthenticationSuccessHandler;
+import net.whgkswo.stonesmith.auth.jwt.entrypoint.JwtAuthenticationFilter;
+import net.whgkswo.stonesmith.auth.jwt.tokenizer.JwtTokenizer;
 import net.whgkswo.stonesmith.entities.members.email.EmailController;
 import net.whgkswo.stonesmith.entities.members.MemberController;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,6 +26,11 @@ import java.util.Arrays;
 
 @Configuration
 public class SecurityConfig {
+    private final JwtTokenizer jwtTokenizer;
+
+    public SecurityConfig(JwtTokenizer jwtTokenizer){
+        this.jwtTokenizer = jwtTokenizer;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder(){
@@ -38,6 +49,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, MemberController.BASE_PATH).permitAll() // 회원가입은 예외
                         .requestMatchers(EmailController.BASE_PATH + "/**").permitAll() // 이메일 관련 API는 예외
                         .requestMatchers(AuthController.BASE_PATH + "/verify").permitAll() // 코드 인증은 예외
+                        .requestMatchers(AuthController.BASE_PATH + "/login").permitAll() // 로그인도 예외
                         .requestMatchers(MemberController.BASE_PATH + "/nicknames/**").permitAll() // 닉네임 검증은 예외
                         .requestMatchers("/h2/**").permitAll() // h2 볼때는 예외
                         //.requestMatchers(HttpMethod.GET, PostController.BASE_PATH + "/**").permitAll() // 비회원도 조회는 허용
@@ -52,10 +64,13 @@ public class SecurityConfig {
                 .headers(headers -> headers
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
                 )
+                // CustomFilterConfigurer 적용
+                .with(new CustomFilterConfigurer(), Customizer.withDefaults())
         ;
         return http.build();
     }
 
+    // CORS 관련 설정
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
@@ -67,5 +82,22 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", configuration);
         return source;
+    }
+
+    // JWT인증 필터를 스프링 시큐리티에 등록
+    public class CustomFilterConfigurer extends AbstractHttpConfigurer<CustomFilterConfigurer, HttpSecurity>{
+        @Override
+        public void configure(HttpSecurity builder) {
+            AuthenticationManager authenticationManager = builder.getSharedObject(AuthenticationManager.class);
+
+            JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(authenticationManager, jwtTokenizer);
+            // 로그인 요청 엔드포인트 설정
+            jwtAuthenticationFilter.setFilterProcessesUrl(AuthController.BASE_PATH + "/login");
+            // 로그인 요청 후처리 로직 적용
+            jwtAuthenticationFilter.setAuthenticationSuccessHandler(new MemberAuthenticationSuccessHandler());
+            jwtAuthenticationFilter.setAuthenticationFailureHandler(new MemberAuthenticationFaliureHandler());
+
+            builder.addFilter(jwtAuthenticationFilter);
+        }
     }
 }
