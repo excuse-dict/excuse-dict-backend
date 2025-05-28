@@ -1,7 +1,7 @@
 package net.whgkswo.stonesmith.auth.config;
 
 import net.whgkswo.stonesmith.auth.controllers.AuthController;
-import net.whgkswo.stonesmith.auth.handlers.MemberAuthenticationFaliureHandler;
+import net.whgkswo.stonesmith.auth.handlers.MemberAuthenticationFailureHandler;
 import net.whgkswo.stonesmith.auth.handlers.MemberAuthenticationSuccessHandler;
 import net.whgkswo.stonesmith.auth.jwt.entrypoint.JwtAuthenticationFilter;
 import net.whgkswo.stonesmith.auth.jwt.tokenizer.JwtTokenizer;
@@ -95,7 +95,7 @@ public class SecurityConfig {
             jwtAuthenticationFilter.setFilterProcessesUrl(AuthController.BASE_PATH + "/login");
             // 로그인 요청 후처리 로직 적용
             jwtAuthenticationFilter.setAuthenticationSuccessHandler(new MemberAuthenticationSuccessHandler());
-            jwtAuthenticationFilter.setAuthenticationFailureHandler(new MemberAuthenticationFaliureHandler());
+            jwtAuthenticationFilter.setAuthenticationFailureHandler(new MemberAuthenticationFailureHandler());
 
             builder.addFilter(jwtAuthenticationFilter);
         }

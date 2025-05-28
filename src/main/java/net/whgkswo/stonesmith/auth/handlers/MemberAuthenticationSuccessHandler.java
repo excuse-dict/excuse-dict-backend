@@ -16,5 +16,6 @@ public class MemberAuthenticationSuccessHandler implements AuthenticationSuccess
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         // 추가 로직 실행
+        // TODO: 로그인 정보 레디스에 저장
     }
 }

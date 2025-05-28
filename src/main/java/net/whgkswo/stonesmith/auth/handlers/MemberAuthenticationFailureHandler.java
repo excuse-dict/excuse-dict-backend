@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import net.whgkswo.stonesmith.exception.BusinessLogicException;
 import net.whgkswo.stonesmith.exception.ErrorResponseDto;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
@@ -12,10 +11,10 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import java.io.IOException;
 
 // 로그인 인증 실패 시 추가 로직 실행 가능
-public class MemberAuthenticationFaliureHandler implements AuthenticationFailureHandler {
+public class MemberAuthenticationFailureHandler implements AuthenticationFailureHandler {
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
-
+        sendErrorResponse(response);
     }
 
     private void sendErrorResponse(HttpServletResponse response) throws IOException{
