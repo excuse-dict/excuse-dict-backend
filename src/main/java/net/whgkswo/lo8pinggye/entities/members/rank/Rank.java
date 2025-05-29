@@ -18,18 +18,13 @@ public class Rank extends BaseEntity {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    private int point;
+    private int currentPoint;
 
     @Enumerated(EnumType.STRING)
-    private Tier tier;
+    private Type type;
 
-    private int division;   // 브론즈~다이아까진 1~10급, 전설은 순위 저장
-
-    public static int LOWEST_DIVISION = 10;
-
-    public Rank(Tier tier, int division){
-        this.tier = tier;
-        this.division = division;
+    public Rank(Type type){
+        this.type = type;
     }
 
     public void setMember(Member member){
@@ -37,12 +32,15 @@ public class Rank extends BaseEntity {
         if(member.getRank() == null) member.setRank(this);
     }
 
-    public enum Tier{
-        BRONZE,
-        SILVER,
-        GOLD,
-        PLATINUM,
-        DIAMOND,
-        LEGEND
+    public enum Type {
+        TADPOLE("올챙이"),
+        LOACH("미꾸라지"),
+        SNAKE("능구렁이")
+        ;
+        private String name;
+
+        Type(String name){
+            this.name = name;
+        }
     }
 }

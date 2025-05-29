@@ -5,8 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.whgkswo.lo8pinggye.entities.TimeStampedEntity;
-import net.whgkswo.lo8pinggye.entities.cards.Card;
 import net.whgkswo.lo8pinggye.entities.members.rank.Rank;
+import net.whgkswo.lo8pinggye.entities.posts.Post;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -26,7 +26,7 @@ public class Member extends TimeStampedEntity {
     private String password;
 
     @OneToMany(mappedBy = "member")
-    private final List<Card> cards = new ArrayList<>();
+    private final List<Post> posts = new ArrayList<>();
 
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)
     private Rank rank;

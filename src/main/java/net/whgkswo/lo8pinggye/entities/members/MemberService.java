@@ -34,7 +34,7 @@ public class MemberService {
         String encryptedPassword = passwordEncoder.encode(dto.rawPassword());
         member.setPassword(encryptedPassword);
 
-        Rank rank = new Rank(Rank.Tier.BRONZE, 10);
+        Rank rank = new Rank(Rank.Type.TADPOLE);
         member.setRank(rank);
 
         // 권한 설정

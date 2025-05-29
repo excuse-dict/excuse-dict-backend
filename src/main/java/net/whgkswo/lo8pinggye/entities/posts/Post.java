@@ -2,8 +2,9 @@ package net.whgkswo.lo8pinggye.entities.posts;
 
 import jakarta.persistence.*;
 import net.whgkswo.lo8pinggye.entities.TimeStampedEntity;
-import net.whgkswo.lo8pinggye.entities.cards.Card;
 import net.whgkswo.lo8pinggye.entities.comments.Comment;
+import net.whgkswo.lo8pinggye.entities.excuses.Excuse;
+import net.whgkswo.lo8pinggye.entities.members.Member;
 import net.whgkswo.lo8pinggye.entities.vote.PostVote;
 
 import java.util.ArrayList;
@@ -13,13 +14,13 @@ import java.util.List;
 public class Post extends TimeStampedEntity {
     private String title;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "main_card_id")
-    private Card mainCard;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    private Member member;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id") // Post를 통해 Card는 조회하지만 그 반대는 필요가 없어서 예외적으로 1:N만 연결. 연관관계의 주인이 반대이기 때문에 여기에다 조인컬럼 설정
-    private List<Card> relatedCards = new ArrayList<>();
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "excuse_id")
+    private Excuse excuse;
 
     @OneToMany(mappedBy = "post")
     private List<Comment> comments = new ArrayList<>();
