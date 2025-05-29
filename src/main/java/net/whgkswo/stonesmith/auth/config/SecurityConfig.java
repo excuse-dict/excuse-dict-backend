@@ -1,10 +1,13 @@
 package net.whgkswo.stonesmith.auth.config;
 
+import lombok.RequiredArgsConstructor;
+import net.whgkswo.stonesmith.auth.CustomAuthorityUtils;
 import net.whgkswo.stonesmith.auth.controllers.AuthController;
 import net.whgkswo.stonesmith.auth.handlers.MemberAuthenticationFailureHandler;
 import net.whgkswo.stonesmith.auth.handlers.MemberAuthenticationSuccessHandler;
 import net.whgkswo.stonesmith.auth.jwt.entrypoint.JwtAuthenticationFilter;
 import net.whgkswo.stonesmith.auth.jwt.tokenizer.JwtTokenizer;
+import net.whgkswo.stonesmith.auth.jwt.verification.JwtVerificationFilter;
 import net.whgkswo.stonesmith.entities.members.email.EmailController;
 import net.whgkswo.stonesmith.entities.members.MemberController;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +18,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -25,12 +29,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtTokenizer jwtTokenizer;
-
-    public SecurityConfig(JwtTokenizer jwtTokenizer){
-        this.jwtTokenizer = jwtTokenizer;
-    }
+    private final CustomAuthorityUtils authorityUtils;
 
     @Bean
     public PasswordEncoder passwordEncoder(){
@@ -40,8 +42,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
         http
+                // 악의적인 요청인지 확인
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/api/**") // API요청들은 CSRF 비활성화 (JWT토큰 사용)
+                        .ignoringRequestMatchers("/h2/**") // h2도 예외
+                )
                 // CORS 활성화
                 .cors(Customizer.withDefaults())
+                // HTTP를 무상태로 관리 (세션 사용 안함 - JWT를 쓰면 세션이 아예 필요 없음)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // 누가 접근할 수 있는 요청인지 확인
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 프리플라이트는 모두 허용
@@ -54,11 +63,6 @@ public class SecurityConfig {
                         .requestMatchers("/h2/**").permitAll() // h2 볼때는 예외
                         //.requestMatchers(HttpMethod.GET, PostController.BASE_PATH + "/**").permitAll() // 비회원도 조회는 허용
                         .anyRequest().authenticated() // 위에 명시하지 않은 요청은 전부 인증 필요
-                )
-                // 악의적인 요청인지 확인
-                .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/api/**") // API요청들은 CSRF 비활성화 (JWT토큰 사용)
-                        .ignoringRequestMatchers("/h2/**") // h2도 예외
                 )
                 // 같은 도메인에서 iframe 허용 (h2가 iframe 사용)
                 .headers(headers -> headers
@@ -97,7 +101,12 @@ public class SecurityConfig {
             jwtAuthenticationFilter.setAuthenticationSuccessHandler(new MemberAuthenticationSuccessHandler());
             jwtAuthenticationFilter.setAuthenticationFailureHandler(new MemberAuthenticationFailureHandler());
 
-            builder.addFilter(jwtAuthenticationFilter);
+            // JWT 토큰 유효성 검증 필터 적용
+            JwtVerificationFilter jwtVerificationFilter = new JwtVerificationFilter(jwtTokenizer, authorityUtils);
+
+            builder
+                    .addFilter(jwtAuthenticationFilter)
+                    .addFilterAfter(jwtVerificationFilter, JwtAuthenticationFilter.class);
         }
     }
 }

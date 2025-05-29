@@ -10,7 +10,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessLogicException.class)
     public ResponseEntity<ErrorResponseDto> handleBusinessLoginException(BusinessLogicException e){
-        ErrorResponseDto dto = new ErrorResponseDto(e.getMessage(), e.getStatus());
+        ErrorResponseDto dto = new ErrorResponseDto(e.getStatus(), e.getMessage());
 
         return ResponseEntity
                 .status(dto.status())

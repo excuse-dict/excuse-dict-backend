@@ -2,6 +2,7 @@ package net.whgkswo.stonesmith.entities.members.email;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
 import net.whgkswo.stonesmith.auth.redis.RedisService;
 import net.whgkswo.stonesmith.auth.service.AuthService;
 import net.whgkswo.stonesmith.entities.members.Member;
@@ -21,20 +22,14 @@ import java.util.List;
 import java.util.Random;
 
 @Service
+@RequiredArgsConstructor
 public class EmailService {
-    private JavaMailSender mailSender;
-    private Environment environment;
-    private MemberRepository memberRepository;
-    private RedisService redisService;
+    private final JavaMailSender mailSender;
+    private final Environment environment;
+    private final MemberRepository memberRepository;
+    private final RedisService redisService;
 
     private static final int CODE_DURATION_SEC = 300;
-
-    public EmailService(JavaMailSender mailSender, RedisService redisService, Environment environment, MemberRepository memberRepository){
-        this.mailSender = mailSender;
-        this.redisService = redisService;
-        this.environment = environment;
-        this.memberRepository = memberRepository;
-    }
 
     // 이메일 유효성 검사
     public void validateEmail(String email){

@@ -1,5 +1,6 @@
 package net.whgkswo.stonesmith.auth.userdetails;
 
+import lombok.RequiredArgsConstructor;
 import net.whgkswo.stonesmith.auth.CustomAuthorityUtils;
 import net.whgkswo.stonesmith.entities.members.Member;
 import net.whgkswo.stonesmith.entities.members.MemberRepository;
@@ -15,14 +16,10 @@ import java.util.Collection;
 import java.util.Optional;
 
 @Component
+@RequiredArgsConstructor
 public class MemberDetailService implements UserDetailsService {
     private final MemberRepository memberRepository;
     private final CustomAuthorityUtils authorityUtils;
-
-    public MemberDetailService(MemberRepository memberRepository, CustomAuthorityUtils authorityUtils) {
-        this.memberRepository = memberRepository;
-        this.authorityUtils = authorityUtils;
-    }
 
     // 이메일로 MemberDetail 조회
     @Override

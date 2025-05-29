@@ -1,5 +1,6 @@
 package net.whgkswo.stonesmith.auth.redis;
 
+import lombok.RequiredArgsConstructor;
 import net.whgkswo.stonesmith.exception.BusinessLogicException;
 import net.whgkswo.stonesmith.exception.ExceptionType;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -9,15 +10,12 @@ import java.time.Duration;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class RedisService {
     private final RedisTemplate<String, String> redisTemplate;
 
     private static final String VERIFICATION_CODE_PREFIX = "verification-code";
     private static final String VERIFICATION_COMPLETE_PREFIX = "verification-complete";
-
-    public RedisService(RedisTemplate<String, String> redisTemplate){
-        this.redisTemplate = redisTemplate;
-    }
 
     // 저장
     public void put(String key, String value, int durationOfSec){

@@ -1,5 +1,6 @@
 package net.whgkswo.stonesmith.entities.members;
 
+import lombok.RequiredArgsConstructor;
 import net.whgkswo.stonesmith.auth.service.AuthService;
 import net.whgkswo.stonesmith.entities.members.email.EmailService;
 import net.whgkswo.stonesmith.entities.members.nicknames.NicknameService;
@@ -10,27 +11,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class MemberService {
-    private MemberMapper memberMapper;
-    private MemberRepository memberRepository;
-    private PasswordEncoder passwordEncoder;
-    private NicknameService nicknameService;
-    private EmailService emailService;
-    private AuthService authService;
-
-    public MemberService(MemberMapper memberMapper,
-                         MemberRepository memberRepository,
-                         PasswordEncoder passwordEncoder,
-                         NicknameService nicknameService,
-                         EmailService emailService,
-                         AuthService authService){
-        this.memberMapper = memberMapper;
-        this.memberRepository = memberRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.nicknameService = nicknameService;
-        this.emailService = emailService;
-        this.authService = authService;
-    }
+    private final MemberMapper memberMapper;
+    private final MemberRepository memberRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final NicknameService nicknameService;
+    private final EmailService emailService;
+    private final AuthService authService;
 
     // 멤버 가입
     public long createMember(MemberDto dto){

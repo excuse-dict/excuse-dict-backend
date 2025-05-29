@@ -1,6 +1,7 @@
 package net.whgkswo.stonesmith.auth.controllers;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import net.whgkswo.stonesmith.auth.dto.VerifyDto;
 import net.whgkswo.stonesmith.auth.service.AuthService;
 import net.whgkswo.stonesmith.entities.members.Member;
@@ -18,17 +19,12 @@ import java.net.URI;
 
 @RestController
 @RequestMapping(AuthController.BASE_PATH)
+@RequiredArgsConstructor
 public class AuthController {
     private MemberService memberService;
     private AuthService authService;
 
     public static final String BASE_PATH = "/api/v1/auth";
-
-
-    public AuthController(MemberService memberService, AuthService authService){
-        this.memberService = memberService;
-        this.authService = authService;
-    }
 
     // 인증 코드 검증
     @PostMapping("/verify")

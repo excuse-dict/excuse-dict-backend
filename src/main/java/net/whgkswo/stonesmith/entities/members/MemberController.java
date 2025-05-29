@@ -1,5 +1,6 @@
 package net.whgkswo.stonesmith.entities.members;
 
+import lombok.RequiredArgsConstructor;
 import net.whgkswo.stonesmith.entities.members.nicknames.NicknameService;
 import net.whgkswo.stonesmith.responses.dtos.SimpleStringDto;
 import org.springframework.http.ResponseEntity;
@@ -10,16 +11,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping(MemberController.BASE_PATH)
+@RequiredArgsConstructor
 public class MemberController {
-    private MemberService memberService;
-    private NicknameService nicknameService;
+    private final MemberService memberService;
+    private final NicknameService nicknameService;
 
     public static final String BASE_PATH = "/api/v1/members";
-
-    public MemberController(MemberService memberService, NicknameService nicknameService){
-        this.memberService = memberService;
-        this.nicknameService = nicknameService;
-    }
 
     // 닉네임 중복 검사
     @GetMapping("/nicknames/check-availability")

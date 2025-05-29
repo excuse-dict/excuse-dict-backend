@@ -20,7 +20,7 @@ public class MemberAuthenticationFailureHandler implements AuthenticationFailure
     private void sendErrorResponse(HttpServletResponse response) throws IOException{
         ObjectMapper mapper = new ObjectMapper();
 
-        ErrorResponseDto errorResponseDto = new ErrorResponseDto("로그인에 실패하였습니다.", 401);
+        ErrorResponseDto errorResponseDto = new ErrorResponseDto(401, "로그인에 실패하였습니다.");
 
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(401);

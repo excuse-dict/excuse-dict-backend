@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import net.whgkswo.stonesmith.auth.dto.LoginDto;
 import net.whgkswo.stonesmith.auth.jwt.tokenizer.JwtTokenizer;
@@ -17,16 +18,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-
 // 클라이언트 로그인 요청을 수신하는 엔트리포인트
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenizer jwtTokenizer;
-
-    public JwtAuthenticationFilter(AuthenticationManager authenticationManager, JwtTokenizer jwtTokenizer) {
-        this.authenticationManager = authenticationManager;
-        this.jwtTokenizer = jwtTokenizer;
-    }
 
     // 로그인 요청을 받으면 여기로 들어오고 authenticationManager에게 처리 위임
     @SneakyThrows

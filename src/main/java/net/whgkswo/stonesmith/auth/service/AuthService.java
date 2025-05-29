@@ -1,5 +1,6 @@
 package net.whgkswo.stonesmith.auth.service;
 
+import lombok.RequiredArgsConstructor;
 import net.whgkswo.stonesmith.auth.redis.RedisService;
 import net.whgkswo.stonesmith.entities.members.Member;
 import net.whgkswo.stonesmith.exception.BusinessLogicException;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
     private RedisService redisService;
 
@@ -19,10 +21,6 @@ public class AuthService {
 
     // 메일 인증정보 만료 시간
     private static final int EMAIL_VERIFICATION_DURATION_SEC = 3600;
-
-    public AuthService(RedisService redisService){
-        this.redisService = redisService;
-    }
 
     // 인증 코드 검증
     public void verifyCode(String email, String code){

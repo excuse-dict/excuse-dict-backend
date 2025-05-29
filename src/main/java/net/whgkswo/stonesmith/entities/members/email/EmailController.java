@@ -1,6 +1,7 @@
 package net.whgkswo.stonesmith.entities.members.email;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import net.whgkswo.stonesmith.entities.members.MemberService;
 import net.whgkswo.stonesmith.responses.Response;
 import net.whgkswo.stonesmith.responses.dtos.EmailDto;
@@ -12,16 +13,12 @@ import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping(EmailController.BASE_PATH)
+@RequiredArgsConstructor
 public class EmailController {
     private EmailService emailService;
     private MemberService memberService;
 
     public static final String BASE_PATH = "/api/v1/email";
-
-    public EmailController(EmailService emailService, MemberService memberService){
-        this.emailService = emailService;
-        this.memberService = memberService;
-    }
 
     // 이메일 중복 검증
     @GetMapping("/check-availability")

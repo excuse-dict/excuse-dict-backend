@@ -1,5 +1,6 @@
 package net.whgkswo.stonesmith.entities.members.nicknames;
 
+import lombok.RequiredArgsConstructor;
 import net.whgkswo.stonesmith.entities.members.Member;
 import net.whgkswo.stonesmith.entities.members.MemberRepository;
 import net.whgkswo.stonesmith.entities.members.MemberService;
@@ -10,15 +11,12 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class NicknameService {
     private MemberRepository memberRepository;
 
     private static final int MIN_NICKNAME_LENGTH = 2;
     private static final int MAX_NICKNAME_LENGTH = 10;
-
-    public NicknameService(MemberRepository memberRepository){
-        this.memberRepository = memberRepository;
-    }
 
     // 닉네임 길이 검사
     private boolean isNicknameLengthValid(String nickname){
