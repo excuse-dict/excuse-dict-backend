@@ -21,8 +21,8 @@ import java.net.URI;
 @RequestMapping(AuthController.BASE_PATH)
 @RequiredArgsConstructor
 public class AuthController {
-    private MemberService memberService;
-    private AuthService authService;
+    private final MemberService memberService;
+    private final AuthService authService;
 
     public static final String BASE_PATH = "/api/v1/auth";
 

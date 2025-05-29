@@ -15,8 +15,8 @@ import java.time.LocalDateTime;
 @RequestMapping(EmailController.BASE_PATH)
 @RequiredArgsConstructor
 public class EmailController {
-    private EmailService emailService;
-    private MemberService memberService;
+    private final EmailService emailService;
+    private final MemberService memberService;
 
     public static final String BASE_PATH = "/api/v1/email";
 
