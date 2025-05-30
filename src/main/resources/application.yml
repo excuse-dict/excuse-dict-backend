@@ -1,22 +1,28 @@
+app:
+  project:
+    name: excuse_bundle
+  server:
+    host: localhost
+
 admin:
   emails: ${secret.admin.emails}
 
 cors:
   allowed:
     origins: http://localhost:3000
-
 spring:
   profiles:
     include: secret # appllcation-secret.yml 임포팅
   datasource:
-    url: jdbc:h2:mem:test
-    driver-class-name: org.h2.Driver
-    username: ${secret.h2.username}
-    password: ${secret.h2.password}
-  h2:
-    console:
-      enabled: true
-      path: /h2
+    url: jdbc:mysql://${app.server.host}:13306/${app.project.name}
+    username: ${secret.mysql.username}
+    password: ${secret.mysql.password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    database: mysql
+    hibernate:
+      ddl-auto: update #운영시엔 validate
+    show-sql: true
   mail:
     host: smtp.gmail.com
     port: 587

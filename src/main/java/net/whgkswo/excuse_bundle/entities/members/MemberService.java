@@ -4,11 +4,9 @@ import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.service.AuthService;
 import net.whgkswo.excuse_bundle.entities.members.email.EmailService;
 import net.whgkswo.excuse_bundle.entities.members.nicknames.NicknameService;
-import net.whgkswo.excuse_bundle.entities.members.rank.Rank;
+import net.whgkswo.excuse_bundle.entities.members.rank.MemberRank;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -36,8 +34,8 @@ public class MemberService {
         String encryptedPassword = passwordEncoder.encode(dto.rawPassword());
         member.setPassword(encryptedPassword);
 
-        Rank rank = new Rank(Rank.Type.TADPOLE);
-        member.setRank(rank);
+        MemberRank memberRank = new MemberRank(MemberRank.Type.TADPOLE);
+        member.setMemberRank(memberRank);
 
         // 권한 설정
         authService.giveRoles(member);

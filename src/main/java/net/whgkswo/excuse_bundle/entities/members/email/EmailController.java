@@ -19,6 +19,7 @@ public class EmailController {
     private final MemberService memberService;
 
     public static final String BASE_PATH = "/api/v1/emails";
+    public static final String BASE_PATH_ANY = "/api/*/emails";
 
     // 이메일 중복 검증
     @GetMapping("/check-availability")

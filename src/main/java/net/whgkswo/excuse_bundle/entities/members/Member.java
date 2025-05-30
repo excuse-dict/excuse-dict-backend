@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.whgkswo.excuse_bundle.entities.TimeStampedEntity;
-import net.whgkswo.excuse_bundle.entities.members.rank.Rank;
+import net.whgkswo.excuse_bundle.entities.members.rank.MemberRank;
 import net.whgkswo.excuse_bundle.entities.posts.Post;
 
 import java.util.ArrayList;
@@ -29,7 +29,7 @@ public class Member extends TimeStampedEntity {
     private final List<Post> posts = new ArrayList<>();
 
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)
-    private Rank rank;
+    private MemberRank memberRank;
 
     // 굳이 Role까지 엔티티로 할 필요 없을 것 같아서 이렇게 함
     @Enumerated(EnumType.STRING)
@@ -47,9 +47,9 @@ public class Member extends TimeStampedEntity {
         this.password = password;
     }
 
-    public void setRank(Rank rank){
-        this.rank = rank;
-        if(rank.getMember() == null) rank.setMember(this);
+    public void setMemberRank(MemberRank memberRank){
+        this.memberRank = memberRank;
+        if(memberRank.getMember() == null) memberRank.setMember(this);
     }
 
     public void addRole(Role role){

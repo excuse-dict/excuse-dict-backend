@@ -17,8 +17,10 @@ public class MemberController {
     private final NicknameService nicknameService;
 
     public static final String BASE_PATH = "/api/v1/members";
+    public static final String BASE_PATH_ANY = "/api/*/members";
 
     // 닉네임 중복 검사
+
     @GetMapping("/nicknames/check-availability")
     public ResponseEntity<?> handleNicknameAvailabilityCheck(@RequestParam String nickname){
         // 닉네임 유효성 검사 (걸리면 예외 반환)

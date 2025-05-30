@@ -55,12 +55,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 프리플라이트는 모두 허용
                         .requestMatchers("/error").permitAll() // 에러 페이지 허용
-                        .requestMatchers(HttpMethod.POST, MemberController.BASE_PATH).permitAll() // 회원가입은 예외
-                        .requestMatchers(EmailController.BASE_PATH + "/**").permitAll() // 이메일 관련 API는 예외
-                        .requestMatchers(MemberController.BASE_PATH + "/emails/is-registered").permitAll() // 이메일 가입여부도 예외
-                        .requestMatchers(AuthController.BASE_PATH + "/verify").permitAll() // 코드 인증은 예외
-                        .requestMatchers(AuthController.BASE_PATH + "/login").permitAll() // 로그인도 예외
-                        .requestMatchers(MemberController.BASE_PATH + "/nicknames/**").permitAll() // 닉네임 검증은 예외
+                        .requestMatchers(HttpMethod.POST, MemberController.BASE_PATH_ANY).permitAll() // 회원가입은 예외
+                        .requestMatchers(EmailController.BASE_PATH_ANY + "/**").permitAll() // 이메일 관련 API는 예외
+                        .requestMatchers(MemberController.BASE_PATH_ANY + "/emails/is-registered").permitAll() // 이메일 가입여부도 예외
+                        .requestMatchers(AuthController.BASE_PATH_ANY + "/verify").permitAll() // 코드 인증은 예외
+                        .requestMatchers(AuthController.BASE_PATH_ANY + "/login").permitAll() // 로그인도 예외
+                        .requestMatchers(MemberController.BASE_PATH_ANY + "/nicknames/**").permitAll() // 닉네임 검증은 예외
                         .requestMatchers("/h2/**").permitAll() // h2 볼때는 예외
                         //.requestMatchers(HttpMethod.GET, PostController.BASE_PATH + "/**").permitAll() // 비회원도 조회는 허용
                         .anyRequest().authenticated() // 위에 명시하지 않은 요청은 전부 인증 필요

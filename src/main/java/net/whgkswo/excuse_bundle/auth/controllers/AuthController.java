@@ -22,6 +22,7 @@ public class AuthController {
     private final AuthService authService;
 
     public static final String BASE_PATH = "/api/v1/auth";
+    public static final String BASE_PATH_ANY = "/api/*/auth";
 
     // 인증 코드 검증
     @PostMapping("/verify")

@@ -12,7 +12,7 @@ import net.whgkswo.excuse_bundle.entities.members.Member;
 @Setter
 @Entity
 @NoArgsConstructor
-public class Rank extends BaseEntity {
+public class MemberRank extends BaseEntity {
 
     @OneToOne
     @JoinColumn(name = "member_id")
@@ -23,13 +23,13 @@ public class Rank extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Type type;
 
-    public Rank(Type type){
+    public MemberRank(Type type){
         this.type = type;
     }
 
     public void setMember(Member member){
         this.member = member;
-        if(member.getRank() == null) member.setRank(this);
+        if(member.getMemberRank() == null) member.setMemberRank(this);
     }
 
     public enum Type {

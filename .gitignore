@@ -38,3 +38,5 @@ out/
 
 # 시크릿 TODO: github secrets으로 변경 검토
 application-secret.yml
+
+.env
