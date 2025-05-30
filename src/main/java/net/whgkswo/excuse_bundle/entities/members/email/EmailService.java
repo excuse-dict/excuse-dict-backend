@@ -48,7 +48,7 @@ public class EmailService {
         LocalDateTime expiryTime = getCodeExpiryTime();
 
         // redis에 코드 저장(5분 후 만료)
-        RedisKey.Prefix prefix = redisKeyMapper.fromVerificationPurpose(purpose);
+        RedisKey.Prefix prefix = redisKeyMapper.getVerificationCodePrefix(purpose);
         RedisKey key = new RedisKey(prefix, email);
         redisService.put(key, code, CODE_DURATION_SEC);
 

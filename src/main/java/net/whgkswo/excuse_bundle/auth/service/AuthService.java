@@ -29,8 +29,8 @@ public class AuthService {
 
     // 인증 코드 검증
     public void verifyCode(String email, String code, VerificationPurpose purpose){
-        RedisKey.Prefix prefix = redisKeyMapper.fromVerificationPurpose(purpose);
-        RedisKey key = new RedisKey(prefix, code);
+        RedisKey.Prefix prefix = redisKeyMapper.getVerificationCodePrefix(purpose);
+        RedisKey key = new RedisKey(prefix, email);
 
         Optional<String> storedCode = redisService.get(key);
 
@@ -42,8 +42,10 @@ public class AuthService {
 
         // 일치하면 레디스에서 인증코드 삭제
         redisService.remove(key);
+
         // 이메일 인증 완료 정보 저장
-        addVerificationToRedis(email, prefix);
+        RedisKey.Prefix completePrefix = redisKeyMapper.getVerificationCompletePrefix(purpose);
+        addVerificationToRedis(email, completePrefix);
     }
 
     // 이메일 인증 완료 정보 저장
