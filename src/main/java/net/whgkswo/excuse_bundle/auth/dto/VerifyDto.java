@@ -1,9 +1,18 @@
 package net.whgkswo.excuse_bundle.auth.dto;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import net.whgkswo.excuse_bundle.entities.members.email.VerificationPurpose;
 import net.whgkswo.excuse_bundle.responses.dtos.Dto;
 
 public record VerifyDto(
+        @NotBlank(message = "이메일은 공백이 아니어야 합니다.")
+        @Email(message = "이메일 형식을 올바르게 입력해야 합니다.")
         String email,
-        String verificationCode
+        @NotNull(message = "인증 코드를 정확히 입력해야 합니다.")
+        String verificationCode,
+        @NotNull(message = "인증 코드를 요구하는 목적을 명시해야 합니다.")
+        VerificationPurpose purpose
 ) implements Dto {
 }

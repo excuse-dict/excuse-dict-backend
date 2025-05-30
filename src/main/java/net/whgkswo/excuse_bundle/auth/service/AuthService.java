@@ -3,8 +3,9 @@ package net.whgkswo.excuse_bundle.auth.service;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.redis.RedisService;
 import net.whgkswo.excuse_bundle.entities.members.Member;
-import net.whgkswo.excuse_bundle.exception.BusinessLogicException;
-import net.whgkswo.excuse_bundle.exception.ExceptionType;
+import net.whgkswo.excuse_bundle.entities.members.email.VerificationPurpose;
+import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
+import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -23,8 +24,8 @@ public class AuthService {
     private static final int EMAIL_VERIFICATION_DURATION_SEC = 3600;
 
     // 인증 코드 검증
-    public void verifyCode(String email, String code){
-        String key = redisService.getKeyForVerificationCode(email);
+    public void verifyCode(String email, String code, VerificationPurpose purpose){
+        String key = redisService.getKeyForVerificationCode(email, purpose);
         Optional<String> storedCode = redisService.get(key);
 
         // 인증 코드가 없거나 만료됨

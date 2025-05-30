@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_bundle.exception;
+package net.whgkswo.excuse_bundle.exceptions;
 
 public record ExceptionType(int status, String message){
 

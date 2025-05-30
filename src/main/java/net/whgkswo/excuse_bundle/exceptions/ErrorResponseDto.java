@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_bundle.exception;
+package net.whgkswo.excuse_bundle.exceptions;
 
 import net.whgkswo.excuse_bundle.responses.dtos.Dto;
 

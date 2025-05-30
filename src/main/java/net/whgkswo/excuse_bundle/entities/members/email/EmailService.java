@@ -6,8 +6,8 @@ import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.redis.RedisService;
 import net.whgkswo.excuse_bundle.entities.members.Member;
 import net.whgkswo.excuse_bundle.entities.members.MemberRepository;
-import net.whgkswo.excuse_bundle.exception.BusinessLogicException;
-import net.whgkswo.excuse_bundle.exception.ExceptionType;
+import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
+import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
 import org.springframework.core.env.Environment;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -37,7 +37,7 @@ public class EmailService {
         }
     }
 
-    public LocalDateTime sendVerificationEmail(String email){
+    public LocalDateTime sendVerificationEmail(String email, VerificationPurpose purpose){
         // 인증 코드 생성
         String code = generateVerificationCode();
 
@@ -45,7 +45,7 @@ public class EmailService {
         LocalDateTime expiryTime = getCodeExpiryTime();
 
         // redis에 코드 저장(5분 후 만료)
-        String redisKey = redisService.getKeyForVerificationCode(email);
+        String redisKey = redisService.getKeyForVerificationCode(email, purpose);
         redisService.put(redisKey, code, CODE_DURATION_SEC);
 
         // 메일 발송

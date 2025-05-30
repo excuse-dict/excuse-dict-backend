@@ -57,6 +57,7 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll() // 에러 페이지 허용
                         .requestMatchers(HttpMethod.POST, MemberController.BASE_PATH).permitAll() // 회원가입은 예외
                         .requestMatchers(EmailController.BASE_PATH + "/**").permitAll() // 이메일 관련 API는 예외
+                        .requestMatchers(MemberController.BASE_PATH + "/emails/is-registered").permitAll() // 이메일 가입여부도 예외
                         .requestMatchers(AuthController.BASE_PATH + "/verify").permitAll() // 코드 인증은 예외
                         .requestMatchers(AuthController.BASE_PATH + "/login").permitAll() // 로그인도 예외
                         .requestMatchers(MemberController.BASE_PATH + "/nicknames/**").permitAll() // 닉네임 검증은 예외

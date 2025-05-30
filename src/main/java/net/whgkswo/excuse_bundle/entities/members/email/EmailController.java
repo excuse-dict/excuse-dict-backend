@@ -18,7 +18,7 @@ public class EmailController {
     private final EmailService emailService;
     private final MemberService memberService;
 
-    public static final String BASE_PATH = "/api/v1/email";
+    public static final String BASE_PATH = "/api/v1/emails";
 
     // 이메일 중복 검증
     @GetMapping("/check-availability")
@@ -29,9 +29,9 @@ public class EmailController {
     }
 
     @PostMapping("/verification-code")
-    public ResponseEntity<?> handleVerificationCodeRequest(@Valid @RequestBody EmailDto dto){
+    public ResponseEntity<?> handleVerificationCodeRequest(@Valid @RequestBody EmailVerificationRequestDto dto){
         // 코드 생성하고 메일 보낸 후 만료시간 받아오기
-        LocalDateTime expiryTime = emailService.sendVerificationEmail(dto.email());
+        LocalDateTime expiryTime = emailService.sendVerificationEmail(dto.email(), dto.purpose());
 
         return ResponseEntity.ok(
                 Response.of(new VerificationCodeResponseDto(dto.email(), expiryTime))

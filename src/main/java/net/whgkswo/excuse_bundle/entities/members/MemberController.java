@@ -2,6 +2,8 @@ package net.whgkswo.excuse_bundle.entities.members;
 
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.entities.members.nicknames.NicknameService;
+import net.whgkswo.excuse_bundle.responses.Response;
+import net.whgkswo.excuse_bundle.responses.dtos.EmailDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,5 +34,15 @@ public class MemberController {
         URI uri = URI.create(BASE_PATH + "/" + memberId);
 
         return ResponseEntity.created(uri).build();
+    }
+
+    // 이메일로 가입 여부 검사
+    @GetMapping("/emails/is-registered")
+    public ResponseEntity<?> handleEmailCheckRequest(@RequestParam String email){
+        boolean isRegistered = memberService.isEmailRegistered(email);
+
+        return ResponseEntity.ok(
+                Response.simpleBoolean(isRegistered)
+        );
     }
 }

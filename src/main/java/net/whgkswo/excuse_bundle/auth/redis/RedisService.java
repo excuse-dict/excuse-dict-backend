@@ -1,8 +1,9 @@
 package net.whgkswo.excuse_bundle.auth.redis;
 
 import lombok.RequiredArgsConstructor;
-import net.whgkswo.excuse_bundle.exception.BusinessLogicException;
-import net.whgkswo.excuse_bundle.exception.ExceptionType;
+import net.whgkswo.excuse_bundle.entities.members.email.VerificationPurpose;
+import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
+import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -64,8 +65,9 @@ public class RedisService {
     }
 
     // 인증 코드 레디스 키 생성
-    public String getKeyForVerificationCode(String email){
-        return generateRedisKey(VERIFICATION_CODE_PREFIX, email);
+    public String getKeyForVerificationCode(String email, VerificationPurpose purpose){
+        String prefix = VERIFICATION_CODE_PREFIX + ":" + purpose.name().toLowerCase();
+        return generateRedisKey(prefix, email);
     }
 
     // 메일 인증 완료 레디스 키 생성

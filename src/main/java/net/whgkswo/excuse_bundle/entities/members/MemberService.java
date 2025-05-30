@@ -8,6 +8,8 @@ import net.whgkswo.excuse_bundle.entities.members.rank.Rank;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class MemberService {
@@ -42,5 +44,10 @@ public class MemberService {
 
         memberRepository.save(member);
         return member.getId();
+    }
+
+    // 이메일로 가입 여부 검사
+    public boolean isEmailRegistered(String email){
+        return memberRepository.existsByEmail(email);
     }
 }
