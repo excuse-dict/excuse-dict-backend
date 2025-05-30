@@ -1,7 +1,6 @@
 package net.whgkswo.excuse_bundle.auth.redis;
 
 import lombok.RequiredArgsConstructor;
-import net.whgkswo.excuse_bundle.entities.members.email.VerificationPurpose;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -15,14 +14,11 @@ import java.util.Optional;
 public class RedisService {
     private final RedisTemplate<String, String> redisTemplate;
 
-    private static final String VERIFICATION_CODE_PREFIX = "verification-code";
-    private static final String VERIFICATION_COMPLETE_PREFIX = "verification-complete";
-
     // 저장
-    public void put(String key, String value, int durationOfSec){
+    public void put(RedisKey key, String value, int durationOfSec){
         try{
             redisTemplate.opsForValue().set(
-                    key,
+                    key.toString(),
                     value,
                     Duration.ofSeconds(durationOfSec)
             );
@@ -32,9 +28,9 @@ public class RedisService {
     }
 
     // 조회
-    public Optional<String> get(String key){
+    public Optional<String> get(RedisKey key){
         try{
-            String value = redisTemplate.opsForValue().get(key);
+            String value = redisTemplate.opsForValue().get(key.toString());
             return Optional.ofNullable(value);
         } catch (Exception e) {
             throw new BusinessLogicException(ExceptionType.REDIS_CONNECTION_LOST);
@@ -42,36 +38,20 @@ public class RedisService {
     }
 
     // 삭제
-    public void remove(String key){
+    public void remove(RedisKey key){
         try{
-            redisTemplate.delete(key);
+            redisTemplate.delete(key.toString());
         } catch (Exception e) {
             throw new BusinessLogicException(ExceptionType.REDIS_CONNECTION_LOST);
         }
     }
 
     // 키 조회
-    public boolean containsKey(String key){
+    public boolean containsKey(RedisKey key){
         try{
-            return redisTemplate.hasKey(key);
+            return redisTemplate.hasKey(key.toString());
         } catch (Exception e) {
             throw new BusinessLogicException(ExceptionType.REDIS_CONNECTION_LOST);
         }
-    }
-
-    // 레디스 키 생성
-    private String generateRedisKey(String prefix, String identifier){
-        return prefix + ":" + identifier;
-    }
-
-    // 인증 코드 레디스 키 생성
-    public String getKeyForVerificationCode(String email, VerificationPurpose purpose){
-        String prefix = VERIFICATION_CODE_PREFIX + ":" + purpose.name().toLowerCase();
-        return generateRedisKey(prefix, email);
-    }
-
-    // 메일 인증 완료 레디스 키 생성
-    public String getKeyForVerificationComplete(String email){
-        return generateRedisKey(VERIFICATION_COMPLETE_PREFIX, email);
     }
 }

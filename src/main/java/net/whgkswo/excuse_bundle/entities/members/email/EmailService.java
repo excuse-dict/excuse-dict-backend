@@ -3,6 +3,8 @@ package net.whgkswo.excuse_bundle.entities.members.email;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import net.whgkswo.excuse_bundle.auth.redis.RedisKey;
+import net.whgkswo.excuse_bundle.auth.redis.RedisKeyMapper;
 import net.whgkswo.excuse_bundle.auth.redis.RedisService;
 import net.whgkswo.excuse_bundle.entities.members.Member;
 import net.whgkswo.excuse_bundle.entities.members.MemberRepository;
@@ -25,6 +27,7 @@ public class EmailService {
     private final Environment environment;
     private final MemberRepository memberRepository;
     private final RedisService redisService;
+    private final RedisKeyMapper redisKeyMapper;
 
     private static final int CODE_DURATION_SEC = 300;
 
@@ -45,8 +48,9 @@ public class EmailService {
         LocalDateTime expiryTime = getCodeExpiryTime();
 
         // redis에 코드 저장(5분 후 만료)
-        String redisKey = redisService.getKeyForVerificationCode(email, purpose);
-        redisService.put(redisKey, code, CODE_DURATION_SEC);
+        RedisKey.Prefix prefix = redisKeyMapper.fromVerificationPurpose(purpose);
+        RedisKey key = new RedisKey(prefix, email);
+        redisService.put(key, code, CODE_DURATION_SEC);
 
         // 메일 발송
         sendEmail(email, code, expiryTime);

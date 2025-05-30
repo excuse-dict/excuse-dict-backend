@@ -3,7 +3,6 @@ package net.whgkswo.excuse_bundle.auth.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import net.whgkswo.excuse_bundle.entities.members.email.VerificationPurpose;
 import net.whgkswo.excuse_bundle.responses.dtos.Dto;
 
 public record VerifyDto(
@@ -11,8 +10,6 @@ public record VerifyDto(
         @Email(message = "이메일 형식을 올바르게 입력해야 합니다.")
         String email,
         @NotNull(message = "인증 코드를 정확히 입력해야 합니다.")
-        String verificationCode,
-        @NotNull(message = "인증 코드를 요구하는 목적을 명시해야 합니다.")
-        VerificationPurpose purpose
+        String verificationCode
 ) implements Dto {
 }

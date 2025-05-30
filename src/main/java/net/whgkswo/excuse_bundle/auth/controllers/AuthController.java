@@ -7,6 +7,7 @@ import net.whgkswo.excuse_bundle.auth.service.AuthService;
 import net.whgkswo.excuse_bundle.entities.members.MemberController;
 import net.whgkswo.excuse_bundle.entities.members.MemberDto;
 import net.whgkswo.excuse_bundle.entities.members.MemberService;
+import net.whgkswo.excuse_bundle.entities.members.email.VerificationPurpose;
 import net.whgkswo.excuse_bundle.responses.Response;
 import net.whgkswo.excuse_bundle.responses.UriHelper;
 import org.springframework.http.ResponseEntity;
@@ -24,13 +25,26 @@ public class AuthController {
     public static final String BASE_PATH = "/api/v1/auth";
     public static final String BASE_PATH_ANY = "/api/*/auth";
 
-    // 인증 코드 검증
-    @PostMapping("/verify")
-    public ResponseEntity<?> handleVerifyRequest(@RequestBody VerifyDto dto){
-        authService.verifyCode(dto.email(), dto.verificationCode(), dto.purpose());
+    // 회원가입용 인증 코드 검증
+    @PostMapping("/verify/signup")
+    public ResponseEntity<?> verifySignupCode(@RequestBody VerifyDto dto){
+        authService.verifyCode(dto.email(), dto.verificationCode(), VerificationPurpose.REGISTRATION);
 
         return ResponseEntity.ok(
                 Response.simpleString("인증 코드 검증이 완료되었습니다.")
+        );
+    }
+
+    // 비밀번호 재설정용 인증 코드 검증
+    @PostMapping("/verify/reset-password")
+    public ResponseEntity<?> verifyResetPasswordCode(@RequestBody VerifyDto dto){
+        authService.verifyCode(dto.email(), dto.verificationCode(), VerificationPurpose.RESET_PASSWORD);
+
+        // 비밀번호 재설정 페이지 접속용 토큰 발급
+        String token = authService.generatePasswordResetToken(dto.email());
+
+        return ResponseEntity.ok(
+                Response.simpleString(token)
         );
     }
 
