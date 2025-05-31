@@ -2,6 +2,7 @@ package net.whgkswo.excuse_bundle.auth.controllers;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import net.whgkswo.excuse_bundle.auth.recaptcha.RecaptchaService;
 import net.whgkswo.excuse_bundle.auth.verify.VerificationCodeResponseDto;
 import net.whgkswo.excuse_bundle.auth.verify.VerifyDto;
 import net.whgkswo.excuse_bundle.auth.service.AuthService;
@@ -26,12 +27,16 @@ public class AuthController {
     private final MemberService memberService;
     private final AuthService authService;
     private final EmailService emailService;
+    private final RecaptchaService recaptchaService;
 
     public static final String BASE_PATH = "/api/v1/auth";
     public static final String BASE_PATH_ANY = "/api/*/auth";
 
     @PostMapping("/verify/codes")
     public ResponseEntity<?> handleVerificationCodeRequest(@Valid @RequestBody EmailVerificationRequestDto dto){
+        // 리캡챠 토큰 검증
+        recaptchaService.verifyRecaptcha(dto.recaptchaToken());
+
         // 코드 생성하고 메일 보낸 후 만료시간 받아오기
         LocalDateTime expiryTime = emailService.sendVerificationEmail(dto.email(), dto.purpose());
 

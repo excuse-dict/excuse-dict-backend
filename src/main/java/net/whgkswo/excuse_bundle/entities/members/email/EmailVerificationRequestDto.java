@@ -11,5 +11,8 @@ public record EmailVerificationRequestDto(
         @Email(message = "이메일을 올바른 형식으로 입력해야 합니다.")
         String email,
         @NotNull(message = "인증 코드를 요구하는 목적을 명시해야 합니다.")
-        VerificationPurpose purpose) implements Dto {
+        VerificationPurpose purpose,
+        @NotBlank(message = "보안 검증에 실패했습니다. 잠시 후 다시 시도해주세요.")
+        String recaptchaToken
+) implements Dto {
 }

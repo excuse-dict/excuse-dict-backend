@@ -17,9 +17,6 @@ public record MemberRegistrationDto(
         // TODO: 허용되지 않은 문자 거르기 -> 커스텀 Validator 고려
         @Size(min = 8, max = 128, message = "비밀번호는 8~128자 사이여야 합니다.")
         @Pattern(regexp = "^(?=.*[!@#$%&_\\-=;:,.<>]).*$", message = "비밀번호에 필수 특수문자가 누락되었습니다.")
-        String rawPassword,
-
-        @NotBlank(message = "reCAPTCHA 토큰이 필요합니다.")
-        String recaptchaToken
+        String rawPassword
 ) implements Dto {
 }

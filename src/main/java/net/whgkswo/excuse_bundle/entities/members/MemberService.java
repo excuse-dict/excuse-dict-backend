@@ -18,13 +18,9 @@ public class MemberService {
     private final NicknameService nicknameService;
     private final EmailService emailService;
     private final AuthService authService;
-    private final RecaptchaService recaptchaService;
 
     // 회원가입 시 입력 유효성 검증
     private void validateRegistrationDto(MemberRegistrationDto dto){
-        // reCAPTCHA 토큰 검증
-        recaptchaService.verifyRecaptcha(dto.recaptchaToken());
-
         // 이메일 유효성 검사
         emailService.validateEmail(dto.email());
 
