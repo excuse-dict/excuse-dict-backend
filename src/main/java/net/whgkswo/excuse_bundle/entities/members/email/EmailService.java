@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.redis.RedisKey;
 import net.whgkswo.excuse_bundle.auth.redis.RedisKeyMapper;
 import net.whgkswo.excuse_bundle.auth.redis.RedisService;
+import net.whgkswo.excuse_bundle.auth.verify.VerificationCode;
 import net.whgkswo.excuse_bundle.entities.members.Member;
 import net.whgkswo.excuse_bundle.entities.members.MemberRepository;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
@@ -42,14 +43,15 @@ public class EmailService {
 
     public LocalDateTime sendVerificationEmail(String email, VerificationPurpose purpose){
         // 인증 코드 생성
-        String code = generateVerificationCode();
+        VerificationCode code = generateVerificationCode();
 
         // 코드 만료시간 계산
         LocalDateTime expiryTime = getCodeExpiryTime();
 
-        // redis에 코드 저장(5분 후 만료)
+        // redis 키 생성
         RedisKey.Prefix prefix = redisKeyMapper.getVerificationCodePrefix(purpose);
         RedisKey key = new RedisKey(prefix, email);
+        // redis에 코드 저장(5분 후 만료)
         redisService.put(key, code, CODE_DURATION_SEC);
 
         // 메일 발송
@@ -59,7 +61,7 @@ public class EmailService {
     }
 
     // 인증 코드 생성
-    private String generateVerificationCode(){
+    private VerificationCode generateVerificationCode(){
         String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         Random random = new Random();
         StringBuilder code = new StringBuilder();
@@ -68,7 +70,7 @@ public class EmailService {
             int index = random.nextInt(characters.length());
             code.append(characters.charAt(index));
         }
-        return code.toString();
+        return new VerificationCode(code.toString());
     }
 
     // 관리자 메일 가져오기
@@ -77,14 +79,16 @@ public class EmailService {
     }
 
     // 메일 발송
-    private void sendEmail(String email, String code, LocalDateTime expiryTime){
+    private void sendEmail(String email, VerificationCode code, LocalDateTime expiryTime){
         try{
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
+            String codeValue = code.getCode();
+
             helper.setTo(email);
-            helper.setSubject("[돌장장이] 메일 인증 코드");
-            helper.setText(createMail(code, expiryTime), true);
+            helper.setSubject("[핑계사전] 메일 인증 코드");
+            helper.setText(createMail(codeValue, expiryTime), true);
             helper.setFrom(getAdminEmail());
 
             // 메일 전송

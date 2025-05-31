@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_bundle.auth.dto;
+package net.whgkswo.excuse_bundle.auth.verify;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

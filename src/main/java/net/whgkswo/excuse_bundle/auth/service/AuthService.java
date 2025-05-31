@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.redis.RedisKey;
 import net.whgkswo.excuse_bundle.auth.redis.RedisKeyMapper;
 import net.whgkswo.excuse_bundle.auth.redis.RedisService;
+import net.whgkswo.excuse_bundle.auth.verify.VerificationCode;
 import net.whgkswo.excuse_bundle.entities.members.Member;
 import net.whgkswo.excuse_bundle.entities.members.email.VerificationPurpose;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
@@ -32,13 +33,19 @@ public class AuthService {
         RedisKey.Prefix prefix = redisKeyMapper.getVerificationCodePrefix(purpose);
         RedisKey key = new RedisKey(prefix, email);
 
-        Optional<String> storedCode = redisService.get(key);
+        Optional<VerificationCode> optionalCode = redisService.get(key, VerificationCode.class);
 
         // 인증 코드가 없거나 만료됨
-        if(storedCode.isEmpty()) throw new BusinessLogicException(ExceptionType.VERIFICATION_CODE_EXPIRED);
+        if(optionalCode.isEmpty()) throw new BusinessLogicException(ExceptionType.VERIFICATION_CODE_EXPIRED);
+
+        VerificationCode storedCode = optionalCode.get();
 
         // 코드가 일치하지 않음
-        if(!code.equals(storedCode.get())) throw new BusinessLogicException(ExceptionType.WRONG_VERIFICATION_CODE);
+        if(!code.equals(storedCode.getCode())) {
+            // 남은 시도 횟수 차감
+            deductRemainingAttempts(key, storedCode);
+            throw new BusinessLogicException(ExceptionType.wrongVerificationCode(storedCode));
+        };
 
         // 일치하면 레디스에서 인증코드 삭제
         redisService.remove(key);
@@ -46,6 +53,19 @@ public class AuthService {
         // 이메일 인증 완료 정보 저장
         RedisKey.Prefix completePrefix = redisKeyMapper.getVerificationCompletePrefix(purpose);
         addVerificationToRedis(email, completePrefix);
+    }
+
+    // 인증 코드 틀릴 시 남은 시도 횟수 차감
+    private void deductRemainingAttempts(RedisKey redisKey, VerificationCode code){
+        // 시도 횟수 소진 시 키 삭제
+        if(code.getRemainingAttempts() <= 1){ // 마지막 시도
+            redisService.remove(redisKey);
+            throw new BusinessLogicException(ExceptionType.WRONG_VERIFICATION_CODE_LAST);
+        }
+        // 시도 횟수 차감
+        code.deductAttempts();
+        // 레디스에 다시 저장
+        redisService.update(redisKey, code, new BusinessLogicException(ExceptionType.VERIFICATION_CODE_EXPIRED));
     }
 
     // 이메일 인증 완료 정보 저장
