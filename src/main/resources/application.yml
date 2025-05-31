@@ -1,6 +1,6 @@
 app:
   project:
-    name: excuse_bundle
+    name: excuse_dict
   server:
     host: localhost
 

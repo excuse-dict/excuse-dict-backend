@@ -8,7 +8,7 @@ version: '3.8'
 services:
   redis:
     image: redis:latest
-    container_name: excuse-bundle-redis
+    container_name: excuse-dict-redis
     ports:
       - "6379:6379"
     restart: unless-stopped
@@ -18,10 +18,10 @@ services:
 
   mysql:
     image: mysql:8.0
-    container_name: excuse-bundle-mysql
+    container_name: excuse-dict-mysql
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DATABASE: excuse_bundle
+      MYSQL_DATABASE: excuse_dict
     ports:
       - "13306:3306"
     restart: unless-stopped
