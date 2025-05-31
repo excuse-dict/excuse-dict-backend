@@ -113,17 +113,17 @@ public class EmailService {
         return """
             <html>
             <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <div style="background-color: rgb(195, 208, 221); padding: 20px; border-radius: 10px;">
+                <div style="background-color: rgb(177, 178, 209); padding: 20px; border-radius: 10px;">
                     <h2 style="color: #333; text-align: center;">이메일 인증</h2>
-                    <p style="font-size: 16px; color: #666;">
+                    <p style="font-size: 16px; color: rgb(121, 120, 139);">
                         아래 인증 코드를 복사하여 입력해주세요.
                     </p>
-                    <div style="background-color: rgb(130, 153, 167);; color: white; font-size: 24px; 
+                    <div style="background-color: rgb(121, 120, 139);; color: white; font-size: 24px; 
                                 font-weight: bold; text-align: center; padding: 15px; 
                                 border-radius: 5px; margin: 20px 0;">
                         %s
                     </div>
-                    <p style="font-size: 14px; color: #999;">
+                    <p style="font-size: 14px; color: rgb(121, 120, 139);">
                         이 코드는 %s에 만료됩니다.
                     </p>
                 </div>

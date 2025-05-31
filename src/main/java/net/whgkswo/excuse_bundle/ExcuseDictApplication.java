@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ExcuseBundleApplication {
+public class ExcuseDictApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ExcuseBundleApplication.class, args);
+		SpringApplication.run(ExcuseDictApplication.class, args);
 	}
 
 }
