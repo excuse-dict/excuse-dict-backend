@@ -6,7 +6,7 @@ import net.whgkswo.excuse_bundle.auth.verify.VerificationCodeResponseDto;
 import net.whgkswo.excuse_bundle.auth.verify.VerifyDto;
 import net.whgkswo.excuse_bundle.auth.service.AuthService;
 import net.whgkswo.excuse_bundle.entities.members.MemberController;
-import net.whgkswo.excuse_bundle.entities.members.MemberDto;
+import net.whgkswo.excuse_bundle.entities.members.MemberRegistrationDto;
 import net.whgkswo.excuse_bundle.entities.members.MemberService;
 import net.whgkswo.excuse_bundle.entities.members.email.EmailService;
 import net.whgkswo.excuse_bundle.entities.members.email.EmailVerificationRequestDto;
@@ -65,7 +65,7 @@ public class AuthController {
 
     // 회원가입
     @PostMapping("/signup")
-    public ResponseEntity<?> handleSignupRequest(@Valid @RequestBody MemberDto dto){
+    public ResponseEntity<?> handleSignupRequest(@Valid @RequestBody MemberRegistrationDto dto){
         long memberId = memberService.createMember(dto);
         // 회원가입은 AuthController가 처리하지만 URI는 UserController 기준으로
         URI uri = UriHelper.createURI(MemberController.BASE_PATH, memberId);

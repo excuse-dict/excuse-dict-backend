@@ -10,7 +10,6 @@ import net.whgkswo.excuse_bundle.entities.members.email.AdminEmailConfig;
 import net.whgkswo.excuse_bundle.entities.members.email.VerificationPurpose;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

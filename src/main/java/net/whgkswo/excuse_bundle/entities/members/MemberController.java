@@ -3,7 +3,6 @@ package net.whgkswo.excuse_bundle.entities.members;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.entities.members.nicknames.NicknameService;
 import net.whgkswo.excuse_bundle.responses.Response;
-import net.whgkswo.excuse_bundle.responses.dtos.EmailDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,7 +29,7 @@ public class MemberController {
 
     // 회원가입
     @PostMapping
-    public ResponseEntity<?> handleRegisterRequest(@RequestBody MemberDto dto){
+    public ResponseEntity<?> handleRegisterRequest(@RequestBody MemberRegistrationDto dto){
         long memberId = memberService.createMember(dto);
         URI uri = URI.create(BASE_PATH + "/" + memberId);
 
