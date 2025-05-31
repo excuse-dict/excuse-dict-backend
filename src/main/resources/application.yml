@@ -4,9 +4,6 @@ app:
   server:
     host: localhost
 
-admin:
-  emails: ${secret.admin.emails}
-
 cors:
   allowed:
     origins: http://localhost:3000
@@ -15,8 +12,6 @@ spring:
     include: secret # appllcation-secret.yml 임포팅
   datasource:
     url: jdbc:mysql://${app.server.host}:13306/${app.project.name}
-    username: ${secret.mysql.username}
-    password: ${secret.mysql.password}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     database: mysql
@@ -26,8 +21,6 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${secret.mail.username}
-    password: ${secret.mail.password} # 구글 앱 비밀번호
     properties:
       mail:
         debug: true # 콘솔 디버깅
@@ -43,6 +36,5 @@ logging:
     org.springframework.security: DEBUG
     org.springframework.security.web.access: DEBUG
 jwt:
-  key: ${secret.jwt.key}
   access-token-expiration-minutes: 30
   refresh-token-expiration-minutes: 50000

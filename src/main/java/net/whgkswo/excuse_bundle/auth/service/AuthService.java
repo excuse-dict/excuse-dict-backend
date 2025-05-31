@@ -6,6 +6,7 @@ import net.whgkswo.excuse_bundle.auth.redis.RedisKeyMapper;
 import net.whgkswo.excuse_bundle.auth.redis.RedisService;
 import net.whgkswo.excuse_bundle.auth.verify.VerificationCode;
 import net.whgkswo.excuse_bundle.entities.members.Member;
+import net.whgkswo.excuse_bundle.entities.members.email.AdminEmailConfig;
 import net.whgkswo.excuse_bundle.entities.members.email.VerificationPurpose;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
@@ -21,9 +22,7 @@ import java.util.UUID;
 public class AuthService {
     private final RedisService redisService;
     private final RedisKeyMapper redisKeyMapper;
-
-    @Value("${secret.admin.emails}")
-    private List<String> adminEmails;
+    private final AdminEmailConfig adminEmailConfig;
 
     // 메일 인증정보 만료 시간
     private static final int EMAIL_VERIFICATION_DURATION_SEC = 3600;
@@ -86,6 +85,8 @@ public class AuthService {
 
     // 회원 권한 부여
     public void giveRoles(Member member){
+        List<String> adminEmails = adminEmailConfig.getEmails();
+
         if(adminEmails.contains(member.getEmail())){
             member.addRole(Member.Role.ADMIN);
         }
