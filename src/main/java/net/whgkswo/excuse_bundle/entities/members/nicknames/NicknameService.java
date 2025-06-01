@@ -1,8 +1,8 @@
 package net.whgkswo.excuse_bundle.entities.members.nicknames;
 
 import lombok.RequiredArgsConstructor;
-import net.whgkswo.excuse_bundle.entities.members.Member;
-import net.whgkswo.excuse_bundle.entities.members.MemberRepository;
+import net.whgkswo.excuse_bundle.entities.members.core.Member;
+import net.whgkswo.excuse_bundle.entities.members.core.MemberRepository;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
 import org.springframework.stereotype.Service;

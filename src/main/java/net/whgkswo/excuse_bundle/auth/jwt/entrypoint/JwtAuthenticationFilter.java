@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import net.whgkswo.excuse_bundle.auth.login.LoginDto;
 import net.whgkswo.excuse_bundle.auth.jwt.tokenizer.JwtTokenizer;
-import net.whgkswo.excuse_bundle.entities.members.Member;
+import net.whgkswo.excuse_bundle.entities.members.core.Member;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;

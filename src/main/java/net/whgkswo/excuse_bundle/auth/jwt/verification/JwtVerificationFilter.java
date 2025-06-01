@@ -7,7 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.CustomAuthorityUtils;
 import net.whgkswo.excuse_bundle.auth.jwt.tokenizer.JwtTokenizer;
-import net.whgkswo.excuse_bundle.entities.members.Member;
+import net.whgkswo.excuse_bundle.entities.members.core.Member;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;

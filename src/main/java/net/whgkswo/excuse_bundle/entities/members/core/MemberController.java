@@ -1,7 +1,9 @@
-package net.whgkswo.excuse_bundle.entities.members;
+package net.whgkswo.excuse_bundle.entities.members.core;
 
 import lombok.RequiredArgsConstructor;
+import net.whgkswo.excuse_bundle.auth.recaptcha.RecaptchaService;
 import net.whgkswo.excuse_bundle.entities.members.nicknames.NicknameService;
+import net.whgkswo.excuse_bundle.entities.members.passwords.ResetPasswordDto;
 import net.whgkswo.excuse_bundle.responses.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +16,7 @@ import java.net.URI;
 public class MemberController {
     private final MemberService memberService;
     private final NicknameService nicknameService;
+    private final RecaptchaService recaptchaService;
 
     public static final String BASE_PATH = "/api/v1/members";
     public static final String BASE_PATH_ANY = "/api/*/members";
@@ -44,5 +47,17 @@ public class MemberController {
         return ResponseEntity.ok(
                 Response.simpleBoolean(isRegistered)
         );
+    }
+
+    // 비밀번호 재설정 (분실시)
+    @PatchMapping("/passwords/reset")
+    public ResponseEntity<?> updatePassword(@RequestBody ResetPasswordDto dto){
+        // 리캡챠 토큰 검증
+        recaptchaService.verifyRecaptcha(dto.recaptchaToken());
+
+        // 비밀번호 재설정
+        memberService.resetPassword(dto.email(), dto.newPassword());
+
+        return ResponseEntity.noContent().build();
     }
 }

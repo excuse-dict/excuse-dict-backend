@@ -3,13 +3,13 @@ package net.whgkswo.excuse_bundle.auth.controllers;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.recaptcha.RecaptchaService;
-import net.whgkswo.excuse_bundle.auth.verify.VerificationCode;
+import net.whgkswo.excuse_bundle.auth.redis.RedisKey;
 import net.whgkswo.excuse_bundle.auth.verify.VerificationCodeResponseDto;
 import net.whgkswo.excuse_bundle.auth.verify.VerifyDto;
 import net.whgkswo.excuse_bundle.auth.service.AuthService;
-import net.whgkswo.excuse_bundle.entities.members.MemberController;
-import net.whgkswo.excuse_bundle.entities.members.MemberRegistrationDto;
-import net.whgkswo.excuse_bundle.entities.members.MemberService;
+import net.whgkswo.excuse_bundle.entities.members.core.MemberController;
+import net.whgkswo.excuse_bundle.entities.members.core.MemberRegistrationDto;
+import net.whgkswo.excuse_bundle.entities.members.core.MemberService;
 import net.whgkswo.excuse_bundle.entities.members.email.EmailService;
 import net.whgkswo.excuse_bundle.entities.members.email.EmailVerificationRequestDto;
 import net.whgkswo.excuse_bundle.entities.members.email.VerificationPurpose;
@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.Random;
 
 @RestController
 @RequestMapping(AuthController.BASE_PATH)
@@ -62,12 +61,10 @@ public class AuthController {
     public ResponseEntity<?> verifyResetPasswordCode(@RequestBody VerifyDto dto){
         authService.verifyCode(dto.email(), dto.verificationCode(), VerificationPurpose.RESET_PASSWORD);
 
-        // 비밀번호 재설정 페이지 접속용 토큰 발급
-        String token = authService.generatePasswordResetToken(dto.email());
+        // 이메일 인증정보 저장
+        authService.addVerificationToRedis(dto.email(), RedisKey.Prefix.VERIFICATION_COMPLETE_RESET_PASSWORD);
 
-        return ResponseEntity.ok(
-                Response.simpleString(token)
-        );
+        return ResponseEntity.noContent().build();
     }
 
     // 회원가입

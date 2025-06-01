@@ -1,7 +1,7 @@
 package net.whgkswo.excuse_bundle.entities.members.email;
 
 import lombok.RequiredArgsConstructor;
-import net.whgkswo.excuse_bundle.entities.members.MemberService;
+import net.whgkswo.excuse_bundle.entities.members.core.MemberService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

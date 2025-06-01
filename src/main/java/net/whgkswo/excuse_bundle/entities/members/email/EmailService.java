@@ -8,8 +8,8 @@ import net.whgkswo.excuse_bundle.auth.redis.RedisKeyMapper;
 import net.whgkswo.excuse_bundle.auth.redis.RedisService;
 import net.whgkswo.excuse_bundle.auth.service.AuthService;
 import net.whgkswo.excuse_bundle.auth.verify.VerificationCode;
-import net.whgkswo.excuse_bundle.entities.members.Member;
-import net.whgkswo.excuse_bundle.entities.members.MemberRepository;
+import net.whgkswo.excuse_bundle.entities.members.core.Member;
+import net.whgkswo.excuse_bundle.entities.members.core.MemberRepository;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
 import org.springframework.core.env.Environment;
@@ -110,24 +110,14 @@ public class EmailService {
         String fExpiryTime = expiryTime.format(formatter);
 
         return """
-            <html>
-            <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <div style="background-color: rgb(177, 178, 209); padding: 20px; border-radius: 10px;">
-                    <h2 style="color: #333; text-align: center;">이메일 인증</h2>
-                    <p style="font-size: 16px; color: rgb(121, 120, 139);">
-                        아래 인증 코드를 복사하여 입력해주세요.
-                    </p>
-                    <div style="background-color: rgb(121, 120, 139);; color: white; font-size: 24px; 
-                                font-weight: bold; text-align: center; padding: 15px; 
-                                border-radius: 5px; margin: 20px 0;">
-                        %s
-                    </div>
-                    <p style="font-size: 14px; color: rgb(121, 120, 139);">
-                        이 코드는 %s에 만료됩니다.
-                    </p>
+            <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#f5f5f5;padding:20px">
+                <div style="background:white;padding:30px;border-radius:8px;box-shadow:0 2px 8px rgba(177, 178, 209, 0.2)">
+                    <h2 style="color:#333;text-align:center;margin-bottom:20px">이메일 인증</h2>
+                    <p style="color:#666;font-size:18px;margin-bottom:30px">아래 인증 코드를 복사하여 입력해주세요.</p>
+                    <div style="background:#79788b;color:white;font-size:32px;font-weight:bold;text-align:center;padding:20px;border-radius:4px;letter-spacing:5px;margin:30px 0">%s</div>
+                    <p style="color:#999;font-size:14px;text-align:center">이 코드는 %s에 만료됩니다.</p>
                 </div>
-            </body>
-            </html>
+            </div>
             """.formatted(code, fExpiryTime);
     }
 }

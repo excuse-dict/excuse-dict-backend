@@ -5,7 +5,7 @@ import net.whgkswo.excuse_bundle.auth.redis.RedisKey;
 import net.whgkswo.excuse_bundle.auth.redis.RedisKeyMapper;
 import net.whgkswo.excuse_bundle.auth.redis.RedisService;
 import net.whgkswo.excuse_bundle.auth.verify.VerificationCode;
-import net.whgkswo.excuse_bundle.entities.members.Member;
+import net.whgkswo.excuse_bundle.entities.members.core.Member;
 import net.whgkswo.excuse_bundle.entities.members.email.AdminEmailConfig;
 import net.whgkswo.excuse_bundle.entities.members.email.VerificationPurpose;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
@@ -81,19 +81,24 @@ public class AuthService {
     }
 
     // 이메일 인증 완료 정보 저장
-    private void addVerificationToRedis(String email, RedisKey.Prefix prefix){
+    public void addVerificationToRedis(String email, RedisKey.Prefix prefix){
         RedisKey key = new RedisKey(prefix, email);
 
         // 레디스에 저장 (value는 의미 없음. 키만 확인하면 됨)
         redisService.put(key, "true", EMAIL_VERIFICATION_DURATION_SEC);
     }
 
-    // 이메일 인증 여부 검사 (회원가입)
-    public void checkEmailVerified(String email){
-        RedisKey key = new RedisKey(RedisKey.Prefix.VERIFICATION_COMPLETE_REGISTRATION, email);
+    // 이메일 인증 여부 검사 (회원가입, 비밀번호 재설정)
+    public void checkEmailVerified(String email, RedisKey.Prefix prefix){
+        RedisKey key = new RedisKey(prefix, email);
 
-        // 인증 정보 없으면 예외 던지기
-        if(!redisService.containsKey(key)) throw new BusinessLogicException(ExceptionType.EMAIL_NOT_VERIFIED);
+        if(redisService.containsKey(key)){
+            // 확인 후 삭제
+            redisService.remove(key);
+        }else{
+            // 인증 정보 없으면 예외 던지기
+            throw new BusinessLogicException(ExceptionType.EMAIL_NOT_VERIFIED);
+        }
     }
 
     // 회원 권한 부여
@@ -104,18 +109,5 @@ public class AuthService {
             member.addRole(Member.Role.ADMIN);
         }
         member.addRole(Member.Role.USER);
-    }
-
-    // 비밀번호 재설정용 토큰 발급
-    public String generatePasswordResetToken(String email){
-        // 토큰 생성 (32바이트 랜덤 문자열)
-        String token = UUID.randomUUID().toString().replace("-", "") +
-                UUID.randomUUID().toString().replace("-", "");
-
-        // 레디스에 저장 (30분 후 만료)
-        RedisKey key = new RedisKey(RedisKey.Prefix.PASSWORD_RESET_TOKEN, email);
-        redisService.put(key, token, 1800);
-
-        return token;
     }
 }

@@ -1,13 +1,18 @@
-package net.whgkswo.excuse_bundle.entities.members;
+package net.whgkswo.excuse_bundle.entities.members.core;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import net.whgkswo.excuse_bundle.auth.recaptcha.RecaptchaService;
+import net.whgkswo.excuse_bundle.auth.redis.RedisKey;
 import net.whgkswo.excuse_bundle.auth.service.AuthService;
 import net.whgkswo.excuse_bundle.entities.members.email.EmailService;
 import net.whgkswo.excuse_bundle.entities.members.nicknames.NicknameService;
 import net.whgkswo.excuse_bundle.entities.members.rank.MemberRank;
+import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
+import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,13 +30,14 @@ public class MemberService {
         emailService.validateEmail(dto.email());
 
         // 이메일 인증여부 검사
-        authService.checkEmailVerified(dto.email());
+        authService.checkEmailVerified(dto.email(), RedisKey.Prefix.VERIFICATION_COMPLETE_REGISTRATION);
 
         // 닉네임 유효성 검증
         nicknameService.validateNickname(dto.nickname());
     }
 
     // 회원가입
+    @Transactional
     public long createMember(MemberRegistrationDto dto){
         // 유효성 검증
         validateRegistrationDto(dto);
@@ -58,5 +64,27 @@ public class MemberService {
     // 이메일로 가입 여부 검사
     public boolean isEmailRegistered(String email){
         return memberRepository.existsByEmail(email);
+    }
+
+    // 멤버 찾기 (이메일)
+    public Member getMember(String email){
+        Optional<Member> optionalMember = memberRepository.findByEmail(email);
+        return optionalMember.orElseThrow(() -> new BusinessLogicException(ExceptionType.MEMBER_NOT_FOUND_BY_EMAIL));
+    }
+
+    // 비밀번호 재설정
+    @Transactional
+    public void resetPassword(String email, String newPassword){
+        // 이메일 인증여부 검증
+        authService.checkEmailVerified(email, RedisKey.Prefix.VERIFICATION_COMPLETE_RESET_PASSWORD);
+
+        // 회원 조회
+        Member member = getMember(email);
+        // 비밀번호 암호화
+        String encryptedPassword = passwordEncoder.encode(newPassword);
+        member.setPassword(encryptedPassword);
+
+        // 멤버 객체 저장
+        memberRepository.save(member);
     }
 }

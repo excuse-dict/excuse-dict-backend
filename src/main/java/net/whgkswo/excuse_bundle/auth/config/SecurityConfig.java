@@ -9,7 +9,7 @@ import net.whgkswo.excuse_bundle.auth.jwt.entrypoint.JwtAuthenticationFilter;
 import net.whgkswo.excuse_bundle.auth.jwt.tokenizer.JwtTokenizer;
 import net.whgkswo.excuse_bundle.auth.jwt.verification.JwtVerificationFilter;
 import net.whgkswo.excuse_bundle.entities.members.email.EmailController;
-import net.whgkswo.excuse_bundle.entities.members.MemberController;
+import net.whgkswo.excuse_bundle.entities.members.core.MemberController;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -56,11 +56,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 프리플라이트는 모두 허용
                         .requestMatchers("/error").permitAll() // 에러 페이지 허용
                         .requestMatchers(HttpMethod.POST, MemberController.BASE_PATH_ANY).permitAll() // 회원가입은 예외
-                        .requestMatchers(EmailController.BASE_PATH_ANY + "/**").permitAll() // 이메일 관련 API는 예외
                         .requestMatchers(MemberController.BASE_PATH_ANY + "/emails/is-registered").permitAll() // 이메일 가입여부도 예외
+                        .requestMatchers(MemberController.BASE_PATH_ANY + "/nicknames/**").permitAll() // 닉네임 검증은 예외
+                        .requestMatchers(HttpMethod.PATCH,MemberController.BASE_PATH_ANY + "/passwords/reset").permitAll() // 비밀번호 변경도 허용
+                        .requestMatchers(EmailController.BASE_PATH_ANY + "/**").permitAll() // 이메일 관련 API는 예외
                         .requestMatchers(AuthController.BASE_PATH_ANY + "/verify/**").permitAll() // 코드 인증은 예외
                         .requestMatchers(AuthController.BASE_PATH_ANY + "/login").permitAll() // 로그인도 예외
-                        .requestMatchers(MemberController.BASE_PATH_ANY + "/nicknames/**").permitAll() // 닉네임 검증은 예외
                         .requestMatchers("/h2/**").permitAll() // h2 볼때는 예외
                         //.requestMatchers(HttpMethod.GET, PostController.BASE_PATH + "/**").permitAll() // 비회원도 조회는 허용
                         .anyRequest().authenticated() // 위에 명시하지 않은 요청은 전부 인증 필요
@@ -80,7 +81,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
 

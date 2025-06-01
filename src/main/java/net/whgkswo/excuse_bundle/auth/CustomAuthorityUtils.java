@@ -1,6 +1,6 @@
 package net.whgkswo.excuse_bundle.auth;
 
-import net.whgkswo.excuse_bundle.entities.members.Member;
+import net.whgkswo.excuse_bundle.entities.members.core.Member;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;

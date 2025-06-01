@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_bundle.entities.members;
+package net.whgkswo.excuse_bundle.entities.members.core;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
