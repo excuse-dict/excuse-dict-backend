@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.redis.RedisKey;
 import net.whgkswo.excuse_bundle.auth.redis.RedisKeyMapper;
 import net.whgkswo.excuse_bundle.auth.redis.RedisService;
+import net.whgkswo.excuse_bundle.auth.service.AuthService;
 import net.whgkswo.excuse_bundle.auth.verify.VerificationCode;
 import net.whgkswo.excuse_bundle.entities.members.Member;
 import net.whgkswo.excuse_bundle.entities.members.MemberRepository;
@@ -19,7 +20,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Random;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,8 +30,11 @@ public class EmailService {
     private final MemberRepository memberRepository;
     private final RedisService redisService;
     private final RedisKeyMapper redisKeyMapper;
+    private final AuthService authService;
 
-    private static final int CODE_DURATION_SEC = 300;
+    private static final int CODE_DURATION_SEC = 300; // 코드 유효기간
+    private static final int CODE_RECREATION_COOLDOWN = 30; // 코드 재발급 최소 대기시간
+    private static final int MIN_TTL_FOR_CODE_RECREATION = CODE_DURATION_SEC - CODE_RECREATION_COOLDOWN;
 
     // 이메일 유효성 검사
     public void validateEmail(String email){
@@ -42,15 +46,23 @@ public class EmailService {
     }
 
     public LocalDateTime sendVerificationEmail(String email, VerificationPurpose purpose){
+        // redis 키 생성
+        RedisKey.Prefix prefix = redisKeyMapper.getVerificationCodePrefix(purpose);
+        RedisKey key = new RedisKey(prefix, email);
+
+        // 일정 시간 이내에 다시 요청할 수 없음
+        Optional<Long> ttl = redisService.getTtlOfSecOptional(key);
+        if(ttl.isPresent() && ttl.get() >= MIN_TTL_FOR_CODE_RECREATION){
+            long timeToWait = ttl.get() - MIN_TTL_FOR_CODE_RECREATION;
+            throw new BusinessLogicException(ExceptionType.tooManyVerificationCodeRequest(timeToWait));
+        }
+
         // 인증 코드 생성
-        VerificationCode code = generateVerificationCode();
+        VerificationCode code = authService.generateVerificationCode();
 
         // 코드 만료시간 계산
         LocalDateTime expiryTime = getCodeExpiryTime();
 
-        // redis 키 생성
-        RedisKey.Prefix prefix = redisKeyMapper.getVerificationCodePrefix(purpose);
-        RedisKey key = new RedisKey(prefix, email);
         // redis에 코드 저장(5분 후 만료)
         redisService.put(key, code, CODE_DURATION_SEC);
 
@@ -58,19 +70,6 @@ public class EmailService {
         sendEmail(email, code, expiryTime);
 
         return expiryTime;
-    }
-
-    // 인증 코드 생성
-    private VerificationCode generateVerificationCode(){
-        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        Random random = new Random();
-        StringBuilder code = new StringBuilder();
-
-        for(int i = 0; i < 6; i++){
-            int index = random.nextInt(characters.length());
-            code.append(characters.charAt(index));
-        }
-        return new VerificationCode(code.toString());
     }
 
     // 관리자 메일 가져오기

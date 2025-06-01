@@ -27,4 +27,8 @@ public record ExceptionType(int status, String message){
         String message = String.format("인증 코드가 틀립니다. 다시 확인해 주세요. (남은 횟수: %d회)", code.getRemainingAttempts());
         return ExceptionType.of(400, message);
     }
+
+    public static ExceptionType tooManyVerificationCodeRequest(long timeToWait){
+        return ExceptionType.of(429, String.format("연달아 코드를 발급하실 수 없습니다. %d초 후 다시 시도해주세요.", timeToWait));
+    }
 }

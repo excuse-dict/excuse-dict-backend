@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
 
 @Service
@@ -25,6 +26,19 @@ public class AuthService {
 
     // 메일 인증정보 만료 시간
     private static final int EMAIL_VERIFICATION_DURATION_SEC = 3600;
+
+    // 인증 코드 생성
+    public VerificationCode generateVerificationCode(){
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        Random random = new Random();
+        StringBuilder code = new StringBuilder();
+
+        for(int i = 0; i < 6; i++){
+            int index = random.nextInt(characters.length());
+            code.append(characters.charAt(index));
+        }
+        return new VerificationCode(code.toString());
+    }
 
     // 인증 코드 검증
     public void verifyCode(String email, String code, VerificationPurpose purpose){

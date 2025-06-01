@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
 import net.whgkswo.excuse_bundle.serialize.JsonSerializer;
+import org.springframework.boot.autoconfigure.cache.CacheProperties;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -68,12 +69,9 @@ public class RedisService {
 
     // 갱신 (만료 시간은 그대로)
     public <T> void update(RedisKey key, T updatedValue, BusinessLogicException e){
-        long ttl = getTtl(key);
+        long ttl = getTtlOfSecOrThrow(key, e);
 
-        // 0: 만료됨, -2: 키 없음 - 어차피 만료되면 키가 없긴 함
-        if(ttl == 0 || ttl == -2) throw e; // 상황에 맞는 예외 throw
-
-        if(ttl == -1){ // -1: 키는 있지만 ttl 없음,
+        if(ttl >= Integer.MAX_VALUE){ // 키는 있지만 만료 없음
             put(key, updatedValue);
         }else{
             put(key, updatedValue, (int) ttl);
@@ -98,8 +96,27 @@ public class RedisService {
         }
     }
 
+    // 만료 시간 조회 (공개용 - 키 없을 때 예외 던지기)
+    public long getTtlOfSecOrThrow(RedisKey key, BusinessLogicException keyNotFoundEx){
+        long ttl = getTtlOfSec(key);
+
+        if(ttl == -1) return Long.MAX_VALUE;
+        if(ttl == -2) throw keyNotFoundEx;
+
+        return ttl;
+    }
+
+    // 만료 시간 조회 (공개용 - optional버전)
+    public Optional<Long> getTtlOfSecOptional(RedisKey key){
+        long ttl = getTtlOfSec(key);
+
+        if(ttl == -2 || ttl == 0) return Optional.empty();
+        if(ttl == -1) return Optional.of(Long.MAX_VALUE);
+        return Optional.of(ttl);
+    }
+
     // 만료 시간 조회 (-1: 키는 있지만 만료 시간이 없음, -2: 키가 없음)
-    private long getTtl(RedisKey key){
+    private long getTtlOfSec(RedisKey key){
         try{
             return redisTemplate.getExpire(key.toString(), TimeUnit.SECONDS);
         } catch (Exception e) {
