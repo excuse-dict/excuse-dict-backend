@@ -1,9 +1,13 @@
 package net.whgkswo.excuse_bundle.entities.posts.tags;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import net.whgkswo.excuse_bundle.entities.BaseEntity;
 
 @Entity
+@Getter
+@Setter
 public class Tag extends BaseEntity {
     private String value;
 
