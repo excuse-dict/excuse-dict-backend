@@ -1,9 +1,7 @@
-package net.whgkswo.excuse_bundle.entities.posts;
+package net.whgkswo.excuse_bundle.entities.posts.tags;
 
 import jakarta.persistence.*;
 import net.whgkswo.excuse_bundle.entities.BaseEntity;
-
-import java.util.Set;
 
 @Entity
 public class Tag extends BaseEntity {
