@@ -8,7 +8,9 @@ import net.whgkswo.excuse_bundle.entities.members.core.Member;
 import net.whgkswo.excuse_bundle.entities.vote.PostVote;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 public class Post extends TimeStampedEntity {
@@ -31,4 +33,13 @@ public class Post extends TimeStampedEntity {
     // votes를 매번 순회하는 것을 막기 위한 반정규화
     private int upvoteCount;
     private int downvoteCount;
+
+    // 다대다 중간에 필요한 조인 테이블 설정
+    @ManyToMany
+    @JoinTable(
+            name = "post_tag",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set<Tag> tags = new HashSet<>();
 }
