@@ -19,6 +19,7 @@ public class Tag extends BaseEntity {
         FAMILY, // 가족사
         HEALTH, // 건강
         HOME_FACILITY, // 집 설비
+        LOVE, // 연애
         RELIGIOUS, // 종교
         TRANSPORT, // 교통
         WEATHER, // 날씨
