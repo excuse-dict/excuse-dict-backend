@@ -63,8 +63,7 @@ public class SecurityConfig {
                         .requestMatchers(MemberController.BASE_PATH_ANY + "/nicknames/**").permitAll() // 닉네임 검증은 예외
                         .requestMatchers(HttpMethod.PATCH,MemberController.BASE_PATH_ANY + "/passwords/reset").permitAll() // 비밀번호 변경도 허용
                         .requestMatchers(EmailController.BASE_PATH_ANY + "/**").permitAll() // 이메일 관련 API는 예외
-                        .requestMatchers(AuthController.BASE_PATH_ANY + "/verify/**").permitAll() // 코드 인증은 예외
-                        .requestMatchers(AuthController.BASE_PATH_ANY + "/login").permitAll() // 로그인도 예외
+                        .requestMatchers(AuthController.BASE_PATH_ANY + "/**").permitAll() // auth 전체 허용
                         .requestMatchers("/h2/**").permitAll() // h2 볼때는 예외
                         //.requestMatchers(HttpMethod.GET, PostController.BASE_PATH + "/**").permitAll() // 비회원도 조회는 허용
                         .anyRequest().authenticated() // 위에 명시하지 않은 요청은 전부 인증 필요
@@ -90,7 +89,7 @@ public class SecurityConfig {
 
         // 클라이언트가 토큰에 접근할 수 있도록 허용
         // 그럼 브라우저에선 이거 없어도 왜 보이냐? -> Network 탭에서 보이는 건 HTTP 프로토콜 레벨에서 접근하는 것이기 때문에 안 숨겨짐
-        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Refresh"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", configuration);

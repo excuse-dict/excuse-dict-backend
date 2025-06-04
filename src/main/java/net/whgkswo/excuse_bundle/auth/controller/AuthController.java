@@ -71,16 +71,6 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
-    // 회원가입
-    @PostMapping("/signup")
-    public ResponseEntity<?> handleSignupRequest(@Valid @RequestBody MemberRegistrationDto dto){
-        long memberId = memberService.createMember(dto);
-        // 회원가입은 AuthController가 처리하지만 URI는 UserController 기준으로
-        URI uri = UriHelper.createURI(MemberController.BASE_PATH, memberId);
-
-        return ResponseEntity.created(uri).build();
-    }
-
     // 액세스 토큰 갱신
     @PostMapping("/refresh")
     public ResponseEntity<?> handleRefreshAccessToken(@Valid @RequestBody RefreshAccessTokenRequestDto dto){
