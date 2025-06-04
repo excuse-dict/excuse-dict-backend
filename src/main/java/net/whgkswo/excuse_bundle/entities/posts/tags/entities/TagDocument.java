@@ -10,7 +10,7 @@ import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
 // ElasticSearch 검색용 객체
-@Document(indexName = "tags")
+@Document(indexName = "tag")
 @NoArgsConstructor
 @Getter
 @Setter
@@ -23,14 +23,14 @@ public class TagDocument {
     private String value;
 
     @Field(type = FieldType.Keyword)
-    private String type;
+    private String category;
 
     @Field(type = FieldType.Long)
     private Long entityId; // JPA 객체와 매핑
 
-    public TagDocument(String value, String type, Long entityId){
+    public TagDocument(String value, String category, Long entityId){
         this.value = value;
-        this.type = type;
+        this.category = category;
         this.entityId = entityId;
     }
 
@@ -38,7 +38,7 @@ public class TagDocument {
     public static TagDocument from(Tag tag){
         return new TagDocument(
             tag.getValue(),
-            tag.getType().name(),
+            tag.getCategory().name(),
             tag.getId()
         );
     }
@@ -48,7 +48,7 @@ public class TagDocument {
         Tag tag = new Tag();
         tag.setId(this.entityId);
         tag.setValue(this.value);
-        tag.setType(Tag.Type.valueOf(this.type));
+        tag.setCategory(Tag.Category.valueOf(this.category));
         return tag;
     }
 }

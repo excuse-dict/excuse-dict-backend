@@ -8,13 +8,14 @@ import java.util.List;
 
 @Repository
 public interface TagSearchRepository extends ElasticsearchRepository<TagDocument, String> {
-    List<TagDocument> findByTypes(List<String> types);
+    // 카테고리로 검색
+    List<TagDocument> findByCategoryIn(List<String> categories);
 
     // 부분 값 입력으로 검색
     List<TagDocument> findByValueContaining(String value);
 
-    // 타입과 부분 값으로 검색
-    List<TagDocument> findByTypesAndValueContaining(List<String> types, String value);
+    // 카테고리와 부분 값으로 검색
+    List<TagDocument> findByCategoryInAndValueContaining(List<String> categories, String value);
 
     // JPA ID로 검색
     TagDocument findByEntityId(Long entityId);

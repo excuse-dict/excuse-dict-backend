@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 @RequiredArgsConstructor
@@ -22,51 +23,53 @@ public class TagService {
     }
 
     // 태그 검색 요청 분기처리
-    public List<Tag> searchTags(List<Tag.Type> filterTypes, String searchValue){
+    public List<Tag> searchTags(List<Tag.Category> filterCategories, String searchValue){
 
-        if(searchValue == null){
-            if(filterTypes == null || filterTypes.isEmpty()){
-                // 타입 x, 검색어 x
+        if(searchValue == null || searchValue.isBlank()){
+            if(filterCategories == null || filterCategories.isEmpty()){
+                // 카테고리 x, 검색어 x
                 return getAllTags();
             }else {
-                // 타입 o, 검색어 x
-                return searchTagsByType(filterTypes);
+                // 카테고리 o, 검색어 x
+                return searchTagsByType(filterCategories);
             }
         }else{
-            if(filterTypes == null || filterTypes.isEmpty()){
-                // 타입 o, 검색어 x
+            if(filterCategories == null || filterCategories.isEmpty()){
+                // 카테고리 o, 검색어 x
                 return searchTagsByValue(searchValue);
             }else{
-                // 타입 o, 검색어 o
-                return searchTagsByTypeAndValue(filterTypes, searchValue);
+                // 카테고리 o, 검색어 o
+                return searchTagsByTypeAndValue(filterCategories, searchValue);
             }
         }
     }
 
     // 전부 가져오기
     private List<Tag> getAllTags(){
-        List<TagDocument> documents = (List<TagDocument>) tagSearchRepository.findAll();
-        return documentsToEntities(documents);
+        Iterable<TagDocument> documents = tagSearchRepository.findAll();
+        List<TagDocument> documentList = StreamSupport.stream(documents.spliterator(), false)
+                .collect(Collectors.toList());
+        return documentsToEntities(documentList);
     }
 
     // 타입으로 검색
-    private List<Tag> searchTagsByType(List<Tag.Type> types){
-        List<String> typeNames = types.stream()
-                .map(type -> type.name())
+    private List<Tag> searchTagsByType(List<Tag.Category> categories){
+        List<String> typeNames = categories.stream()
+                .map(category -> category.name())
                 .collect(Collectors.toList());
 
-        List<TagDocument> tagDocuments = tagSearchRepository.findByTypes(typeNames);
+        List<TagDocument> tagDocuments = tagSearchRepository.findByCategoryIn(typeNames);
 
         return documentsToEntities(tagDocuments);
     }
 
-    // 타입 + 일치값으로 검색
-    private List<Tag> searchTagsByTypeAndValue(List<Tag.Type> types, String value){
-        List<String> typeNames = types.stream()
-                .map(type -> type.name())
+    // 카테고리 + 일치값으로 검색
+    private List<Tag> searchTagsByTypeAndValue(List<Tag.Category> categories, String value){
+        List<String> typeNames = categories.stream()
+                .map(category -> category.name())
                 .collect(Collectors.toList());
 
-        List<TagDocument> tagDocuments = tagSearchRepository.findByTypesAndValueContaining(typeNames, value);
+        List<TagDocument> tagDocuments = tagSearchRepository.findByCategoryInAndValueContaining(typeNames, value);
 
         return documentsToEntities(tagDocuments);
     }

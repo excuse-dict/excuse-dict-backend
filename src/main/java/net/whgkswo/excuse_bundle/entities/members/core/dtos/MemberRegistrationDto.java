@@ -1,7 +1,6 @@
-package net.whgkswo.excuse_bundle.entities.members.core;
+package net.whgkswo.excuse_bundle.entities.members.core.dtos;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import net.whgkswo.excuse_bundle.entities.members.passwords.ValidPassword;
 import net.whgkswo.excuse_bundle.responses.dtos.Dto;

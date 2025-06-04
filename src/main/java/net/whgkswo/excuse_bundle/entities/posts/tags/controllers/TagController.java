@@ -7,9 +7,9 @@ import net.whgkswo.excuse_bundle.entities.posts.tags.entities.Tag;
 import net.whgkswo.excuse_bundle.entities.posts.tags.services.TagService;
 import net.whgkswo.excuse_bundle.responses.Response;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -23,11 +23,11 @@ public class TagController {
     public static final String BASE_PATH_ANY = "/api/*/posts/tags";
 
     @GetMapping
-    public ResponseEntity<?> handleTagRequest(@RequestParam @Nullable List<Tag.Type> filterTypes,
+    public ResponseEntity<?> handleTagRequest(@RequestParam @Nullable List<Tag.Category> categories,
                                               @RequestParam @Nullable String searchValue
                                               ){
 
-        List<Tag> tags = tagService.searchTags(filterTypes, searchValue);
+        List<Tag> tags = tagService.searchTags(categories, searchValue);
 
          return ResponseEntity.ok(
                  Response.of(new TagResponseDto(tags))

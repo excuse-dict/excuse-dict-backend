@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.whgkswo.excuse_bundle.entities.BaseEntity;
-import net.whgkswo.excuse_bundle.entities.members.core.Member;
+import net.whgkswo.excuse_bundle.entities.members.core.entities.Member;
 
 
 @Getter

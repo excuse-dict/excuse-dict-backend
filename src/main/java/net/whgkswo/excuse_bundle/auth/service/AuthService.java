@@ -5,7 +5,7 @@ import net.whgkswo.excuse_bundle.auth.redis.RedisKey;
 import net.whgkswo.excuse_bundle.auth.redis.RedisKeyMapper;
 import net.whgkswo.excuse_bundle.auth.redis.RedisService;
 import net.whgkswo.excuse_bundle.auth.verify.VerificationCode;
-import net.whgkswo.excuse_bundle.entities.members.core.Member;
+import net.whgkswo.excuse_bundle.entities.members.core.entities.Member;
 import net.whgkswo.excuse_bundle.entities.members.email.AdminEmailConfig;
 import net.whgkswo.excuse_bundle.entities.members.email.VerificationPurpose;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor

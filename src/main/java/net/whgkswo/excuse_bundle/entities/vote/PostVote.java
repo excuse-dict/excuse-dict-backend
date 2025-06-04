@@ -6,7 +6,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import net.whgkswo.excuse_bundle.entities.TimeStampedEntity;
 import net.whgkswo.excuse_bundle.entities.posts.Post;
-import net.whgkswo.excuse_bundle.entities.members.core.Member;
+import net.whgkswo.excuse_bundle.entities.members.core.entities.Member;
 
 @Entity
 public class PostVote extends TimeStampedEntity {

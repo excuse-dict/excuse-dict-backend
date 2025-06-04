@@ -12,9 +12,9 @@ public class Tag extends BaseEntity {
     private String value;
 
     @Enumerated(EnumType.STRING)
-    private Type type;
+    private Category category;
 
-    public enum Type{
+    public enum Category {
         ACCIDENT, // 사고
         COMPANY, // 직장
         EVENT, // 경조사

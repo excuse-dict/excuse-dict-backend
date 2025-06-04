@@ -15,12 +15,13 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   sql:
     init:
-      mode: never
+      mode: never # data.sql 자동 실행여부 제어 (always / embedded / never)
   jpa:
     database: mysql
     hibernate:
       ddl-auto: update #운영시엔 validate
     show-sql: true
+    defer-datasource-initialization: true # datasource 초기화를 Hibernate의 테이블 생성 후로 연기 -> data.sql 실행 연기
   mail:
     host: smtp.gmail.com
     port: 587

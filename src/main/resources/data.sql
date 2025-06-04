@@ -1,5 +1,4 @@
-
-INSERT INTO tags (value, type) VALUES
+INSERT INTO tag (value, category) VALUES
 -- 사고 관련
 ('감전', 'ACCIDENT'),
 ('골절', 'ACCIDENT'),
@@ -144,17 +143,17 @@ INSERT INTO tags (value, type) VALUES
 ('화장실막힘', 'HOME_FACILITY'),
 
 -- 연애
-('기념일', 'RELATIONSHIP'),
-('다툼', 'RELATIONSHIP'),
-('데이트', 'RELATIONSHIP'),
-('미팅', 'RELATIONSHIP'),
-('부모님인사', 'RELATIONSHIP'),
-('선물준비', 'RELATIONSHIP'),
-('소개팅', 'RELATIONSHIP'),
-('연애', 'RELATIONSHIP'),
-('연애상담', 'RELATIONSHIP'),
-('이별', 'RELATIONSHIP'),
-('프러포즈', 'RELATIONSHIP'),
+('기념일', 'LOVE'),
+('다툼', 'LOVE'),
+('데이트', 'LOVE'),
+('미팅', 'LOVE'),
+('부모님인사', 'LOVE'),
+('선물준비', 'LOVE'),
+('소개팅', 'LOVE'),
+('연애', 'LOVE'),
+('연애상담', 'LOVE'),
+('이별', 'LOVE'),
+('프러포즈', 'LOVE'),
 
 -- 종교 관련
 ('교회', 'RELIGIOUS'),
@@ -193,8 +192,9 @@ INSERT INTO tags (value, type) VALUES
 ('장마', 'WEATHER'),
 ('추위', 'WEATHER'),
 ('태풍', 'WEATHER'),
-('황사', 'WEATHER');
+('황사', 'WEATHER'),
 
 -- 기타
-('고소/고발', 'ETC');
-('새똥', 'ETC');
+('고소/고발', 'ETC'),
+('새똥', 'ETC')
+;

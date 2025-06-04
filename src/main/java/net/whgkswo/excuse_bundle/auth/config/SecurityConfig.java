@@ -9,7 +9,7 @@ import net.whgkswo.excuse_bundle.auth.jwt.entrypoint.JwtAuthenticationFilter;
 import net.whgkswo.excuse_bundle.auth.jwt.tokenizer.JwtTokenizer;
 import net.whgkswo.excuse_bundle.auth.jwt.verification.JwtVerificationFilter;
 import net.whgkswo.excuse_bundle.entities.members.email.EmailController;
-import net.whgkswo.excuse_bundle.entities.members.core.MemberController;
+import net.whgkswo.excuse_bundle.entities.members.core.controllers.MemberController;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -84,6 +84,10 @@ public class SecurityConfig {
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
+
+        // 클라이언트가 토큰에 접근할 수 있도록 허용
+        // 그럼 브라우저에선 이거 없어도 왜 보이냐? -> Network 탭에서 보이는 건 HTTP 프로토콜 레벨에서 접근하는 것이기 때문에 안 숨겨짐
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", configuration);

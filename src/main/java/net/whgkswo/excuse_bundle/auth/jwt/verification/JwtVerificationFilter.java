@@ -7,7 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.CustomAuthorityUtils;
 import net.whgkswo.excuse_bundle.auth.jwt.tokenizer.JwtTokenizer;
-import net.whgkswo.excuse_bundle.entities.members.core.Member;
+import net.whgkswo.excuse_bundle.entities.members.core.entities.Member;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -17,7 +17,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 // 토큰 유효성 검증 필터
 @RequiredArgsConstructor
@@ -69,8 +69,12 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
     private void setAuthenticationToContext(Map<String, Object> claims) {
         // claim에서 이메일과 권한 추출
         String username = (String) claims.get("username");
-        @SuppressWarnings("unchecked")
-        List<GrantedAuthority> authorities = authorityUtils.createAuthorities((Set<Member.Role>) claims.get("roles"));
+
+        List<Member.Role> roles = ((List<String>) claims.get("roles")).stream()
+                .map(role -> Member.Role.valueOf(role))
+                .collect(Collectors.toList());
+
+        List<GrantedAuthority> authorities = authorityUtils.createAuthorities(roles);
         // 인증 정보 생성 (이미 JWT토큰으로 인증 되었기 때문에 credentials은 굳이 저장할 필요 없음 -> null)
         Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, authorities);
         // SecurityContext에 인증정보 저장

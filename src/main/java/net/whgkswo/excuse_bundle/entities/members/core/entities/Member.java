@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_bundle.entities.members.core;
+package net.whgkswo.excuse_bundle.entities.members.core.entities;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -9,9 +9,7 @@ import net.whgkswo.excuse_bundle.entities.members.rank.MemberRank;
 import net.whgkswo.excuse_bundle.entities.posts.Post;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -36,7 +34,7 @@ public class Member extends TimeStampedEntity {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "member_roles", joinColumns = @JoinColumn(name = "member_id"))
     @Column(name = "role")
-    private Set<Role> roles = new HashSet<>();
+    private List<Role> roles = new ArrayList<>();
 
     public Member(String nickname,
                   String email,
