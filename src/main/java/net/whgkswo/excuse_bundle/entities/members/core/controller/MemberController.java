@@ -1,9 +1,9 @@
-package net.whgkswo.excuse_bundle.entities.members.core.controllers;
+package net.whgkswo.excuse_bundle.entities.members.core.controller;
 
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.recaptcha.RecaptchaService;
 import net.whgkswo.excuse_bundle.entities.members.core.dtos.MemberRegistrationDto;
-import net.whgkswo.excuse_bundle.entities.members.core.services.MemberService;
+import net.whgkswo.excuse_bundle.entities.members.core.service.MemberService;
 import net.whgkswo.excuse_bundle.entities.members.nicknames.NicknameService;
 import net.whgkswo.excuse_bundle.entities.members.passwords.ResetPasswordDto;
 import net.whgkswo.excuse_bundle.responses.Response;

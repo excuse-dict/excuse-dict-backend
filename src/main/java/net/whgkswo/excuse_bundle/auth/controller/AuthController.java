@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_bundle.auth.controllers;
+package net.whgkswo.excuse_bundle.auth.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -7,12 +7,12 @@ import net.whgkswo.excuse_bundle.auth.redis.RedisKey;
 import net.whgkswo.excuse_bundle.auth.verify.VerificationCodeResponseDto;
 import net.whgkswo.excuse_bundle.auth.verify.VerifyDto;
 import net.whgkswo.excuse_bundle.auth.service.AuthService;
-import net.whgkswo.excuse_bundle.entities.members.core.controllers.MemberController;
+import net.whgkswo.excuse_bundle.entities.members.core.controller.MemberController;
 import net.whgkswo.excuse_bundle.entities.members.core.dtos.MemberRegistrationDto;
-import net.whgkswo.excuse_bundle.entities.members.core.services.MemberService;
-import net.whgkswo.excuse_bundle.entities.members.email.EmailService;
-import net.whgkswo.excuse_bundle.entities.members.email.EmailVerificationRequestDto;
-import net.whgkswo.excuse_bundle.entities.members.email.VerificationPurpose;
+import net.whgkswo.excuse_bundle.entities.members.core.service.MemberService;
+import net.whgkswo.excuse_bundle.entities.members.email.service.EmailService;
+import net.whgkswo.excuse_bundle.entities.members.email.dto.EmailVerificationRequestDto;
+import net.whgkswo.excuse_bundle.entities.members.email.dto.VerificationPurpose;
 import net.whgkswo.excuse_bundle.responses.Response;
 import net.whgkswo.excuse_bundle.responses.UriHelper;
 import org.springframework.http.ResponseEntity;

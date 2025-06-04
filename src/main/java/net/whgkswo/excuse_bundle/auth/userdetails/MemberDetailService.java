@@ -2,8 +2,8 @@ package net.whgkswo.excuse_bundle.auth.userdetails;
 
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.CustomAuthorityUtils;
-import net.whgkswo.excuse_bundle.entities.members.core.entities.Member;
-import net.whgkswo.excuse_bundle.entities.members.core.repositories.MemberRepository;
+import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
+import net.whgkswo.excuse_bundle.entities.members.core.repositoriy.MemberRepository;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
 import org.springframework.security.core.userdetails.UserDetails;

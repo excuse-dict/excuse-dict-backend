@@ -1,6 +1,6 @@
-package net.whgkswo.excuse_bundle.entities.members.core.mappers;
+package net.whgkswo.excuse_bundle.entities.members.core.mapper;
 
-import net.whgkswo.excuse_bundle.entities.members.core.entities.Member;
+import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import net.whgkswo.excuse_bundle.entities.members.core.dtos.MemberRegistrationDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;

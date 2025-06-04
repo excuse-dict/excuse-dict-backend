@@ -1,6 +1,6 @@
-package net.whgkswo.excuse_bundle.entities.members.core.repositories;
+package net.whgkswo.excuse_bundle.entities.members.core.repositoriy;
 
-import net.whgkswo.excuse_bundle.entities.members.core.entities.Member;
+import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_bundle.entities.members.email;
+package net.whgkswo.excuse_bundle.entities.members.email.service;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -8,8 +8,9 @@ import net.whgkswo.excuse_bundle.auth.redis.RedisKeyMapper;
 import net.whgkswo.excuse_bundle.auth.redis.RedisService;
 import net.whgkswo.excuse_bundle.auth.service.AuthService;
 import net.whgkswo.excuse_bundle.auth.verify.VerificationCode;
-import net.whgkswo.excuse_bundle.entities.members.core.entities.Member;
-import net.whgkswo.excuse_bundle.entities.members.core.repositories.MemberRepository;
+import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
+import net.whgkswo.excuse_bundle.entities.members.core.repositoriy.MemberRepository;
+import net.whgkswo.excuse_bundle.entities.members.email.dto.VerificationPurpose;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
 import org.springframework.core.env.Environment;

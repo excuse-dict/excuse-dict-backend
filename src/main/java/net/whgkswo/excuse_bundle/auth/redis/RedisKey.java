@@ -1,7 +1,5 @@
 package net.whgkswo.excuse_bundle.auth.redis;
 
-import net.whgkswo.excuse_bundle.entities.members.email.VerificationPurpose;
-
 public record RedisKey(Prefix prefix, String identifier) {
 
     // 직렬화

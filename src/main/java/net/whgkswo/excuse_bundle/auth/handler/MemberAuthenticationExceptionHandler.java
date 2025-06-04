@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_bundle.auth.handlers;
+package net.whgkswo.excuse_bundle.auth.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;

@@ -1,6 +1,6 @@
 package net.whgkswo.excuse_bundle.auth.redis;
 
-import net.whgkswo.excuse_bundle.entities.members.email.VerificationPurpose;
+import net.whgkswo.excuse_bundle.entities.members.email.dto.VerificationPurpose;
 import org.springframework.stereotype.Component;
 
 @Component

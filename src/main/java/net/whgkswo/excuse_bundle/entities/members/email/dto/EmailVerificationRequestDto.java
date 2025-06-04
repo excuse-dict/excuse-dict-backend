@@ -1,9 +1,8 @@
-package net.whgkswo.excuse_bundle.entities.members.email;
+package net.whgkswo.excuse_bundle.entities.members.email.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
 import net.whgkswo.excuse_bundle.responses.dtos.Dto;
 
 public record EmailVerificationRequestDto(

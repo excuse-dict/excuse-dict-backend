@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_bundle.auth.handlers;
+package net.whgkswo.excuse_bundle.auth.handler;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,7 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import net.whgkswo.excuse_bundle.entities.members.core.entities.Member;
+import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;

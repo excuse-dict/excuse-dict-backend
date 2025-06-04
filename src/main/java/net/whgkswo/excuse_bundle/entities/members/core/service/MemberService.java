@@ -1,14 +1,14 @@
-package net.whgkswo.excuse_bundle.entities.members.core.services;
+package net.whgkswo.excuse_bundle.entities.members.core.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.redis.RedisKey;
 import net.whgkswo.excuse_bundle.auth.service.AuthService;
-import net.whgkswo.excuse_bundle.entities.members.core.entities.Member;
-import net.whgkswo.excuse_bundle.entities.members.core.mappers.MemberMapper;
+import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
+import net.whgkswo.excuse_bundle.entities.members.core.mapper.MemberMapper;
 import net.whgkswo.excuse_bundle.entities.members.core.dtos.MemberRegistrationDto;
-import net.whgkswo.excuse_bundle.entities.members.core.repositories.MemberRepository;
-import net.whgkswo.excuse_bundle.entities.members.email.EmailService;
+import net.whgkswo.excuse_bundle.entities.members.core.repositoriy.MemberRepository;
+import net.whgkswo.excuse_bundle.entities.members.email.service.EmailService;
 import net.whgkswo.excuse_bundle.entities.members.nicknames.NicknameService;
 import net.whgkswo.excuse_bundle.entities.members.rank.MemberRank;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;

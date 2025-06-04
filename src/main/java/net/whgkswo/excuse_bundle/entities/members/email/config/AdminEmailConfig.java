@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_bundle.entities.members.email;
+package net.whgkswo.excuse_bundle.entities.members.email.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

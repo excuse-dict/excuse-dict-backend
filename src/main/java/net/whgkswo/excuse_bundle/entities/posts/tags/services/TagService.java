@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.entities.posts.tags.repositories.TagSearchRepository;
 import net.whgkswo.excuse_bundle.entities.posts.tags.entities.Tag;
 import net.whgkswo.excuse_bundle.entities.posts.tags.entities.TagDocument;
+import net.whgkswo.excuse_bundle.responses.page.PageUtil;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,8 +24,15 @@ public class TagService {
                 .collect(Collectors.toList());
     }
 
+    // 컨트롤러 요청 받아 페이지로 래핑해 반환
+    public Page<Tag> searchTags(List<Tag.Category> filterCategories, String searchValue, int page, int size){
+        List<Tag> tags = findTagsByCondition(filterCategories, searchValue);
+
+        return PageUtil.createPageFromList(tags, page - 1, size); // 컨트롤러에서 넘어온 page는 1부터 시작, 내부적으론 0부터 시작
+    }
+
     // 태그 검색 요청 분기처리
-    public List<Tag> searchTags(List<Tag.Category> filterCategories, String searchValue){
+    private List<Tag> findTagsByCondition(List<Tag.Category> filterCategories, String searchValue){
 
         if(searchValue == null || searchValue.isBlank()){
             if(filterCategories == null || filterCategories.isEmpty()){
