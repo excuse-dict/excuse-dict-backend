@@ -5,7 +5,7 @@ import net.whgkswo.excuse_bundle.entities.TimeStampedEntity;
 import net.whgkswo.excuse_bundle.entities.comments.Comment;
 import net.whgkswo.excuse_bundle.entities.excuses.Excuse;
 import net.whgkswo.excuse_bundle.entities.members.core.Member;
-import net.whgkswo.excuse_bundle.entities.posts.tags.Tag;
+import net.whgkswo.excuse_bundle.entities.posts.tags.entities.Tag;
 import net.whgkswo.excuse_bundle.entities.vote.PostVote;
 
 import java.util.ArrayList;
