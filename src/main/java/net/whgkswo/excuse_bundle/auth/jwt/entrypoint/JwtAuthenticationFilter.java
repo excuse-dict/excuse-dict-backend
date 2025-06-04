@@ -7,8 +7,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import net.whgkswo.excuse_bundle.auth.login.LoginDto;
-import net.whgkswo.excuse_bundle.auth.jwt.token.tokenizer.JwtTokenizer;
+import net.whgkswo.excuse_bundle.auth.dto.LoginDto;
+import net.whgkswo.excuse_bundle.auth.jwt.service.JwtTokenService;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,15 +16,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 // 클라이언트 로그인 요청을 수신하는 엔트리포인트
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
-    private final JwtTokenizer jwtTokenizer;
+    private final JwtTokenService jwtTokenService;
 
     // 로그인 요청을 받으면 여기로 들어오고 authenticationManager에게 처리 위임
     @SneakyThrows
@@ -49,40 +46,13 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                             ) throws ServletException, IOException {
         Member member = (Member) authResult.getPrincipal();
 
-        String accessToken = delegateAccessToken(member);
-        String refreshToken = delegateRefreshToken(member);
+        String accessToken = jwtTokenService.generateAccessToken(member);
+        String refreshToken = jwtTokenService.generateRefreshToken(member);
 
         response.setHeader("Authorization", "Bearer " + accessToken);
         response.setHeader("Refresh", refreshToken);
 
         // AuthenticationSuccessHandler 추가 호출
         this.getSuccessHandler().onAuthenticationSuccess(request, response, authResult);
-    }
-
-    // 액세스 토큰 발행
-    private String delegateAccessToken(Member member){
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("username", member.getEmail());
-        claims.put("roles", member.getRoles());
-
-        String subject = member.getEmail();
-        Date expiration = jwtTokenizer.getTokenExpiration(jwtTokenizer.getAccessTokenExpirationMinutes());
-
-        String base64EncodedSecretKey = jwtTokenizer.encodeBase64SecretKey(jwtTokenizer.getSecretKey());
-
-        String accessToken = jwtTokenizer.generateAccessToken(claims, subject, expiration, base64EncodedSecretKey);
-
-        return accessToken;
-    }
-
-    // 리프레시 토큰 발행
-    private String delegateRefreshToken(Member member){
-        String subject = member.getEmail();
-        Date expiration = jwtTokenizer.getTokenExpiration(jwtTokenizer.getRefreshTokenExpirationMinutes());
-        String base64EncodedSecretKey = jwtTokenizer.encodeBase64SecretKey(jwtTokenizer.getSecretKey());
-
-        String refreshToken = jwtTokenizer.generateRefreshToken(subject, expiration, base64EncodedSecretKey);
-
-        return refreshToken;
     }
 }

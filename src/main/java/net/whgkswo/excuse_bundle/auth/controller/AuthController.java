@@ -2,6 +2,9 @@ package net.whgkswo.excuse_bundle.auth.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import net.whgkswo.excuse_bundle.auth.dto.RefreshAccessTokenRequestDto;
+import net.whgkswo.excuse_bundle.auth.dto.RefreshAccessTokenResponseDto;
+import net.whgkswo.excuse_bundle.auth.jwt.service.JwtTokenService;
 import net.whgkswo.excuse_bundle.auth.recaptcha.RecaptchaService;
 import net.whgkswo.excuse_bundle.auth.redis.RedisKey;
 import net.whgkswo.excuse_bundle.auth.verify.VerificationCodeResponseDto;
@@ -29,6 +32,7 @@ public class AuthController {
     private final AuthService authService;
     private final EmailService emailService;
     private final RecaptchaService recaptchaService;
+    private final JwtTokenService jwtTokenService;
 
     public static final String BASE_PATH = "/api/v1/auth";
     public static final String BASE_PATH_ANY = "/api/*/auth";
@@ -48,7 +52,7 @@ public class AuthController {
 
     // 회원가입용 인증 코드 검증
     @PostMapping("/verify/signup")
-    public ResponseEntity<?> verifySignupCode(@RequestBody VerifyDto dto){
+    public ResponseEntity<?> verifySignupCode(@Valid @RequestBody VerifyDto dto){
         authService.verifyCode(dto.email(), dto.verificationCode(), VerificationPurpose.REGISTRATION);
 
         return ResponseEntity.ok(
@@ -58,7 +62,7 @@ public class AuthController {
 
     // 비밀번호 재설정용 인증 코드 검증
     @PostMapping("/verify/reset-password")
-    public ResponseEntity<?> verifyResetPasswordCode(@RequestBody VerifyDto dto){
+    public ResponseEntity<?> verifyResetPasswordCode(@Valid @RequestBody VerifyDto dto){
         authService.verifyCode(dto.email(), dto.verificationCode(), VerificationPurpose.RESET_PASSWORD);
 
         // 이메일 인증정보 저장
@@ -75,5 +79,15 @@ public class AuthController {
         URI uri = UriHelper.createURI(MemberController.BASE_PATH, memberId);
 
         return ResponseEntity.created(uri).build();
+    }
+
+    // 액세스 토큰 갱신
+    @PostMapping("/refresh")
+    public ResponseEntity<?> handleRefreshAccessToken(@Valid @RequestBody RefreshAccessTokenRequestDto dto){
+        String newAccessToken = jwtTokenService.refreshAccessToken(dto.refreshToken());
+
+        return ResponseEntity.ok(
+                Response.of(new RefreshAccessTokenResponseDto(newAccessToken))
+        );
     }
 }

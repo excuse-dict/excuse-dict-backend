@@ -4,7 +4,8 @@ import net.whgkswo.excuse_bundle.auth.verify.VerificationCode;
 
 public record ExceptionType(int status, String code, String message){
 
-    public static ExceptionType of(int status, String code, String message){
+    // 미리 선언된 객체 또는 메서드만 사용하게 함으로서 일관성 확보(생성자까진 못막음... 레코드라서)
+    private static ExceptionType of(int status, String code, String message){
         return new ExceptionType(status, code, message);
     }
 
@@ -18,7 +19,9 @@ public record ExceptionType(int status, String code, String message){
     public static final ExceptionType JSON_FORMAT_INVALID = ExceptionType.of(400, "JSON_FORMAT_INVALID", "잘못된 형식의 JSON입니다.");
     public static final ExceptionType AUTHENTICATION_FAILED = ExceptionType.of(401, "AUTHENTICATION_FAILED", "인증에 실패하였습니다.");
     public static final ExceptionType ACCESS_TOKEN_INVALID = ExceptionType.of(401, "ACCESS_TOKEN_INVALID", "액세스 토큰이 유효하지 않습니다.");
-    public static final ExceptionType ACCESS_TOKEN_EXPIRED = ExceptionType.of(401, "ACCESS_TOKEN_EXPIRED", "액세스 토큰이 만료되었습니다. 재발급해주세요.");
+    public static final ExceptionType ACCESS_TOKEN_EXPIRED = ExceptionType.of(401, "ACCESS_TOKEN_EXPIRED", "액세스 토큰이 만료되었습니다. 다시 발급해주세요.");
+    public static final ExceptionType REFRESH_TOKEN_INVALID = ExceptionType.of(401, "REFRESH_TOKEN_INVALID", "리프레시 토큰이 유효하지 않습니다.");
+    public static final ExceptionType REFRESH_TOKEN_EXPIRED = ExceptionType.of(401, "REFRESH_TOKEN_EXPIRED", "리프레시 토큰이 만료되었습니다. 다시 발급해주세요.");
     public static final ExceptionType MEMBER_NOT_FOUND = ExceptionType.of(404, "MEMBER_NOT_FOUND","회원을 찾을 수 없습니다.");
     public static final ExceptionType MEMBER_NOT_FOUND_BY_EMAIL = ExceptionType.of(404, "MEMBER_NOT_FOUND_BY_EMAIL","해당 이메일로 가입된 회원을 찾을 수 없습니다.");
     public static final ExceptionType REDIS_CONNECTION_LOST = ExceptionType.of(500, "REDIS_CONNECTION_LOST","Redis 서버 연결 불가");

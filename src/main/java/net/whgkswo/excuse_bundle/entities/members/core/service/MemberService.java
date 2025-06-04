@@ -71,7 +71,7 @@ public class MemberService {
     }
 
     // 멤버 찾기 (이메일)
-    public Member getMember(String email){
+    public Member findByEmail(String email){
         Optional<Member> optionalMember = memberRepository.findByEmail(email);
         return optionalMember.orElseThrow(() -> new BusinessLogicException(ExceptionType.MEMBER_NOT_FOUND_BY_EMAIL));
     }
@@ -83,7 +83,7 @@ public class MemberService {
         authService.checkEmailVerified(email, RedisKey.Prefix.VERIFICATION_COMPLETE_RESET_PASSWORD);
 
         // 회원 조회
-        Member member = getMember(email);
+        Member member = findByEmail(email);
         // 비밀번호 암호화
         String encryptedPassword = passwordEncoder.encode(newPassword);
         member.setPassword(encryptedPassword);

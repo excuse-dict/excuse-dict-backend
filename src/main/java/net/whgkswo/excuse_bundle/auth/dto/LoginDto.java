@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_bundle.auth.login;
+package net.whgkswo.excuse_bundle.auth.dto;
 
 import net.whgkswo.excuse_bundle.responses.dtos.Dto;
 

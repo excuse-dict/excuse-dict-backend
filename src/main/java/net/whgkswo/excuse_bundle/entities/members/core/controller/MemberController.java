@@ -1,5 +1,6 @@
 package net.whgkswo.excuse_bundle.entities.members.core.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.recaptcha.RecaptchaService;
 import net.whgkswo.excuse_bundle.entities.members.core.dtos.MemberRegistrationDto;
@@ -34,7 +35,7 @@ public class MemberController {
 
     // 회원가입
     @PostMapping
-    public ResponseEntity<?> handleRegisterRequest(@RequestBody MemberRegistrationDto dto){
+    public ResponseEntity<?> handleRegisterRequest(@Valid @RequestBody MemberRegistrationDto dto){
         long memberId = memberService.createMember(dto);
         URI uri = URI.create(BASE_PATH + "/" + memberId);
 
@@ -53,7 +54,7 @@ public class MemberController {
 
     // 비밀번호 재설정 (분실시)
     @PatchMapping("/passwords/reset")
-    public ResponseEntity<?> updatePassword(@RequestBody ResetPasswordDto dto){
+    public ResponseEntity<?> updatePassword(@Valid @RequestBody ResetPasswordDto dto){
         // 리캡챠 토큰 검증
         recaptchaService.verifyRecaptcha(dto.recaptchaToken());
 

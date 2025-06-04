@@ -7,6 +7,7 @@ import net.whgkswo.excuse_bundle.auth.handler.MemberAuthenticationExceptionHandl
 import net.whgkswo.excuse_bundle.auth.handler.MemberAuthenticationFailureHandler;
 import net.whgkswo.excuse_bundle.auth.handler.MemberAuthenticationSuccessHandler;
 import net.whgkswo.excuse_bundle.auth.jwt.entrypoint.JwtAuthenticationFilter;
+import net.whgkswo.excuse_bundle.auth.jwt.service.JwtTokenService;
 import net.whgkswo.excuse_bundle.auth.jwt.token.tokenizer.JwtTokenizer;
 import net.whgkswo.excuse_bundle.auth.jwt.token.verification.JwtVerificationFilter;
 import net.whgkswo.excuse_bundle.entities.members.email.controller.EmailController;
@@ -33,13 +34,9 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtTokenizer jwtTokenizer;
+    private final JwtTokenService jwtTokenService;
     private final CustomAuthorityUtils authorityUtils;
     private final MemberAuthenticationExceptionHandler memberAuthenticationExceptionHandler;
-
-    @Bean
-    public PasswordEncoder passwordEncoder(){
-        return new BCryptPasswordEncoder();
-    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
@@ -106,7 +103,7 @@ public class SecurityConfig {
         public void configure(HttpSecurity builder) {
             AuthenticationManager authenticationManager = builder.getSharedObject(AuthenticationManager.class);
 
-            JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(authenticationManager, jwtTokenizer);
+            JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(authenticationManager, jwtTokenService);
             // 로그인 요청 엔드포인트 설정
             jwtAuthenticationFilter.setFilterProcessesUrl(AuthController.BASE_PATH + "/login");
             // 로그인 요청 후처리 로직 적용
