@@ -3,11 +3,12 @@ package net.whgkswo.excuse_bundle.auth.config;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.CustomAuthorityUtils;
 import net.whgkswo.excuse_bundle.auth.controller.AuthController;
+import net.whgkswo.excuse_bundle.auth.handler.MemberAuthenticationExceptionHandler;
 import net.whgkswo.excuse_bundle.auth.handler.MemberAuthenticationFailureHandler;
 import net.whgkswo.excuse_bundle.auth.handler.MemberAuthenticationSuccessHandler;
 import net.whgkswo.excuse_bundle.auth.jwt.entrypoint.JwtAuthenticationFilter;
-import net.whgkswo.excuse_bundle.auth.jwt.tokenizer.JwtTokenizer;
-import net.whgkswo.excuse_bundle.auth.jwt.verification.JwtVerificationFilter;
+import net.whgkswo.excuse_bundle.auth.jwt.token.tokenizer.JwtTokenizer;
+import net.whgkswo.excuse_bundle.auth.jwt.token.verification.JwtVerificationFilter;
 import net.whgkswo.excuse_bundle.entities.members.email.controller.EmailController;
 import net.whgkswo.excuse_bundle.entities.members.core.controller.MemberController;
 import org.springframework.context.annotation.Bean;
@@ -33,6 +34,7 @@ import java.util.Arrays;
 public class SecurityConfig {
     private final JwtTokenizer jwtTokenizer;
     private final CustomAuthorityUtils authorityUtils;
+    private final MemberAuthenticationExceptionHandler memberAuthenticationExceptionHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder(){
@@ -51,6 +53,10 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 // HTTP를 무상태로 관리 (세션 사용 안함 - JWT를 쓰면 세션이 아예 필요 없음)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // 인증되지 않은 요청 처리 진입점 등록
+                .exceptionHandling(ex ->
+                    ex.authenticationEntryPoint(memberAuthenticationExceptionHandler)
+                )
                 // 누가 접근할 수 있는 요청인지 확인
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 프리플라이트는 모두 허용

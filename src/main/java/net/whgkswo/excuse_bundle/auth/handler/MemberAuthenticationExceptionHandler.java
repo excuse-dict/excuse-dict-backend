@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import net.whgkswo.excuse_bundle.exceptions.ErrorResponseDto;
+import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
@@ -28,11 +29,11 @@ public class MemberAuthenticationExceptionHandler implements AuthenticationEntry
 
         ErrorResponseDto dto;
         if(exception instanceof ExpiredJwtException){
-            dto = new ErrorResponseDto(401, "토큰이 만료되었습니다.");
+            dto = ErrorResponseDto.of(ExceptionType.ACCESS_TOKEN_EXPIRED); // 토큰 만료
         } else if (exception instanceof SignatureException) {
-            dto = new ErrorResponseDto(401, "유효하지 않은 토큰입니다.");
+            dto = ErrorResponseDto.of(ExceptionType.ACCESS_TOKEN_INVALID); // 유효하지 않은 토큰
         } else {
-            dto = new ErrorResponseDto(401, "인증이 필요합니다.");
+            dto = ErrorResponseDto.of(ExceptionType.AUTHENTICATION_FAILED);
         }
         sendErrorResponse(response, dto);
     }

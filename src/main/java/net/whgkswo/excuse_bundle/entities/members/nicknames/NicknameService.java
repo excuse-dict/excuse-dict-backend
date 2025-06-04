@@ -41,7 +41,7 @@ public class NicknameService {
     public void validateNickname(String nickname){
         boolean isLengthValid = isNicknameLengthValid(nickname);
         if(!isLengthValid) throw new BusinessLogicException(
-                ExceptionType.of(400, String.format("닉네임은 %d~%d자 사이어야 합니다.", MIN_NICKNAME_LENGTH, MAX_NICKNAME_LENGTH))
+                ExceptionType.nicknameLengthInvalid(MIN_NICKNAME_LENGTH, MAX_NICKNAME_LENGTH)
                 );
 
         boolean isUnique = isNicknameUnique(nickname);

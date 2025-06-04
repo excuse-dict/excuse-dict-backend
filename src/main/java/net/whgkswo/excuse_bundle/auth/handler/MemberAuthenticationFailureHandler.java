@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import net.whgkswo.excuse_bundle.exceptions.ErrorResponseDto;
+import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 
@@ -20,7 +21,7 @@ public class MemberAuthenticationFailureHandler implements AuthenticationFailure
     private void sendErrorResponse(HttpServletResponse response) throws IOException{
         ObjectMapper mapper = new ObjectMapper();
 
-        ErrorResponseDto errorResponseDto = new ErrorResponseDto(401, "로그인에 실패하였습니다.");
+        ErrorResponseDto errorResponseDto = ErrorResponseDto.of(ExceptionType.AUTHENTICATION_FAILED);
 
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(401);

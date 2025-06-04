@@ -8,7 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import net.whgkswo.excuse_bundle.auth.login.LoginDto;
-import net.whgkswo.excuse_bundle.auth.jwt.tokenizer.JwtTokenizer;
+import net.whgkswo.excuse_bundle.auth.jwt.token.tokenizer.JwtTokenizer;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

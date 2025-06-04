@@ -45,5 +45,5 @@ logging:
     org.springframework.security: DEBUG
     org.springframework.security.web.access: DEBUG
 jwt:
-  access-token-expiration-minutes: 30
+  access-token-expiration-minutes: 1
   refresh-token-expiration-minutes: 50000

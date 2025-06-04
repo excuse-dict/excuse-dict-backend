@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_bundle.auth.jwt.tokenizer;
+package net.whgkswo.excuse_bundle.auth.jwt.token.tokenizer;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;

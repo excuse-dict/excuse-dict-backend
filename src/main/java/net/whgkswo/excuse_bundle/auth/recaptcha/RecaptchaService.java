@@ -43,7 +43,7 @@ public class RecaptchaService {
             if(response == null) throw new BusinessLogicException(ExceptionType.RECAPTCHA_VERIFY_FAILED);
 
             // 검증 실패
-            if(!response.success()) throw new BusinessLogicException(ExceptionType.INVALID_RECAPTCHA_TOKEN);
+            if(!response.success()) throw new BusinessLogicException(ExceptionType.RECAPTCHA_TOKEN_INVALID);
 
         } catch (BusinessLogicException e){
             throw e;

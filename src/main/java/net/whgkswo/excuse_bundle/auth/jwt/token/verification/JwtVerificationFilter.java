@@ -1,13 +1,15 @@
-package net.whgkswo.excuse_bundle.auth.jwt.verification;
+package net.whgkswo.excuse_bundle.auth.jwt.token.verification;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.CustomAuthorityUtils;
-import net.whgkswo.excuse_bundle.auth.jwt.tokenizer.JwtTokenizer;
+import net.whgkswo.excuse_bundle.auth.jwt.token.tokenizer.JwtTokenizer;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
+import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -37,10 +39,6 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
             request.setAttribute("exception", e);
         }
 
-        // 토큰 검증 및 claim 추출
-        Map<String, Object> claims = verifyJws(request);
-        // 인증정보 구성
-        setAuthenticationToContext(claims);
         // 다음 필터로 진행
         filterChain.doFilter(request, response);
     }
