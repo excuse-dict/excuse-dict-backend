@@ -16,6 +16,7 @@ spring:
   sql:
     init:
       mode: never # data.sql 자동 실행여부 제어 (always / embedded / never)
+      enabled: false
   jpa:
     database: mysql
     hibernate:
@@ -42,8 +43,10 @@ spring:
     socket-timeout: 30s
 logging:
   level:
-    org.springframework.security: DEBUG
-    org.springframework.security.web.access: DEBUG
+    #org.springframework.security: DEBUG
+    #org.springframework.security.web.access: DEBUG
+    org.springframework.boot.autoconfigure.sql.init.SqlInitializationAutoConfiguration: DEBUG
+    org.springframework.boot.sql.init: DEBUG
 jwt:
-  access-token-expiration-minutes: 1
+  access-token-expiration-minutes: 30
   refresh-token-expiration-minutes: 50000
