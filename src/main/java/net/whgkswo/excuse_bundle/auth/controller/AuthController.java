@@ -3,25 +3,20 @@ package net.whgkswo.excuse_bundle.auth.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.dto.RefreshAccessTokenRequestDto;
-import net.whgkswo.excuse_bundle.auth.dto.RefreshAccessTokenResponseDto;
 import net.whgkswo.excuse_bundle.auth.jwt.service.JwtTokenService;
 import net.whgkswo.excuse_bundle.auth.recaptcha.RecaptchaService;
 import net.whgkswo.excuse_bundle.auth.redis.RedisKey;
 import net.whgkswo.excuse_bundle.auth.verify.VerificationCodeResponseDto;
 import net.whgkswo.excuse_bundle.auth.verify.VerifyDto;
 import net.whgkswo.excuse_bundle.auth.service.AuthService;
-import net.whgkswo.excuse_bundle.entities.members.core.controller.MemberController;
-import net.whgkswo.excuse_bundle.entities.members.core.dtos.MemberRegistrationDto;
 import net.whgkswo.excuse_bundle.entities.members.core.service.MemberService;
 import net.whgkswo.excuse_bundle.entities.members.email.service.EmailService;
 import net.whgkswo.excuse_bundle.entities.members.email.dto.EmailVerificationRequestDto;
 import net.whgkswo.excuse_bundle.entities.members.email.dto.VerificationPurpose;
 import net.whgkswo.excuse_bundle.responses.Response;
-import net.whgkswo.excuse_bundle.responses.UriHelper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.time.LocalDateTime;
 
 @RestController
@@ -76,8 +71,8 @@ public class AuthController {
     public ResponseEntity<?> handleRefreshAccessToken(@Valid @RequestBody RefreshAccessTokenRequestDto dto){
         String newAccessToken = jwtTokenService.refreshAccessToken(dto.refreshToken());
 
-        return ResponseEntity.ok(
-                Response.of(new RefreshAccessTokenResponseDto(newAccessToken))
-        );
+        return ResponseEntity.ok()
+                .header("Authorization", newAccessToken)
+                .build();
     }
 }

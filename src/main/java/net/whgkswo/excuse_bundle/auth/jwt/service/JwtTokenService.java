@@ -3,6 +3,7 @@ package net.whgkswo.excuse_bundle.auth.jwt.service;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
+import net.whgkswo.excuse_bundle.auth.jwt.token.scheme.TokenPrefix;
 import net.whgkswo.excuse_bundle.auth.jwt.token.tokenizer.JwtTokenizer;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import net.whgkswo.excuse_bundle.entities.members.core.service.MemberService;
@@ -22,7 +23,7 @@ public class JwtTokenService {
     private final MemberService memberService;
 
     // 액세스 토큰 발행
-    public String generateAccessToken(Member member){
+    public String generateAccessToken(Member member, TokenPrefix prefix){
         Map<String, Object> claims = new HashMap<>();
         claims.put("username", member.getEmail());
         claims.put("roles", member.getRoles());
@@ -34,7 +35,7 @@ public class JwtTokenService {
 
         String accessToken = jwtTokenizer.generateAccessToken(claims, subject, expiration, base64EncodedSecretKey);
 
-        return accessToken;
+        return prefix.getValue() + accessToken;
     }
 
     // 리프레시 토큰 발행
@@ -55,7 +56,7 @@ public class JwtTokenService {
             Member member = validateRefreshTokenAndGetMember(refreshToken);
 
             // 액세스 토큰 재발급
-            return generateAccessToken(member);
+            return generateAccessToken(member, TokenPrefix.BEARER);
 
         }catch (ExpiredJwtException e){
             throw new BusinessLogicException(ExceptionType.REFRESH_TOKEN_EXPIRED);

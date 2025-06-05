@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import net.whgkswo.excuse_bundle.auth.dto.LoginDto;
 import net.whgkswo.excuse_bundle.auth.jwt.service.JwtTokenService;
+import net.whgkswo.excuse_bundle.auth.jwt.token.scheme.TokenPrefix;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -46,10 +47,10 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                             ) throws ServletException, IOException {
         Member member = (Member) authResult.getPrincipal();
 
-        String accessToken = jwtTokenService.generateAccessToken(member);
+        String accessToken = jwtTokenService.generateAccessToken(member, TokenPrefix.BEARER);
         String refreshToken = jwtTokenService.generateRefreshToken(member);
 
-        response.setHeader("Authorization", "Bearer " + accessToken);
+        response.setHeader("Authorization", accessToken);
         response.setHeader("Refresh", refreshToken);
 
         // AuthenticationSuccessHandler 추가 호출
