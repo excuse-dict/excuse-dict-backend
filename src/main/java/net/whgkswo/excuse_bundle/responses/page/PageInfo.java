@@ -3,7 +3,7 @@ package net.whgkswo.excuse_bundle.responses.page;
 public record PageInfo(
         int currentPage,
         int totalPages,
-        long totalElement,
+        long totalElements,
         boolean hasNext
 ) {
 }

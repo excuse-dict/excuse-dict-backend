@@ -1,7 +1,8 @@
 package net.whgkswo.excuse_bundle.entities.posts.tags.controllers;
 
-import jakarta.annotation.Nullable;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import net.whgkswo.excuse_bundle.entities.posts.tags.dtos.TagRequestDto;
 import net.whgkswo.excuse_bundle.entities.posts.tags.dtos.TagResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.tags.entities.Tag;
 import net.whgkswo.excuse_bundle.entities.posts.tags.services.TagService;
@@ -9,10 +10,7 @@ import net.whgkswo.excuse_bundle.responses.Response;
 import net.whgkswo.excuse_bundle.responses.page.PageInfo;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping(TagController.BASE_PATH)
@@ -24,15 +22,12 @@ public class TagController {
     public static final String BASE_PATH = "/api/v1/posts/tags";
     public static final String BASE_PATH_ANY = "/api/*/posts/tags";
 
-    @GetMapping
-    public ResponseEntity<?> handleTagRequest(@RequestParam @Nullable List<Tag.Category> categories,
-                                              @RequestParam @Nullable String searchValue,
-                                              @RequestParam(defaultValue = "1") int page,
-                                              @RequestParam(defaultValue = "20") int size
-                                              ){
+    // 쿼리 파라미터에 검색조건 배열을 담아 보내느냐, Rest를 포기하고 Post로 받느냐...
+    @PostMapping
+    public ResponseEntity<?> handleTagRequest(@Valid @RequestBody TagRequestDto dto){
 
-        Page<Tag> tags = tagService.searchTags(categories, searchValue, page, size);
-        PageInfo pageInfo = new PageInfo(page, tags.getTotalPages(), tags.getTotalElements(), tags.hasNext());
+        Page<Tag> tags = tagService.searchTags(dto.categories(), dto.searchValue(), dto.pageOrDefault(), dto.sizeOrDefault());
+        PageInfo pageInfo = new PageInfo(dto.pageOrDefault(), tags.getTotalPages(), tags.getTotalElements(), tags.hasNext());
 
          return ResponseEntity.ok(
                  Response.of(new TagResponseDto(tags, pageInfo))
