@@ -26,6 +26,7 @@ public class JwtTokenService {
     public String generateAccessToken(Member member, TokenPrefix prefix){
         Map<String, Object> claims = new HashMap<>();
         claims.put("username", member.getEmail());
+        claims.put("memberId", member.getId());
         claims.put("roles", member.getRoles());
 
         String subject = member.getEmail();

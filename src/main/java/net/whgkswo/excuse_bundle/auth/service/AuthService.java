@@ -1,6 +1,8 @@
 package net.whgkswo.excuse_bundle.auth.service;
 
 import lombok.RequiredArgsConstructor;
+import net.whgkswo.excuse_bundle.auth.jwt.principal.CustomPrincipal;
+import net.whgkswo.excuse_bundle.auth.jwt.token.tokenizer.JwtTokenizer;
 import net.whgkswo.excuse_bundle.auth.redis.RedisKey;
 import net.whgkswo.excuse_bundle.auth.redis.RedisKeyMapper;
 import net.whgkswo.excuse_bundle.auth.redis.RedisService;
@@ -8,11 +10,16 @@ import net.whgkswo.excuse_bundle.auth.verify.VerificationCode;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import net.whgkswo.excuse_bundle.entities.members.email.config.AdminEmailConfig;
 import net.whgkswo.excuse_bundle.entities.members.email.dto.VerificationPurpose;
+import net.whgkswo.excuse_bundle.exceptions.BadRequestException;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
@@ -22,6 +29,7 @@ public class AuthService {
     private final RedisService redisService;
     private final RedisKeyMapper redisKeyMapper;
     private final AdminEmailConfig adminEmailConfig;
+    private final JwtTokenizer jwtTokenizer;
 
     // 메일 인증정보 만료 시간
     private static final int EMAIL_VERIFICATION_DURATION_SEC = 3600;
@@ -108,5 +116,14 @@ public class AuthService {
             member.addRole(Member.Role.ADMIN);
         }
         member.addRole(Member.Role.USER);
+    }
+
+    // 토큰에서 id 회원 id 추출
+    public long getMemberIdFromAuthentication(Authentication authentication){
+        if(authentication == null || !authentication.isAuthenticated())
+            throw new BadRequestException(ExceptionType.AUTHENTICATION_FAILED);
+
+        CustomPrincipal principal = (CustomPrincipal) authentication.getPrincipal();
+        return principal.memberId();
     }
 }

@@ -4,9 +4,12 @@ import net.whgkswo.excuse_bundle.auth.verify.VerificationCode;
 
 public record ExceptionType(int status, String code, String message){
 
-    // 미리 선언된 객체 또는 메서드만 사용하게 함으로서 일관성 확보(생성자까진 못막음... 레코드라서)
     private static ExceptionType of(int status, String code, String message){
         return new ExceptionType(status, code, message);
+    }
+
+    public static ExceptionType fromException(int status, Exception e){
+        return ExceptionType.of(status, e.getClass().getSimpleName(), e.getMessage());
     }
 
     // 고정 메시지들
@@ -51,5 +54,9 @@ public record ExceptionType(int status, String code, String message){
 
     public static ExceptionType dtoValidationFailed(String validationMessage){
         return ExceptionType.of(400, "DTO_VALIDATION_FAILED", validationMessage);
+    }
+
+    public static ExceptionType tagNotFound(String tagKey){
+        return ExceptionType.of(404, "TAG_NOT_FOUND", tagKey + "에 해당하는 태그가 없습니다.");
     }
 }

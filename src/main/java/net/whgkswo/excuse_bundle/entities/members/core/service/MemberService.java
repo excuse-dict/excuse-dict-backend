@@ -76,6 +76,12 @@ public class MemberService {
         return optionalMember.orElseThrow(() -> new BusinessLogicException(ExceptionType.MEMBER_NOT_FOUND_BY_EMAIL));
     }
 
+    // 멤버 찾기 (id)
+    public Member findById(long memberId){
+        Optional<Member> optionalMember = memberRepository.findById(memberId);
+        return optionalMember.orElseThrow(() -> new BusinessLogicException(ExceptionType.MEMBER_NOT_FOUND));
+    }
+
     // 비밀번호 재설정
     @Transactional
     public void resetPassword(String email, String newPassword){

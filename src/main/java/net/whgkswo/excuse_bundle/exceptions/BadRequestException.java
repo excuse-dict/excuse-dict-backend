@@ -5,6 +5,6 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class BusinessLogicException extends RuntimeException implements CustomException {
+public class BadRequestException extends RuntimeException implements CustomException {
     private ExceptionType exceptionType;
 }

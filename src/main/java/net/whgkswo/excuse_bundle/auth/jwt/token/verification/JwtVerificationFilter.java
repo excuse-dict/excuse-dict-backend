@@ -1,15 +1,14 @@
 package net.whgkswo.excuse_bundle.auth.jwt.token.verification;
 
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.CustomAuthorityUtils;
+import net.whgkswo.excuse_bundle.auth.jwt.principal.CustomPrincipal;
 import net.whgkswo.excuse_bundle.auth.jwt.token.tokenizer.JwtTokenizer;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
-import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -65,16 +64,20 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
 
     // 인증 정보 설정
     private void setAuthenticationToContext(Map<String, Object> claims) {
-        // claim에서 이메일과 권한 추출
+        // claim 추출
         String username = (String) claims.get("username");
+        long memberId = Long.parseLong(claims.get("memberId").toString());
 
         List<Member.Role> roles = ((List<String>) claims.get("roles")).stream()
                 .map(role -> Member.Role.valueOf(role))
                 .collect(Collectors.toList());
 
         List<GrantedAuthority> authorities = authorityUtils.createAuthorities(roles);
+
+        CustomPrincipal principal = new CustomPrincipal(username, memberId);
+
         // 인증 정보 생성 (이미 JWT토큰으로 인증 되었기 때문에 credentials은 굳이 저장할 필요 없음 -> null)
-        Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, authorities);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(principal, null, authorities);
         // SecurityContext에 인증정보 저장
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
