@@ -1,6 +1,6 @@
-package net.whgkswo.excuse_bundle.entities.posts.tags.repositories;
+package net.whgkswo.excuse_bundle.entities.posts.tags.repository;
 
-import net.whgkswo.excuse_bundle.entities.posts.tags.entities.TagDocument;
+import net.whgkswo.excuse_bundle.entities.posts.tags.entity.TagDocument;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Repository;
 

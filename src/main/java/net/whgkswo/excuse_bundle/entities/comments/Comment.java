@@ -5,7 +5,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import net.whgkswo.excuse_bundle.entities.TimeStampedEntity;
-import net.whgkswo.excuse_bundle.entities.posts.Post;
+import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 
 @Entity

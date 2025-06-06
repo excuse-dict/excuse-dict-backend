@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.whgkswo.excuse_bundle.entities.TimeStampedEntity;
 import net.whgkswo.excuse_bundle.entities.members.rank.MemberRank;
-import net.whgkswo.excuse_bundle.entities.posts.Post;
+import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 
 import java.util.ArrayList;
 import java.util.List;

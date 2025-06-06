@@ -4,12 +4,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.recaptcha.RecaptchaService;
 import net.whgkswo.excuse_bundle.entities.members.core.dtos.MemberRegistrationDto;
+import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import net.whgkswo.excuse_bundle.entities.members.core.service.MemberService;
 import net.whgkswo.excuse_bundle.entities.members.nicknames.NicknameService;
 import net.whgkswo.excuse_bundle.entities.members.passwords.ResetPasswordDto;
 import net.whgkswo.excuse_bundle.responses.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 
@@ -36,8 +38,12 @@ public class MemberController {
     // 회원가입
     @PostMapping
     public ResponseEntity<?> handleRegisterRequest(@Valid @RequestBody MemberRegistrationDto dto){
-        long memberId = memberService.createMember(dto);
-        URI uri = URI.create(BASE_PATH + "/" + memberId);
+        Member member = memberService.createMember(dto);
+        URI uri = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(member.getId()) // id 다음에 이걸 넣었기 때문에 명시 안해도 순서대로 매칭
+                .toUri();
 
         return ResponseEntity.created(uri).build();
     }

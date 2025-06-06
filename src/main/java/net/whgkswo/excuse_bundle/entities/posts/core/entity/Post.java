@@ -1,11 +1,13 @@
-package net.whgkswo.excuse_bundle.entities.posts;
+package net.whgkswo.excuse_bundle.entities.posts.core.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import net.whgkswo.excuse_bundle.entities.TimeStampedEntity;
 import net.whgkswo.excuse_bundle.entities.comments.Comment;
 import net.whgkswo.excuse_bundle.entities.excuses.Excuse;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
-import net.whgkswo.excuse_bundle.entities.posts.tags.entities.Tag;
+import net.whgkswo.excuse_bundle.entities.posts.tags.entity.Tag;
 import net.whgkswo.excuse_bundle.entities.vote.PostVote;
 
 import java.util.ArrayList;
@@ -14,8 +16,9 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
+@Getter
+@Setter
 public class Post extends TimeStampedEntity {
-    private String title;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
@@ -24,6 +27,8 @@ public class Post extends TimeStampedEntity {
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "excuse_id")
     private Excuse excuse;
+
+    private List<String> images;
 
     @OneToMany(mappedBy = "post")
     private List<Comment> comments = new ArrayList<>();
@@ -43,4 +48,10 @@ public class Post extends TimeStampedEntity {
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
     private Set<Tag> tags = new HashSet<>();
+
+    // Excuse <-> Post
+    public void setExcuse(Excuse excuse){
+        this.excuse = excuse;
+        if(excuse.getPost() == null) excuse.setPost(this);
+    }
 }

@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_bundle.entities.posts.tags.entities;
+package net.whgkswo.excuse_bundle.entities.posts.tags.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

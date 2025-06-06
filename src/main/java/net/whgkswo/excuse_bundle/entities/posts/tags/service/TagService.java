@@ -1,9 +1,9 @@
-package net.whgkswo.excuse_bundle.entities.posts.tags.services;
+package net.whgkswo.excuse_bundle.entities.posts.tags.service;
 
 import lombok.RequiredArgsConstructor;
-import net.whgkswo.excuse_bundle.entities.posts.tags.repositories.TagSearchRepository;
-import net.whgkswo.excuse_bundle.entities.posts.tags.entities.Tag;
-import net.whgkswo.excuse_bundle.entities.posts.tags.entities.TagDocument;
+import net.whgkswo.excuse_bundle.entities.posts.tags.repository.TagSearchRepository;
+import net.whgkswo.excuse_bundle.entities.posts.tags.entity.Tag;
+import net.whgkswo.excuse_bundle.entities.posts.tags.entity.TagDocument;
 import net.whgkswo.excuse_bundle.responses.page.PageUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;

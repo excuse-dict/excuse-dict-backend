@@ -1,12 +1,12 @@
-package net.whgkswo.excuse_bundle.entities.posts.tags.dtos;
+package net.whgkswo.excuse_bundle.entities.posts.tags.dto;
 
 import jakarta.annotation.Nullable;
-import net.whgkswo.excuse_bundle.entities.posts.tags.entities.Tag;
+import net.whgkswo.excuse_bundle.entities.posts.tags.entity.Tag;
 import net.whgkswo.excuse_bundle.responses.dtos.Dto;
 
 import java.util.List;
 
-public record TagRequestDto(
+public record TagSearchRequestDto(
         @Nullable List<Tag.Category> categories,
         @Nullable String searchValue,
         @Nullable Integer page,

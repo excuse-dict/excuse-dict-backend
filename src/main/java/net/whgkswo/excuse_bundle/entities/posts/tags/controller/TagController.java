@@ -1,11 +1,11 @@
-package net.whgkswo.excuse_bundle.entities.posts.tags.controllers;
+package net.whgkswo.excuse_bundle.entities.posts.tags.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import net.whgkswo.excuse_bundle.entities.posts.tags.dtos.TagRequestDto;
-import net.whgkswo.excuse_bundle.entities.posts.tags.dtos.TagResponseDto;
-import net.whgkswo.excuse_bundle.entities.posts.tags.entities.Tag;
-import net.whgkswo.excuse_bundle.entities.posts.tags.services.TagService;
+import net.whgkswo.excuse_bundle.entities.posts.tags.dto.TagSearchRequestDto;
+import net.whgkswo.excuse_bundle.entities.posts.tags.dto.TagSearchResponseDto;
+import net.whgkswo.excuse_bundle.entities.posts.tags.entity.Tag;
+import net.whgkswo.excuse_bundle.entities.posts.tags.service.TagService;
 import net.whgkswo.excuse_bundle.responses.Response;
 import net.whgkswo.excuse_bundle.responses.page.PageInfo;
 import org.springframework.data.domain.Page;
@@ -24,13 +24,13 @@ public class TagController {
 
     // 쿼리 파라미터에 검색조건 배열을 담아 보내느냐, Rest를 포기하고 Post로 받느냐...
     @PostMapping
-    public ResponseEntity<?> handleTagRequest(@Valid @RequestBody TagRequestDto dto){
+    public ResponseEntity<?> handleTagRequest(@Valid @RequestBody TagSearchRequestDto dto){
 
         Page<Tag> tags = tagService.searchTags(dto.categories(), dto.searchValue(), dto.pageOrDefault(), dto.sizeOrDefault());
         PageInfo pageInfo = new PageInfo(dto.pageOrDefault(), tags.getTotalPages(), tags.getTotalElements(), tags.hasNext());
 
          return ResponseEntity.ok(
-                 Response.of(new TagResponseDto(tags, pageInfo))
+                 Response.of(new TagSearchResponseDto(tags, pageInfo))
          );
     }
 }

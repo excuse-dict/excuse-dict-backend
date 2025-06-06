@@ -1,9 +1,8 @@
 package net.whgkswo.excuse_bundle.elasticsearch;
 
 import lombok.RequiredArgsConstructor;
-import net.whgkswo.excuse_bundle.entities.posts.tags.entities.Tag;
-import net.whgkswo.excuse_bundle.entities.posts.tags.entities.TagDocument;
-import net.whgkswo.excuse_bundle.entities.posts.tags.repositories.TagSearchRepository;
+import net.whgkswo.excuse_bundle.entities.posts.tags.entity.TagDocument;
+import net.whgkswo.excuse_bundle.entities.posts.tags.repository.TagSearchRepository;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.JdbcTemplate;

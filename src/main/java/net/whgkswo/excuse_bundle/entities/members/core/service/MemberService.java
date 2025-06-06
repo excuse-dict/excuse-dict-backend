@@ -42,7 +42,7 @@ public class MemberService {
 
     // 회원가입
     @Transactional
-    public long createMember(MemberRegistrationDto dto){
+    public Member createMember(MemberRegistrationDto dto){
         // 유효성 검증
         validateRegistrationDto(dto);
 
@@ -62,7 +62,7 @@ public class MemberService {
         // 리포지토리 세이브
         memberRepository.save(member);
 
-        return member.getId();
+        return member;
     }
 
     // 이메일로 가입 여부 검사
