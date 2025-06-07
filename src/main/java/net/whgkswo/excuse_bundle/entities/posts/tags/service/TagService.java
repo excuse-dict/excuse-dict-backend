@@ -5,7 +5,6 @@ import net.whgkswo.excuse_bundle.elasticsearch.ElasticService;
 import net.whgkswo.excuse_bundle.entities.posts.tags.elasticsearch.TagSearchResult;
 import net.whgkswo.excuse_bundle.entities.posts.tags.entity.Tag;
 import net.whgkswo.excuse_bundle.entities.posts.tags.repository.TagRepository;
-import net.whgkswo.excuse_bundle.komoran.KomoranService;
 import net.whgkswo.excuse_bundle.responses.page.PageUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -19,7 +18,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TagService {
     private final TagRepository tagRepository;
-    private final KomoranService komoranService;
     private final ElasticService elasticService;
 
     // 컨트롤러 요청 받아 페이지로 래핑해 반환
@@ -54,7 +52,7 @@ public class TagService {
     private static final double CATEGORY_KEYWORD_WEIGHT = 0.4; // 카테고리 키워드 매치
 
 
-    private static final double MIN_SIMILARITY_THRESHOLD = 0.7; // 최소 유사도
+    private static final double MIN_SIMILARITY_THRESHOLD = 0.5; // 최소 유사도
 
     // 카테고리 필터 적용하여 태그 조회
     private List<Tag> getFilteredTags(List<Tag.Category> categories) {
@@ -66,7 +64,7 @@ public class TagService {
 
     public List<TagSearchResult> elasticSearchTags(String userInput, List<Tag.Category> categories) {
         // 사용자 입력 형태소 분해
-        List<String> morphemes = komoranService.getMeaningfulMorphemes(userInput.trim());
+        List<String> morphemes = elasticService.getMeaningfulMorphemes(userInput.trim());
 
         if (morphemes.isEmpty()) {
             return Collections.emptyList();

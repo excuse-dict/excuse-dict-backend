@@ -21,9 +21,6 @@ configurations {
 
 repositories {
 	mavenCentral()
-
-	// Komoran
-	maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -34,7 +31,6 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'org.mapstruct:mapstruct:1.5.5.Final'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'com.github.shin285:KOMORAN:3.3.9'
 
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.mysql:mysql-connector-j'
