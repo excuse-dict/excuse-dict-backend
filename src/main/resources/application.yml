@@ -1,6 +1,4 @@
 app:
-  project:
-    name: excuse_dict
   server:
     host: localhost
 
@@ -8,10 +6,12 @@ cors:
   allowed:
     origins: http://localhost:3000
 spring:
+  application:
+    name: excuse_dict
   profiles:
     include: secret # appllcation-secret.yml 임포팅
   datasource:
-    url: jdbc:mysql://${app.server.host}:13306/${app.project.name}
+    url: jdbc:mysql://${app.server.host}:13306/${spring.application.name}
     driver-class-name: com.mysql.cj.jdbc.Driver
   sql:
     init:
