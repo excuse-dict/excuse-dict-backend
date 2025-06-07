@@ -3,8 +3,7 @@ package net.whgkswo.excuse_bundle.auth.redis;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
-import net.whgkswo.excuse_bundle.serialize.JsonSerializer;
-import org.springframework.boot.autoconfigure.cache.CacheProperties;
+import net.whgkswo.excuse_bundle.serializers.JsonSerializer;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 

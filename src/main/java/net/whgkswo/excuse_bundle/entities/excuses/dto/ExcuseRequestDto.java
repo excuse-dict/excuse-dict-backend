@@ -2,7 +2,6 @@ package net.whgkswo.excuse_bundle.entities.excuses.dto;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
-import net.whgkswo.excuse_bundle.entities.posts.tags.entity.Tag;
 import net.whgkswo.excuse_bundle.responses.dtos.Dto;
 import org.hibernate.validator.constraints.Length;
 

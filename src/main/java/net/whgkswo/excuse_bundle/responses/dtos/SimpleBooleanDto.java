@@ -1,4 +1,4 @@
 package net.whgkswo.excuse_bundle.responses.dtos;
 
-public record SimpleBooleanDto(boolean data) implements Dto{
+public record SimpleBooleanDto(boolean data) implements Dto {
 }

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import net.whgkswo.excuse_bundle.entities.BaseEntity;
+import net.whgkswo.excuse_bundle.serializers.StringJsonToSetConverter;
 
 import java.util.Set;
 
@@ -16,10 +17,13 @@ public class Tag extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Category category;
 
+    @Convert(converter = StringJsonToSetConverter.class)
     private Set<String> tagKeywords;
 
-    private int popularity = 0;
+    @Column(columnDefinition = "INT DEFAULT 0")
+    private int popularity;
 
+    @Getter
     public enum Category {
         ACCIDENT(Set.of("사고", "부상", "다침", "응급", "아픔", "피남", "위험", "안전")),
         COMPANY(Set.of("직장", "회사", "일", "근무", "근로", "노동", "출근", "퇴근", "출퇴근", "통근", "워크")),
