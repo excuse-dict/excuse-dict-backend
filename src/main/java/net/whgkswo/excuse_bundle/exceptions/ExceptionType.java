@@ -27,11 +27,15 @@ public record ExceptionType(int status, String code, String message){
     public static final ExceptionType REFRESH_TOKEN_EXPIRED = ExceptionType.of(401, "REFRESH_TOKEN_EXPIRED", "리프레시 토큰이 만료되었습니다. 다시 발급해주세요.");
     public static final ExceptionType MEMBER_NOT_FOUND = ExceptionType.of(404, "MEMBER_NOT_FOUND","회원을 찾을 수 없습니다.");
     public static final ExceptionType MEMBER_NOT_FOUND_BY_EMAIL = ExceptionType.of(404, "MEMBER_NOT_FOUND_BY_EMAIL","해당 이메일로 가입된 회원을 찾을 수 없습니다.");
+    public static final ExceptionType ES_QUERY_NOT_FOUND = ExceptionType.of(404, "ES_QUERY_NOT_FOUND", "ES 쿼리를 찾을 수 없습니다.");
     public static final ExceptionType REDIS_CONNECTION_LOST = ExceptionType.of(500, "REDIS_CONNECTION_LOST","Redis 서버 연결 불가");
     public static final ExceptionType FAILED_TO_SEND_MAIL = ExceptionType.of(500, "FAILED_TO_SEND_MAIL","메일 전송 실패!");
     public static final ExceptionType SERIALIZATION_FAILED = ExceptionType.of(500, "SERIALIZATION_FAILED","데이터 직렬화에 실패하였습니다.");
     public static final ExceptionType DESERIALIZATION_FAILED = ExceptionType.of(500, "DESERIALIZATION_FAILED","데이터 역직렬화에 실패하였습니다.");
     public static final ExceptionType RECAPTCHA_VERIFY_FAILED = ExceptionType.of(500, "RECAPTCHA_VERIFY_FAILED","reCAPTCHA 검증에 실패했습니다.");
+    public static final ExceptionType ES_QUERY_LOAD_FAILED = ExceptionType.of(500, "ES_QUERY_LOAD_FAILED", "엘라스틱서치 쿼리를 로드할 수 없습니다.");
+    public static final ExceptionType ES_SEARCH_FAILED = ExceptionType.of(500, "ES_SEARCH_FAILED", "엘라스틱 서치 검색 중 오류 발생");
+    public static final ExceptionType ES_SYNC_FAILED = ExceptionType.of(500, "ES_SYNC_FAILED", "엘라스틱 서치 데이터 동기화 중 오류 발생");
 
     // ㅡㅡㅡㅡㅡ 이 밑으로 동적 메시지들 ㅡㅡㅡㅡㅡ
 

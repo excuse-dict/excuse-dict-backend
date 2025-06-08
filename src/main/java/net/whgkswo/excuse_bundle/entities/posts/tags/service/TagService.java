@@ -20,11 +20,17 @@ public class TagService {
     private final TagRepository tagRepository;
     private final ElasticService elasticService;
 
+    // 가중치 상수
+    private static final double TAG_NAME_WEIGHT = 1.0;      // 태그명 직접 매치
+    private static final double TAG_KEYWORD_WEIGHT = 0.7;   // 태그 키워드 매치
+    private static final double CATEGORY_KEYWORD_WEIGHT = 0.4; // 카테고리 키워드 매치
+
+
     // 컨트롤러 요청 받아 페이지로 래핑해 반환
     public Page<Tag> searchTags(List<Tag.Category> filterCategories, String searchValue, int page, int size){
         List<Tag> tags = findTagsByCondition(filterCategories, searchValue);
 
-        return PageUtil.createPageFromList(tags, page - 1, size); // 컨트롤러에서 넘어온 page는 1부터 시작, 내부적으론 0부터 시작
+        return PageUtil.createPageFromList(tags, page, size);
     }
 
     // 태그 검색 요청 분기처리
@@ -45,14 +51,6 @@ public class TagService {
                     .collect(Collectors.toList());
         }
     }
-
-    // 가중치 상수
-    private static final double TAG_NAME_WEIGHT = 1.0;      // 태그명 직접 매치
-    private static final double TAG_KEYWORD_WEIGHT = 0.7;   // 태그 키워드 매치
-    private static final double CATEGORY_KEYWORD_WEIGHT = 0.4; // 카테고리 키워드 매치
-
-
-    private static final double MIN_SIMILARITY_THRESHOLD = 0.5; // 최소 유사도
 
     // 카테고리 필터 적용하여 태그 조회
     private List<Tag> getFilteredTags(List<Tag.Category> categories) {
@@ -93,7 +91,7 @@ public class TagService {
         double maxScore = 0.0;
 
         // 태그명과 직접 매치 (최고 가중치)
-        double tagNameScore = calculateTagNameMatchScore(morphemes, tag.getValue());
+        double tagNameScore = elasticService.calculateMatchScore(morphemes, tag.getValue());
         maxScore = Math.max(maxScore, tagNameScore * TAG_NAME_WEIGHT);
 
         // 태그 키워드와 매치
@@ -109,26 +107,6 @@ public class TagService {
                     tag.getCategory().getCategoryKeywords()
             );
             maxScore = Math.max(maxScore, categoryKeywordScore * CATEGORY_KEYWORD_WEIGHT);
-        }
-
-        return maxScore;
-    }
-
-    // 형태소 -> 태그명 유사도 계산
-    private double calculateTagNameMatchScore(List<String> morphemes, String tagValue) {
-        double maxScore = 0.0;
-
-        // 형태소 중에 태그명과 정확히 일치하는 것이 있는지 확인
-        for (String morpheme : morphemes) {
-            if (morpheme.equals(tagValue)) {
-                return TAG_NAME_WEIGHT; // 완전 일치
-            }
-
-            // 오타 허용한 유사도 계산
-            double similarity = elasticService.calculateWordSimilarity(morpheme, tagValue);
-            if (similarity >= MIN_SIMILARITY_THRESHOLD) {
-                maxScore = Math.max(maxScore, similarity);
-            }
         }
 
         return maxScore;

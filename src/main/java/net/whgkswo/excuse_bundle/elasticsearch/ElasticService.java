@@ -1,12 +1,22 @@
 package net.whgkswo.excuse_bundle.elasticsearch;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.indices.AnalyzeRequest;
 import co.elastic.clients.elasticsearch.indices.AnalyzeResponse;
 import co.elastic.clients.elasticsearch.indices.analyze.AnalyzeToken;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
+import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.stereotype.Service;
 
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,9 +25,54 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ElasticService {
 
     private final ElasticsearchClient elasticsearchClient;
+
+    private static final double SIMILARITY_EXACTLY_SAME = 1.0;
+
+    private static final double MIN_SIMILARITY_THRESHOLD = 0.7; // 최소 유사도
+
+    // 그냥 검색
+    public <T> List<T> executeSearch(String queryJson, String indexName, Class<T> clazz) {
+        try {
+            SearchRequest searchRequest = SearchRequest.of(s -> s
+                    .index(indexName)
+                    .withJson(new StringReader(queryJson))
+            );
+
+            SearchResponse<T> response = elasticsearchClient
+                    .search(searchRequest, clazz);
+
+            return response.hits().hits().stream()
+                    .map(hit -> hit.source())
+                    .collect(Collectors.toList());
+
+        } catch (Exception e) {
+            throw new BusinessLogicException(ExceptionType.ES_SEARCH_FAILED);
+        }
+    }
+
+    // 페이지네이션용
+    public <T> SearchResponse<T> executeSearchWithResponse(String queryJson, String indexName, Class<T> clazz) {
+        try {
+            log.info("ES 검색 시작 - Index: {}, Query: {}", indexName, queryJson);
+            SearchRequest searchRequest = SearchRequest.of(s -> s
+                    .index(indexName)
+                    .withJson(new StringReader(queryJson))
+            );
+
+            SearchResponse<T> response = elasticsearchClient.search(searchRequest, clazz);
+
+            log.info("ES 검색 완료 - 결과: {} 개", response.hits().total().value());
+            return response;
+
+        } catch (Exception e) {
+            log.error("ES 검색 실패 - Index: {}, Query: {}, Error: {}", indexName, queryJson, e.getMessage(), e);
+            throw new BusinessLogicException(ExceptionType.ES_SEARCH_FAILED);
+        }
+    }
 
     // 형태소 입력으로 키워드와의 유사도 계산
     public double calculateKeywordMatchScore(List<String> morphemes, Set<String> keywords){
@@ -31,7 +86,7 @@ public class ElasticService {
         for (String morpheme : morphemes) {
             for (String keyword : keywords) {
                 double similarity = calculateWordSimilarity(morpheme, keyword);
-                if (similarity > 0.7) {  // 70% 이상 유사하면 매칭
+                if (similarity > MIN_SIMILARITY_THRESHOLD) {  // 70% 이상 유사하면 매칭
                     maxScore = Math.max(maxScore, similarity);
                 }
             }
@@ -134,5 +189,25 @@ public class ElasticService {
     // 불용어 체크
     private boolean isStopWord(String word) {
         return STOP_WORDS.contains(word);
+    }
+
+    // 형태소 -> 문자열 유사도 계산
+    public double calculateMatchScore(List<String> morphemes, String targetString) {
+        double maxScore = 0.0;
+
+        // 형태소 중에 태그명과 정확히 일치하는 것이 있는지 확인
+        for (String morpheme : morphemes) {
+            if (morpheme.equals(targetString)) {
+                return SIMILARITY_EXACTLY_SAME; // 완전 일치
+            }
+
+            // 오타 허용한 유사도 계산
+            double similarity = calculateWordSimilarity(morpheme, targetString);
+            if (similarity >= MIN_SIMILARITY_THRESHOLD) {
+                maxScore = Math.max(maxScore, similarity);
+            }
+        }
+
+        return maxScore;
     }
 }
