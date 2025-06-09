@@ -33,10 +33,9 @@ public class Member extends TimeStampedEntity {
 
     // 굳이 Role까지 엔티티로 할 필요 없을 것 같아서 이렇게 함
     @Enumerated(EnumType.STRING)
-    @ElementCollection(fetch = FetchType.LAZY)
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "member_roles", joinColumns = @JoinColumn(name = "member_id"))
     @Column(name = "role")
-    @JsonIgnore // 자꾸 얘 땜에 추가 쿼리 나가는데 제외 (FetchType.LAZY일 때만 효과 있음)
     private List<Role> roles = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
