@@ -6,6 +6,6 @@ import net.whgkswo.excuse_bundle.responses.dtos.Dto;
 public record MemberResponseDto(
         long id,
         String nickname,
-        MemberRank rank
+        MemberRank.Type rank
 ) implements Dto {
 }

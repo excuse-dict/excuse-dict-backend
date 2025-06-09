@@ -1,6 +1,7 @@
 package net.whgkswo.excuse_bundle.entities.posts.core.mapper;
 
 import net.whgkswo.excuse_bundle.entities.excuses.mapper.ExcuseMapper;
+import net.whgkswo.excuse_bundle.entities.members.core.mapper.MemberMapper;
 import net.whgkswo.excuse_bundle.entities.posts.comments.CommentMapper;
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.MultiPostResponseDto;
@@ -14,7 +15,7 @@ import org.springframework.data.domain.Page;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = {CommentMapper.class, ExcuseMapper.class})
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = {CommentMapper.class, ExcuseMapper.class, MemberMapper.class})
 public interface PostMapper {
 
     @Mapping(target = "author", source = "member")
