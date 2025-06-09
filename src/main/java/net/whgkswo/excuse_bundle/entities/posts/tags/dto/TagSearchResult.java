@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_bundle.entities.posts.tags.elasticsearch;
+package net.whgkswo.excuse_bundle.entities.posts.tags.dto;
 
 import net.whgkswo.excuse_bundle.entities.posts.tags.entity.Tag;
 

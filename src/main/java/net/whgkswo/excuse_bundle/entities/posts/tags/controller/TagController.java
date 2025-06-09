@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.entities.posts.tags.commands.SearchTagCommand;
 import net.whgkswo.excuse_bundle.entities.posts.tags.dto.TagSearchRequestDto;
 import net.whgkswo.excuse_bundle.responses.dtos.PageSearchResponseDto;
-import net.whgkswo.excuse_bundle.entities.posts.tags.elasticsearch.TagElasticService;
 import net.whgkswo.excuse_bundle.entities.posts.tags.entity.Tag;
 import net.whgkswo.excuse_bundle.entities.posts.tags.service.TagService;
 import net.whgkswo.excuse_bundle.responses.Response;
@@ -20,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 public class TagController {
 
     private final TagService tagService;
-    private final TagElasticService tagElasticService;
 
     public static final String BASE_PATH = "/api/v1/posts/tags";
     public static final String BASE_PATH_ANY = "/api/*/posts/tags";
@@ -29,12 +27,11 @@ public class TagController {
     @PostMapping
     public ResponseEntity<?> handleTagRequest(@Valid @RequestBody TagSearchRequestDto dto){
 
-        //Page<TagDocument> tags = tagElasticService.searchTags(dto.searchValue(), dto.pageOrDefault(), dto.sizeOrDefault());
         Page<Tag> tags = tagService.searchTags(new SearchTagCommand(dto.categories(), dto.searchValue(), dto.pageOrDefault(), dto.sizeOrDefault()));
         PageInfo pageInfo = new PageInfo(dto.pageOrDefault(), tags.getTotalPages(), tags.getTotalElements(), tags.hasNext());
 
          return ResponseEntity.ok(
-                 Response.of(new PageSearchResponseDto(tags, pageInfo))
+                 Response.of(new PageSearchResponseDto<>(tags, pageInfo))
          );
     }
 }

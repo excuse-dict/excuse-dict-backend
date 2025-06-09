@@ -21,6 +21,7 @@ configurations {
 
 repositories {
 	mavenCentral()
+	maven { url 'https://jitpack.io' } // Komoran
 }
 
 dependencies {
@@ -31,6 +32,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'org.mapstruct:mapstruct:1.5.5.Final'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'com.github.shin285:KOMORAN:3.3.9'
 
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.mysql:mysql-connector-j'
@@ -44,11 +46,6 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	runtimeOnly	'io.jsonwebtoken:jjwt-jackson:0.11.5'
-
-	// elasticsearch
-	implementation 'org.springframework.data:spring-data-elasticsearch'
-	implementation 'co.elastic.clients:elasticsearch-java:8.11.0'
-	implementation 'com.fasterxml.jackson.core:jackson-databind'
 }
 
 tasks.named('test') {

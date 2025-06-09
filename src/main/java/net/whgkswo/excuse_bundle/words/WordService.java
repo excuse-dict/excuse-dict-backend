@@ -1,18 +1,12 @@
-package net.whgkswo.excuse_bundle.elasticsearch;
+package net.whgkswo.excuse_bundle.words;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch.core.SearchRequest;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
-import co.elastic.clients.elasticsearch.indices.AnalyzeRequest;
-import co.elastic.clients.elasticsearch.indices.AnalyzeResponse;
-import co.elastic.clients.elasticsearch.indices.analyze.AnalyzeToken;
+import kr.co.shineware.nlp.komoran.core.Komoran;
+import kr.co.shineware.nlp.komoran.model.KomoranResult;
+import kr.co.shineware.nlp.komoran.model.Token;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
-import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
 import org.springframework.stereotype.Service;
 
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,53 +16,13 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ElasticService {
+public class WordService {
 
-    private final ElasticsearchClient elasticsearchClient;
+    private final Komoran komoran;
 
     private static final double SIMILARITY_EXACTLY_SAME = 1.0;
 
     private static final double MIN_SIMILARITY_THRESHOLD = 0.7; // 최소 유사도
-
-    // 그냥 검색
-    public <T> List<T> executeSearch(String queryJson, String indexName, Class<T> clazz) {
-        try {
-            SearchRequest searchRequest = SearchRequest.of(s -> s
-                    .index(indexName)
-                    .withJson(new StringReader(queryJson))
-            );
-
-            SearchResponse<T> response = elasticsearchClient
-                    .search(searchRequest, clazz);
-
-            return response.hits().hits().stream()
-                    .map(hit -> hit.source())
-                    .collect(Collectors.toList());
-
-        } catch (Exception e) {
-            throw new BusinessLogicException(ExceptionType.ES_SEARCH_FAILED);
-        }
-    }
-
-    // 페이지네이션용
-    public <T> SearchResponse<T> executeSearchWithResponse(String queryJson, String indexName, Class<T> clazz) {
-        try {
-            log.info("ES 검색 시작 - Index: {}, Query: {}", indexName, queryJson);
-            SearchRequest searchRequest = SearchRequest.of(s -> s
-                    .index(indexName)
-                    .withJson(new StringReader(queryJson))
-            );
-
-            SearchResponse<T> response = elasticsearchClient.search(searchRequest, clazz);
-
-            log.info("ES 검색 완료 - 결과: {} 개", response.hits().total().value());
-            return response;
-
-        } catch (Exception e) {
-            log.error("ES 검색 실패 - Index: {}, Query: {}, Error: {}", indexName, queryJson, e.getMessage(), e);
-            throw new BusinessLogicException(ExceptionType.ES_SEARCH_FAILED);
-        }
-    }
 
     // 형태소 입력으로 키워드와의 유사도 계산
     public double calculateKeywordMatchScore(List<String> morphemes, Set<String> keywords){
@@ -161,16 +115,11 @@ public class ElasticService {
     // 사용자 입력을 분석해 의미있는 형태소 추출
     public List<String> getMeaningfulMorphemes(String userInput) {
         try {
-            AnalyzeRequest request = AnalyzeRequest.of(a -> a
-                    .analyzer("nori")
-                    .text(userInput));
+            KomoranResult result = komoran.analyze(userInput);
 
-            AnalyzeResponse response = elasticsearchClient.indices().analyze(request);
-
-            return response.tokens().stream()
-                    .map(AnalyzeToken::token) // 토큰 -> 문자열
+            return result.getTokenList().stream()
+                    .map(Token::getMorph) // 형태소 추출
                     .filter(term -> !term.isEmpty()) // 빈 문자열 제거
-                    .filter(term -> !isStopWord(term)) // 불용어 제거
                     .distinct() // 중복 제거
                     .collect(Collectors.toList());
 
@@ -180,11 +129,6 @@ public class ElasticService {
                     .filter(word -> word.length() >= 2)
                     .collect(Collectors.toList());
         }
-    }
-
-    // 불용어 체크
-    private boolean isStopWord(String word) {
-        return STOP_WORDS.contains(word);
     }
 
     // 형태소 -> 문자열 유사도 계산
