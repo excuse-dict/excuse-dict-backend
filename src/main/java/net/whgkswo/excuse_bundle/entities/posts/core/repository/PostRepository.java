@@ -14,7 +14,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p " +
             "LEFT JOIN FETCH p.member m " +
             "LEFT JOIN FETCH m.memberRank " +
-            "LEFT JOIN FETCH m.roles " +
             "LEFT JOIN FETCH p.excuse")
     Page<Post> findAllForList(Pageable pageable);
 
