@@ -3,14 +3,10 @@ package net.whgkswo.excuse_bundle.entities.posts.core.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.service.AuthService;
-import net.whgkswo.excuse_bundle.entities.excuses.Excuse;
 import net.whgkswo.excuse_bundle.entities.excuses.dto.ExcuseRequestDto;
-import net.whgkswo.excuse_bundle.entities.excuses.service.ExcuseService;
-import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
-import net.whgkswo.excuse_bundle.entities.members.core.service.MemberService;
-import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostResponseDto;
+import net.whgkswo.excuse_bundle.entities.posts.core.dto.SinglePostResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
-import net.whgkswo.excuse_bundle.entities.posts.core.service.GetPostCommand;
+import net.whgkswo.excuse_bundle.entities.posts.core.service.GetPostsCommand;
 import net.whgkswo.excuse_bundle.entities.posts.core.service.PostService;
 import net.whgkswo.excuse_bundle.responses.Response;
 import net.whgkswo.excuse_bundle.responses.dtos.PageSearchResponseDto;
@@ -53,15 +49,24 @@ public class PostController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getPostRequest(@RequestParam(defaultValue = "0") int page,
+    public ResponseEntity<?> handleGetPosts(@RequestParam(defaultValue = "0") int page,
                                             @RequestParam(defaultValue = "10") int size,
                                             @RequestParam(required = false) String searchInput){
         Pageable pageable = PageRequest.of(page, size);
-        Page<PostResponseDto> posts = postService.getPosts(new GetPostCommand(pageable, searchInput));
+        Page<SinglePostResponseDto> posts = postService.getPosts(new GetPostsCommand(pageable, searchInput));
         PageInfo pageInfo = new PageInfo(page, posts.getTotalPages(), posts.getTotalElements(), posts.hasNext());
 
         return ResponseEntity.ok(
                 Response.of(new PageSearchResponseDto<>(posts, pageInfo))
+        );
+    }
+
+    @GetMapping("/{post-id}")
+    public ResponseEntity<?> handleGetPost(@PathVariable long postId){
+        SinglePostResponseDto post = postService.getPost(postId);
+
+        return ResponseEntity.ok(
+                Response.of(post)
         );
     }
 }

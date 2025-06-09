@@ -6,6 +6,7 @@ import lombok.Setter;
 import net.whgkswo.excuse_bundle.entities.BaseEntity;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.posts.tags.entity.Tag;
+import org.hibernate.annotations.BatchSize;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -18,6 +19,7 @@ public class Excuse extends BaseEntity {
     private String excuse;
 
     @ManyToMany
+    @BatchSize(size = 10)
     private Set<Tag> tags = new HashSet<>();
 
     @OneToOne(mappedBy = "excuse")

@@ -7,6 +7,7 @@ import lombok.Setter;
 import net.whgkswo.excuse_bundle.entities.TimeStampedEntity;
 import net.whgkswo.excuse_bundle.entities.members.rank.MemberRank;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
+import org.hibernate.annotations.BatchSize;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +37,9 @@ public class Member extends TimeStampedEntity {
     @Column(name = "role")
     private List<Role> roles = new ArrayList<>();
 
+    @Enumerated(EnumType.STRING)
+    private Status status = Status.ACTIVE;
+
     public Member(String nickname,
                   String email,
                   String password
@@ -57,5 +61,11 @@ public class Member extends TimeStampedEntity {
     public enum Role {
         ADMIN,
         USER
+    }
+
+    public enum Status{
+        ACTIVE,
+        BANNED,
+        QUIT
     }
 }
