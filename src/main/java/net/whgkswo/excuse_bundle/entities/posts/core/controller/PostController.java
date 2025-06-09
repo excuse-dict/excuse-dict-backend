@@ -8,8 +8,16 @@ import net.whgkswo.excuse_bundle.entities.excuses.dto.ExcuseRequestDto;
 import net.whgkswo.excuse_bundle.entities.excuses.service.ExcuseService;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import net.whgkswo.excuse_bundle.entities.members.core.service.MemberService;
+import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
+import net.whgkswo.excuse_bundle.entities.posts.core.service.GetPostCommand;
 import net.whgkswo.excuse_bundle.entities.posts.core.service.PostService;
+import net.whgkswo.excuse_bundle.responses.Response;
+import net.whgkswo.excuse_bundle.responses.dtos.PageSearchResponseDto;
+import net.whgkswo.excuse_bundle.responses.page.PageInfo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -42,5 +50,18 @@ public class PostController {
                 .toUri();
 
         return ResponseEntity.created(uri).build();
+    }
+
+    @GetMapping
+    public ResponseEntity<?> getPostRequest(@RequestParam(defaultValue = "0") int page,
+                                            @RequestParam(defaultValue = "10") int size,
+                                            @RequestParam(required = false) String searchInput){
+        Pageable pageable = PageRequest.of(page, size);
+        Page<PostResponseDto> posts = postService.getPosts(new GetPostCommand(pageable, searchInput));
+        PageInfo pageInfo = new PageInfo(page, posts.getTotalPages(), posts.getTotalElements(), posts.hasNext());
+
+        return ResponseEntity.ok(
+                Response.of(new PageSearchResponseDto<>(posts, pageInfo))
+        );
     }
 }

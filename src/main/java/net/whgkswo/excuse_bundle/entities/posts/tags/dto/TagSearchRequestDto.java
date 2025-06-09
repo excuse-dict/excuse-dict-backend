@@ -14,7 +14,7 @@ public record TagSearchRequestDto(
 ) implements Dto {
 
     public Integer pageOrDefault(){
-        return page == null ? 1 : page;
+        return page == null ? 0 : page;
     }
 
     public Integer sizeOrDefault(){

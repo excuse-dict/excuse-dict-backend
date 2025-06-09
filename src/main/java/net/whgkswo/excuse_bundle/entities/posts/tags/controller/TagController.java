@@ -2,9 +2,9 @@ package net.whgkswo.excuse_bundle.entities.posts.tags.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import net.whgkswo.excuse_bundle.entities.posts.tags.commands.SearchTagCommand;
 import net.whgkswo.excuse_bundle.entities.posts.tags.dto.TagSearchRequestDto;
-import net.whgkswo.excuse_bundle.entities.posts.tags.dto.TagSearchResponseDto;
-import net.whgkswo.excuse_bundle.entities.posts.tags.elasticsearch.TagDocument;
+import net.whgkswo.excuse_bundle.responses.dtos.PageSearchResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.tags.elasticsearch.TagElasticService;
 import net.whgkswo.excuse_bundle.entities.posts.tags.entity.Tag;
 import net.whgkswo.excuse_bundle.entities.posts.tags.service.TagService;
@@ -29,11 +29,12 @@ public class TagController {
     @PostMapping
     public ResponseEntity<?> handleTagRequest(@Valid @RequestBody TagSearchRequestDto dto){
 
-        Page<TagDocument> tags = tagElasticService.searchTags(dto.searchValue(), dto.pageOrDefault(), dto.sizeOrDefault());
+        //Page<TagDocument> tags = tagElasticService.searchTags(dto.searchValue(), dto.pageOrDefault(), dto.sizeOrDefault());
+        Page<Tag> tags = tagService.searchTags(new SearchTagCommand(dto.categories(), dto.searchValue(), dto.pageOrDefault(), dto.sizeOrDefault()));
         PageInfo pageInfo = new PageInfo(dto.pageOrDefault(), tags.getTotalPages(), tags.getTotalElements(), tags.hasNext());
 
          return ResponseEntity.ok(
-                 Response.of(new TagSearchResponseDto(tags, pageInfo))
+                 Response.of(new PageSearchResponseDto(tags, pageInfo))
          );
     }
 }

@@ -11,7 +11,6 @@ public class PageUtil {
 
     // 리스트로 페이지 객체 생성
     public static <T> Page<T> createPageFromList(List<T> data, int page, int size){
-        page--; // 프론트 페이지는 1부터 시작, 백엔드는 0부터 시작
         int start = page * size;
         int end = Math.min(start + size, data.size());
 

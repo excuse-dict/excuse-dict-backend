@@ -2,6 +2,7 @@ package net.whgkswo.excuse_bundle.entities.posts.tags.service;
 
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.elasticsearch.ElasticService;
+import net.whgkswo.excuse_bundle.entities.posts.tags.commands.SearchTagCommand;
 import net.whgkswo.excuse_bundle.entities.posts.tags.elasticsearch.TagSearchResult;
 import net.whgkswo.excuse_bundle.entities.posts.tags.entity.Tag;
 import net.whgkswo.excuse_bundle.entities.posts.tags.repository.TagRepository;
@@ -27,10 +28,10 @@ public class TagService {
 
 
     // 컨트롤러 요청 받아 페이지로 래핑해 반환
-    public Page<Tag> searchTags(List<Tag.Category> filterCategories, String searchValue, int page, int size){
-        List<Tag> tags = findTagsByCondition(filterCategories, searchValue);
+    public Page<Tag> searchTags(SearchTagCommand command){
+        List<Tag> tags = findTagsByCondition(command.filterCategories(), command.searchValue());
 
-        return PageUtil.createPageFromList(tags, page, size);
+        return PageUtil.createPageFromList(tags, command.page(), command.size());
     }
 
     // 태그 검색 요청 분기처리

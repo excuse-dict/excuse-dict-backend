@@ -1,15 +1,15 @@
 package net.whgkswo.excuse_bundle.entities.posts.core.service;
 
 import lombok.RequiredArgsConstructor;
-import net.whgkswo.excuse_bundle.auth.service.AuthService;
 import net.whgkswo.excuse_bundle.entities.excuses.Excuse;
 import net.whgkswo.excuse_bundle.entities.excuses.service.ExcuseService;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import net.whgkswo.excuse_bundle.entities.members.core.service.MemberService;
+import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
+import net.whgkswo.excuse_bundle.entities.posts.core.mapper.PostMapper;
 import net.whgkswo.excuse_bundle.entities.posts.core.repository.PostRepository;
-import net.whgkswo.excuse_bundle.entities.posts.tags.entity.Tag;
-import net.whgkswo.excuse_bundle.entities.posts.tags.repository.TagRepository;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +21,7 @@ public class PostService {
     private final ExcuseService excuseService;
     private final MemberService memberService;
     private final PostRepository postRepository;
+    private final PostMapper postMapper;
 
     @Transactional
     public Post createPost(long memberId, String situation, String excuseStr, Set<String> tags){
@@ -34,5 +35,12 @@ public class PostService {
         post.setMember(member);
 
         return postRepository.save(post);
+    }
+
+    public Page<PostResponseDto> getPosts(GetPostCommand command){
+
+        Page<Post> posts = postRepository.findAll(command.pageable());
+
+        return postMapper.postsToPostResponseDtos(posts);
     }
 }

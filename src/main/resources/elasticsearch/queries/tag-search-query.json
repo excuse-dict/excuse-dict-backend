@@ -12,6 +12,14 @@
             }
           },
           {
+            "wildcard": {
+              "value": {
+                "value": "*{{searchText}}*",
+                "boost": 8.0
+              }
+            }
+          },
+          {
             "fuzzy": {
               "value": {
                 "value": "{{searchText}}",
@@ -29,6 +37,14 @@
             }
           },
           {
+            "wildcard": {
+              "tagKeywords": {
+                "value": "*{{searchText}}*",
+                "boost": 5.0
+              }
+            }
+          },
+          {
             "fuzzy": {
               "tagKeywords": {
                 "value": "{{searchText}}",
@@ -42,6 +58,14 @@
               "categoryKeywords": {
                 "query": "{{searchText}}",
                 "boost": 3.0
+              }
+            }
+          },
+          {
+            "wildcard": {
+              "categoryKeywords": {
+                "value": "*{{searchText}}*",
+                "boost": 2.5
               }
             }
           },
