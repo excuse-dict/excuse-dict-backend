@@ -2,7 +2,7 @@ package net.whgkswo.excuse_bundle.entities.vote;
 
 import jakarta.persistence.*;
 import net.whgkswo.excuse_bundle.entities.TimeStampedEntity;
-import net.whgkswo.excuse_bundle.entities.comments.Comment;
+import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 
 @Entity

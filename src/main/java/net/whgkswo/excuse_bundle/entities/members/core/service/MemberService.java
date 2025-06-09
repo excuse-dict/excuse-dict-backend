@@ -6,7 +6,7 @@ import net.whgkswo.excuse_bundle.auth.redis.RedisKey;
 import net.whgkswo.excuse_bundle.auth.service.AuthService;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import net.whgkswo.excuse_bundle.entities.members.core.mapper.MemberMapper;
-import net.whgkswo.excuse_bundle.entities.members.core.dtos.MemberRegistrationDto;
+import net.whgkswo.excuse_bundle.entities.members.core.dto.MemberRegistrationDto;
 import net.whgkswo.excuse_bundle.entities.members.core.repositoriy.MemberRepository;
 import net.whgkswo.excuse_bundle.entities.members.email.service.EmailService;
 import net.whgkswo.excuse_bundle.entities.members.nicknames.NicknameService;

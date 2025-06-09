@@ -3,7 +3,7 @@ package net.whgkswo.excuse_bundle.entities.members.core.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.recaptcha.RecaptchaService;
-import net.whgkswo.excuse_bundle.entities.members.core.dtos.MemberRegistrationDto;
+import net.whgkswo.excuse_bundle.entities.members.core.dto.MemberRegistrationDto;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import net.whgkswo.excuse_bundle.entities.members.core.service.MemberService;
 import net.whgkswo.excuse_bundle.entities.members.nicknames.NicknameService;
