@@ -28,7 +28,8 @@ public class MemberAuthenticationSuccessHandler implements AuthenticationSuccess
         responseData.put("message", "로그인 성공");
         responseData.put("data", Map.of(
            "email", member.getEmail(),
-           "nickname", member.getNickname()
+           "nickname", member.getNickname(),
+                "id", member.getId()
         ));
 
         // 응답 구성

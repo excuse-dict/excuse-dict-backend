@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring", uses = {CommentMapper.class, ExcuseMapper.class})
 public interface PostMapper {
 
-    @Mapping(target = "author", source = "member.nickname")
+    @Mapping(target = "author", source = "member")
     PostResponseDto postToPostResponseDto(Post post);
 
     default List<PostResponseDto> postsToPostResponseDtos(List<Post> posts){
