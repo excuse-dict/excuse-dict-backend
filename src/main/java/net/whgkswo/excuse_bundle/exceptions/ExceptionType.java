@@ -1,6 +1,7 @@
 package net.whgkswo.excuse_bundle.exceptions;
 
 import net.whgkswo.excuse_bundle.auth.verify.VerificationCode;
+import net.whgkswo.excuse_bundle.entities.vote.entity.VoteType;
 
 public record ExceptionType(int status, String code, String message){
 
@@ -20,6 +21,7 @@ public record ExceptionType(int status, String code, String message){
     public static final ExceptionType EMAIL_NOT_VERIFIED = ExceptionType.of(400, "EMAIL_NOT_VERIFIED","이메일 인증이 완료되지 않았거나 인증 정보가 만료되었습니다.");
     public static final ExceptionType RECAPTCHA_TOKEN_INVALID = ExceptionType.of(400, "RECAPTCHA_TOKEN_INVALID","잘못된 reCAPTCHA 토큰입니다. 페이지를 새로고침하거나 잠시 후에 시도해 주세요");
     public static final ExceptionType JSON_FORMAT_INVALID = ExceptionType.of(400, "JSON_FORMAT_INVALID", "잘못된 형식의 JSON입니다.");
+    public static final ExceptionType SELF_VOTE_NOT_ALLOWED = ExceptionType.of(400, "SELF_VOTE_NOT_ALLOWED", "자신의 게시글에 추천/비추천하실 수 없습니다.");
     public static final ExceptionType AUTHENTICATION_FAILED = ExceptionType.of(401, "AUTHENTICATION_FAILED", "인증에 실패하였습니다.");
     public static final ExceptionType ACCESS_TOKEN_INVALID = ExceptionType.of(401, "ACCESS_TOKEN_INVALID", "액세스 토큰이 유효하지 않습니다.");
     public static final ExceptionType ACCESS_TOKEN_EXPIRED = ExceptionType.of(401, "ACCESS_TOKEN_EXPIRED", "액세스 토큰이 만료되었습니다. 다시 발급해주세요.");
@@ -45,10 +47,6 @@ public record ExceptionType(int status, String code, String message){
         return ExceptionType.of(400, "WRONG_VERIFICATION_CODE", message);
     }
 
-    public static ExceptionType tooManyVerificationCodeRequest(long timeToWait){
-        return ExceptionType.of(429, "TOO_MANY_VERIFICATION_CODE_REQUEST", String.format("연달아 코드를 발급하실 수 없습니다. %d초 후 다시 시도해주세요.", timeToWait));
-    }
-
     public static ExceptionType nicknameLengthInvalid(int minLength, int maxLength){
         return ExceptionType.of(400, "NICKNAME_LENGTH_VALID", String.format("닉네임은 %d~%d자 사이어야 합니다.", minLength, maxLength));
     }
@@ -63,5 +61,14 @@ public record ExceptionType(int status, String code, String message){
 
     public static ExceptionType tagNotFound(String tagKey){
         return ExceptionType.of(404, "TAG_NOT_FOUND", tagKey + "에 해당하는 태그가 없습니다.");
+    }
+
+    public static ExceptionType alreadyVoted(VoteType voteType){
+        String type = voteType == VoteType.UPVOTE ? "추천" : "비추천";
+        return ExceptionType.of(409, "ALREADY_VOTED", "이미 " + type + "하셨습니다. 먼저 취소한 뒤 다시 시도해주세요.");
+    }
+
+    public static ExceptionType tooManyVerificationCodeRequest(long timeToWait){
+        return ExceptionType.of(429, "TOO_MANY_VERIFICATION_CODE_REQUEST", String.format("연달아 코드를 발급하실 수 없습니다. %d초 후 다시 시도해주세요.", timeToWait));
     }
 }

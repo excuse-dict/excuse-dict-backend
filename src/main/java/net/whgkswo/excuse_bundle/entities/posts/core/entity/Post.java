@@ -7,7 +7,7 @@ import net.whgkswo.excuse_bundle.entities.TimeStampedEntity;
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
 import net.whgkswo.excuse_bundle.entities.excuses.Excuse;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
-import net.whgkswo.excuse_bundle.entities.vote.PostVote;
+import net.whgkswo.excuse_bundle.entities.vote.entity.Vote;
 import org.hibernate.annotations.BatchSize;
 
 import java.util.ArrayList;
@@ -28,12 +28,12 @@ public class Post extends TimeStampedEntity {
 
     private List<String> images;
 
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @BatchSize(size = 50)
     private List<Comment> comments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "post")
-    private List<PostVote> votes = new ArrayList<>();
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Vote> votes = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private Status status = Status.ACTIVE;
@@ -46,6 +46,12 @@ public class Post extends TimeStampedEntity {
     public void setExcuse(Excuse excuse){
         this.excuse = excuse;
         if(excuse.getPost() == null) excuse.setPost(this);
+    }
+
+    // Vote <-> Post
+    public void addVote(Vote vote){
+        votes.add(vote);
+        if(vote.getPost() == null) vote.setPost(this);
     }
 
     public enum Status{

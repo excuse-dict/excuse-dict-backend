@@ -1,20 +1,35 @@
-package net.whgkswo.excuse_bundle.entities.vote;
+package net.whgkswo.excuse_bundle.entities.vote.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import net.whgkswo.excuse_bundle.entities.TimeStampedEntity;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 
 @Entity
-public class PostVote extends TimeStampedEntity {
+@Getter
+@Setter
+@AllArgsConstructor
+public class Vote extends TimeStampedEntity {
+
     private VoteType type;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private Member member;
+
+    // Post <-> Vote
+    public void setPost(Post post){
+        this.post = post;
+        if(!post.getVotes().contains(this)) post.addVote(this);
+    }
 }
