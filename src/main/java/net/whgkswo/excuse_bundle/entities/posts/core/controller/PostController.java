@@ -4,6 +4,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.service.AuthService;
 import net.whgkswo.excuse_bundle.entities.excuses.dto.ExcuseRequestDto;
+import net.whgkswo.excuse_bundle.entities.posts.core.dto.MultiPostResponseDto;
+import net.whgkswo.excuse_bundle.entities.posts.core.dto.MultiPostSummaryResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.SinglePostResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.VoteCommand;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
@@ -18,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -34,6 +37,7 @@ public class PostController {
     public static final String BASE_PATH = "/api/v1/posts";
     public static final String BASE_PATH_ANY = "/api/*/posts";
 
+    // 게시물 등록
     @PostMapping
     public ResponseEntity<?> handlePostRequest(@Valid @RequestBody ExcuseRequestDto dto,
                                                Authentication authentication){
@@ -51,12 +55,18 @@ public class PostController {
         return ResponseEntity.created(uri).build();
     }
 
+    // 게시물 조회 (다수)
     @GetMapping
     public ResponseEntity<?> handleGetPosts(@RequestParam(defaultValue = "0") int page,
                                             @RequestParam(defaultValue = "10") int size,
-                                            @RequestParam(required = false) String searchInput){
+                                            @RequestParam(required = false) String searchInput,
+                                            @Nullable Authentication authentication){
+
+        Long memberId = null;
+        if(authentication != null) memberId = authService.getMemberIdFromAuthentication(authentication);
+
         Pageable pageable = PageRequest.of(page, size);
-        Page<SinglePostResponseDto> posts = postService.getPosts(new GetPostsCommand(pageable, searchInput));
+        Page<MultiPostResponseDto> posts = postService.getPosts(new GetPostsCommand(pageable, searchInput, memberId));
         PageInfo pageInfo = new PageInfo(page, posts.getTotalPages(), posts.getTotalElements(), posts.hasNext());
 
         return ResponseEntity.ok(
@@ -64,6 +74,7 @@ public class PostController {
         );
     }
 
+    // 게시물 조회 (단일)
     @GetMapping("/{postId}")
     public ResponseEntity<?> handleGetPost(@PathVariable long postId){
         SinglePostResponseDto post = postService.getPost(postId);
@@ -73,6 +84,7 @@ public class PostController {
         );
     }
 
+    // 게시물 추천/비추천
     @PostMapping("/{postId}/votes")
     public ResponseEntity<?> handleVoteRequest(@PathVariable long postId,
                                                @RequestBody @Valid VoteRequestDto dto,

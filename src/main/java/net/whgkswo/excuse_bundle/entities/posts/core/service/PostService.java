@@ -5,12 +5,13 @@ import net.whgkswo.excuse_bundle.entities.excuses.Excuse;
 import net.whgkswo.excuse_bundle.entities.excuses.service.ExcuseService;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import net.whgkswo.excuse_bundle.entities.members.core.service.MemberService;
+import net.whgkswo.excuse_bundle.entities.posts.core.dto.MultiPostResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.SinglePostResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.VoteCommand;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.posts.core.mapper.PostMapper;
 import net.whgkswo.excuse_bundle.entities.posts.core.repository.PostRepository;
-import net.whgkswo.excuse_bundle.entities.vote.entity.Vote;
+import net.whgkswo.excuse_bundle.entities.posts.core.entity.PostVote;
 import net.whgkswo.excuse_bundle.entities.vote.entity.VoteType;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
@@ -44,19 +45,32 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public Page<SinglePostResponseDto> getPosts(GetPostsCommand command){
+    public Page<MultiPostResponseDto> getPosts(GetPostsCommand command){
 
         Page<Post> posts = postRepository.findAllForList(command.pageable());
 
-        return postMapper.postsToSinglePostResponseDtos(posts);
+        return postMapper.postsToMultiPostResponseDtos(posts)
+                .map(summary -> {
+                    Post post = findPost(summary.postId());
+                    Optional<PostVote> optionalVote = getVoteFromCertainMember(post, command.memberId());
+
+                    return postMapper.summaryToMultiPostResponseDto(summary, post, optionalVote);
+                });
     }
 
     @Transactional(readOnly = true)
     public SinglePostResponseDto getPost(long postId){
+        Post post = findPost(postId);
+
+        return postMapper.postToPostResponseDto(post);
+    }
+
+    @Transactional(readOnly = true)
+    private Post findPost(long postId){
         Optional<Post> optionalPost = postRepository.findByIdForDetail(postId);
         Post post = optionalPost.orElseThrow(() -> new BusinessLogicException(ExceptionType.POST_NOT_FOUND));
 
-        return postMapper.postToPostResponseDto(post);
+        return post;
     }
 
     @Transactional
@@ -69,10 +83,10 @@ public class PostService {
             throw new BusinessLogicException(ExceptionType.SELF_VOTE_NOT_ALLOWED);
 
         // 이미 추천/비추천했는지
-        Optional<Vote> optionalVote = getVoteFromCertainMember(post, command.memberId());
+        Optional<PostVote> optionalVote = getVoteFromCertainMember(post, command.memberId());
         if(optionalVote.isPresent()){
             // 추천 비추천 취소
-            Vote vote = optionalVote.get();
+            PostVote vote = optionalVote.get();
             if(vote.getType().equals(command.voteType())){ // 같은 타입일 때만 취소
                 removeVote(post, vote);
                 return false; // 취소됨
@@ -87,14 +101,16 @@ public class PostService {
     }
 
     // 게시물에 특정 유저가 추천/비추천을 눌렀는지 조회
-    private Optional<Vote> getVoteFromCertainMember(Post post, long memberId) {
+    private Optional<PostVote> getVoteFromCertainMember(Post post, Long memberId) {
+        if(memberId == null) return Optional.empty();
+
         return post.getVotes().stream()
                 .filter(vote -> vote.getMember().getId().equals(memberId))
                 .findFirst();
     }
 
-    // 추천/비추천 취소 (이미 앞에서 post-vote 관계 검증했을 때만 사용)
-    private void removeVote(Post post, Vote vote){
+    // 추천/비추천 취소 (이미 앞에서 post-myVote 관계 검증했을 때만 사용)
+    private void removeVote(Post post, PostVote vote){
         post.getVotes().remove(vote);
 
         postRepository.save(post);
@@ -104,7 +120,7 @@ public class PostService {
     private void saveVote(Post post, VoteType type, long memberId){
         Member member = memberService.findById(memberId);
 
-        Vote vote = new Vote(type, post, member);
+        PostVote vote = new PostVote(type, post, member);
 
         post.addVote(vote);
         postRepository.save(post);

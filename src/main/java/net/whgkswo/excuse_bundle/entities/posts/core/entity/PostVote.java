@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_bundle.entities.vote.entity;
+package net.whgkswo.excuse_bundle.entities.posts.core.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -8,14 +8,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import net.whgkswo.excuse_bundle.entities.TimeStampedEntity;
-import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
+import net.whgkswo.excuse_bundle.entities.vote.entity.VoteType;
 
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
-public class Vote extends TimeStampedEntity {
+public class PostVote extends TimeStampedEntity {
 
     private VoteType type;
 

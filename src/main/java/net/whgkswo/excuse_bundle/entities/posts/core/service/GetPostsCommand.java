@@ -5,6 +5,7 @@ import org.springframework.lang.Nullable;
 
 public record GetPostsCommand(
         Pageable pageable,
-        @Nullable String searchInput
+        @Nullable String searchInput,
+        @Nullable Long memberId
 ) {
 }
