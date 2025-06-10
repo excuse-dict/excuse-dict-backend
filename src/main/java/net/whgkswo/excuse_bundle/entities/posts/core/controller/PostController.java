@@ -70,7 +70,7 @@ public class PostController {
 
         Pageable pageable = PageRequest.of(page, size);
         Page<PostResponseDto> posts = postService.getPosts(new GetPostsCommand(pageable, searchInput, memberId));
-        PageInfo pageInfo = new PageInfo(page, posts.getTotalPages(), posts.getTotalElements(), posts.hasNext());
+        PageInfo pageInfo = PageInfo.from(posts);
 
         return ResponseEntity.ok(
                 Response.of(new PageSearchResponseDto<>(posts, pageInfo))
@@ -117,7 +117,7 @@ public class PostController {
                                                ){
 
         Page<CommentResponseDto> comments = postService.getComments(new GetCommentsCommand(postId, page, size));
-        PageInfo pageInfo = new PageInfo(page, comments.getTotalPages(), comments.getTotalElements(), comments.hasNext());
+        PageInfo pageInfo = PageInfo.from(comments);
 
         return ResponseEntity.ok(
                 Response.of(new PageSearchResponseDto<>(comments, pageInfo))

@@ -28,7 +28,7 @@ public class TagController {
     public ResponseEntity<?> handleTagRequest(@Valid @RequestBody TagSearchRequestDto dto){
 
         Page<Tag> tags = tagService.searchTags(new SearchTagCommand(dto.categories(), dto.searchValue(), dto.pageOrDefault(), dto.sizeOrDefault()));
-        PageInfo pageInfo = new PageInfo(dto.pageOrDefault(), tags.getTotalPages(), tags.getTotalElements(), tags.hasNext());
+        PageInfo pageInfo = PageInfo.from(tags);
 
          return ResponseEntity.ok(
                  Response.of(new PageSearchResponseDto<>(tags, pageInfo))
