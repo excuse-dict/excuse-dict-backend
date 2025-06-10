@@ -5,6 +5,9 @@ import net.whgkswo.excuse_bundle.entities.excuses.Excuse;
 import net.whgkswo.excuse_bundle.entities.excuses.service.ExcuseService;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import net.whgkswo.excuse_bundle.entities.members.core.service.MemberService;
+import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CreateCommentCommand;
+import net.whgkswo.excuse_bundle.entities.posts.comments.dto.GetCommentsCommand;
+import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostCommentDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.VoteCommand;
@@ -17,9 +20,12 @@ import net.whgkswo.excuse_bundle.entities.vote.mapper.VoteMapper;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -67,7 +73,6 @@ public class PostService {
         return postMapper.postToPostCommentDto(post);
     }
 
-    @Transactional(readOnly = true)
     private Post findPost(long postId){
         Optional<Post> optionalPost = postRepository.findByIdForDetail(postId);
         Post post = optionalPost.orElseThrow(() -> new BusinessLogicException(ExceptionType.POST_NOT_FOUND));
@@ -137,5 +142,25 @@ public class PostService {
         }
 
         postRepository.save(post);
+    }
+
+    // 댓글 작성
+    @Transactional
+    public void createComment(CreateCommentCommand command){
+        Post post = findPost(command.postId());
+        Member member = memberService.findById(command.memberId());
+
+        Comment comment = new Comment(post, member, command.content());
+        post.getComments().add(comment);
+
+        postRepository.save(post);
+    }
+
+    // 댓글 조회
+    @Transactional(readOnly = true)
+    public Page<Comment> getComments(GetCommentsCommand command){
+        Pageable pageable = PageRequest.of(command.page(), command.size());
+
+        return postRepository.findCommentsByPostId(command.postId(), pageable);
     }
 }

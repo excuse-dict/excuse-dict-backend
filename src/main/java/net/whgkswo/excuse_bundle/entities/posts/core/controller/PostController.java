@@ -4,6 +4,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.service.AuthService;
 import net.whgkswo.excuse_bundle.entities.excuses.dto.ExcuseRequestDto;
+import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CommentRequestDto;
+import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CreateCommentCommand;
+import net.whgkswo.excuse_bundle.entities.posts.comments.dto.GetCommentsCommand;
+import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostCommentDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.VoteCommand;
@@ -95,6 +99,38 @@ public class PostController {
 
         return ResponseEntity.ok(
                 Response.of(new SimpleBooleanDto(created))
+        );
+    }
+
+    // 댓글 쓰기
+    @PostMapping("/{postId}/comments")
+    public ResponseEntity<?> handleAddCommentRequest(@PathVariable long postId,
+                                                     @RequestBody @Valid CommentRequestDto dto,
+                                                     Authentication authentication){
+        long memberId = authService.getMemberIdFromAuthentication(authentication);
+
+        postService.createComment(new CreateCommentCommand(postId, memberId, dto.comment()));
+
+        URI uri = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .build()
+                .toUri();
+
+        return ResponseEntity.created(uri).build();
+    }
+
+    // 댓글 조회
+    @GetMapping("/{postId}/comments")
+    public ResponseEntity<?> handleGetComments(@PathVariable long postId,
+                                               @RequestParam(defaultValue = "0") int page,
+                                               @RequestParam(defaultValue = "10") int size
+                                               ){
+
+        Page<Comment> comments = postService.getComments(new GetCommentsCommand(postId, page, size));
+        PageInfo pageInfo = new PageInfo(page, comments.getTotalPages(), comments.getTotalElements(), comments.hasNext());
+
+        return ResponseEntity.ok(
+                Response.of(new PageSearchResponseDto<>(comments, pageInfo))
         );
     }
 }

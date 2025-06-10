@@ -1,9 +1,6 @@
 package net.whgkswo.excuse_bundle.entities.posts.comments.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import net.whgkswo.excuse_bundle.entities.TimeStampedEntity;
@@ -26,4 +23,26 @@ public class Comment extends TimeStampedEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
+
+    private String content;
+
+    @Enumerated(EnumType.STRING)
+    private Status status = Status.ACTIVE;
+
+    public Comment(Post post, Member member, String content){
+        this.post = post;
+        this.member = member;
+        this.content = content;
+    }
+
+    public Comment(Comment comment, Member member, String content){
+        this.comment = comment;
+        this.member = member;
+        this.content = content;
+    }
+
+    public enum Status{
+        ACTIVE,
+        DELETED
+    }
 }

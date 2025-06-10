@@ -5,6 +5,7 @@ import net.whgkswo.excuse_bundle.responses.dtos.Dto;
 
 public record CommentResponseDto(
         boolean isReply,
+        String content,
         MemberResponseDto member
 ) implements Dto {
 }
