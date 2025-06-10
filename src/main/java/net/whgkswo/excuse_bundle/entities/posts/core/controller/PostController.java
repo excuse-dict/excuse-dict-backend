@@ -5,10 +5,10 @@ import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.service.AuthService;
 import net.whgkswo.excuse_bundle.entities.excuses.dto.ExcuseRequestDto;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CommentRequestDto;
+import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CommentResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CreateCommentCommand;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.GetCommentsCommand;
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
-import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostCommentDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.VoteCommand;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
@@ -77,16 +77,6 @@ public class PostController {
         );
     }
 
-    // 게시물 댓글 조회 (단일)
-    @GetMapping("/{postId}/comments")
-    public ResponseEntity<?> handleGetPostComments(@PathVariable long postId){
-        PostCommentDto post = postService.getPost(postId);
-
-        return ResponseEntity.ok(
-                Response.of(post)
-        );
-    }
-
     // 게시물 추천/비추천
     @PostMapping("/{postId}/votes")
     public ResponseEntity<?> handleVoteRequest(@PathVariable long postId,
@@ -102,7 +92,7 @@ public class PostController {
         );
     }
 
-    // 댓글 쓰기
+    // 댓글 작성
     @PostMapping("/{postId}/comments")
     public ResponseEntity<?> handleAddCommentRequest(@PathVariable long postId,
                                                      @RequestBody @Valid CommentRequestDto dto,
@@ -123,10 +113,10 @@ public class PostController {
     @GetMapping("/{postId}/comments")
     public ResponseEntity<?> handleGetComments(@PathVariable long postId,
                                                @RequestParam(defaultValue = "0") int page,
-                                               @RequestParam(defaultValue = "10") int size
+                                               @RequestParam(defaultValue = "5") int size
                                                ){
 
-        Page<Comment> comments = postService.getComments(new GetCommentsCommand(postId, page, size));
+        Page<CommentResponseDto> comments = postService.getComments(new GetCommentsCommand(postId, page, size));
         PageInfo pageInfo = new PageInfo(page, comments.getTotalPages(), comments.getTotalElements(), comments.hasNext());
 
         return ResponseEntity.ok(

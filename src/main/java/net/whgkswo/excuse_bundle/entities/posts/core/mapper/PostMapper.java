@@ -4,11 +4,9 @@ import net.whgkswo.excuse_bundle.entities.excuses.mapper.ExcuseMapper;
 import net.whgkswo.excuse_bundle.entities.members.core.mapper.MemberMapper;
 import net.whgkswo.excuse_bundle.entities.posts.comments.CommentMapper;
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
-import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostCommentDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostSummaryResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
-import net.whgkswo.excuse_bundle.entities.posts.core.entity.PostVote;
 import net.whgkswo.excuse_bundle.entities.vote.dto.PostVoteDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -21,8 +19,6 @@ import java.util.Optional;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = {CommentMapper.class, ExcuseMapper.class, MemberMapper.class})
 public interface PostMapper {
-
-    PostCommentDto postToPostCommentDto(Post post);
 
     @Mapping(target = "postId", source = "id")
     @Mapping(target = "author", source = "member")

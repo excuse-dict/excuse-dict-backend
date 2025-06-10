@@ -5,10 +5,11 @@ import net.whgkswo.excuse_bundle.entities.excuses.Excuse;
 import net.whgkswo.excuse_bundle.entities.excuses.service.ExcuseService;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import net.whgkswo.excuse_bundle.entities.members.core.service.MemberService;
+import net.whgkswo.excuse_bundle.entities.posts.comments.CommentMapper;
+import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CommentResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CreateCommentCommand;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.GetCommentsCommand;
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
-import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostCommentDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.VoteCommand;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
@@ -25,7 +26,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -37,6 +37,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final VoteMapper voteMapper;
+    private final CommentMapper commentMapper;
 
     @Transactional
     public Post createPost(long memberId, String situation, String excuseStr, Set<String> tags){
@@ -64,13 +65,6 @@ public class PostService {
 
                     return postMapper.summaryToMultiPostResponseDto(summary, optionalVote.map(voteMapper::postVoteToPostVoteDto));
                 });
-    }
-
-    @Transactional(readOnly = true)
-    public PostCommentDto getPost(long postId){
-        Post post = findPost(postId);
-
-        return postMapper.postToPostCommentDto(post);
     }
 
     private Post findPost(long postId){
@@ -158,9 +152,10 @@ public class PostService {
 
     // 댓글 조회
     @Transactional(readOnly = true)
-    public Page<Comment> getComments(GetCommentsCommand command){
+    public Page<CommentResponseDto> getComments(GetCommentsCommand command){
         Pageable pageable = PageRequest.of(command.page(), command.size());
 
-        return postRepository.findCommentsByPostId(command.postId(), pageable);
+        Page<Comment> comments = postRepository.findCommentsByPostId(command.postId(), pageable);
+        return comments.map(commentMapper::commentToCommentResponseDto);
     }
 }

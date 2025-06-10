@@ -29,7 +29,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     // 댓글 조회
     @Query("SELECT c FROM Comment c " +
-            "WHERE c.post.id = :postId + " +
+            "WHERE c.post.id = :postId " +
             "ORDER BY c.createdAt DESC")
     Page<Comment> findCommentsByPostId(@Param("postId") long postId, Pageable pageable);
 }

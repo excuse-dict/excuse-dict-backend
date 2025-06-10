@@ -2,6 +2,7 @@ package net.whgkswo.excuse_bundle.entities.posts.comments.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.whgkswo.excuse_bundle.entities.TimeStampedEntity;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
@@ -10,6 +11,7 @@ import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
 public class Comment extends TimeStampedEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
