@@ -19,7 +19,7 @@ import net.whgkswo.excuse_bundle.entities.vote.entity.VoteType;
 @NoArgsConstructor
 public class PostVote extends TimeStampedEntity {
 
-    private VoteType type;
+    private VoteType voteType;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")

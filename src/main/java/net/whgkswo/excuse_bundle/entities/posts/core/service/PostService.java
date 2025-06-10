@@ -13,6 +13,7 @@ import net.whgkswo.excuse_bundle.entities.posts.core.mapper.PostMapper;
 import net.whgkswo.excuse_bundle.entities.posts.core.repository.PostRepository;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.PostVote;
 import net.whgkswo.excuse_bundle.entities.vote.entity.VoteType;
+import net.whgkswo.excuse_bundle.entities.vote.mapper.VoteMapper;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
 import org.springframework.data.domain.Page;
@@ -29,6 +30,7 @@ public class PostService {
     private final MemberService memberService;
     private final PostRepository postRepository;
     private final PostMapper postMapper;
+    private final VoteMapper voteMapper;
 
     @Transactional
     public Post createPost(long memberId, String situation, String excuseStr, Set<String> tags){
@@ -54,7 +56,7 @@ public class PostService {
                     Post post = findPost(summary.getPostId());
                     Optional<PostVote> optionalVote = getVoteFromCertainMember(post, command.memberId());
 
-                    return postMapper.summaryToMultiPostResponseDto(summary, post, optionalVote);
+                    return postMapper.summaryToMultiPostResponseDto(summary, optionalVote.map(voteMapper::postVoteToPostVoteDto));
                 });
     }
 
@@ -87,7 +89,7 @@ public class PostService {
         if(optionalVote.isPresent()){
             // 추천 비추천 취소
             PostVote vote = optionalVote.get();
-            if(vote.getType().equals(command.voteType())){ // 같은 타입일 때만 취소
+            if(vote.getVoteType().equals(command.voteType())){ // 같은 타입일 때만 취소
                 removeVote(post, vote);
                 return false; // 취소됨
             }else{ // 추천 눌렀는데 취소 안하고 비추천 누르거나 그 반대
@@ -112,6 +114,11 @@ public class PostService {
     // 추천/비추천 취소 (이미 앞에서 post-myVote 관계 검증했을 때만 사용)
     private void removeVote(Post post, PostVote vote){
         post.getVotes().remove(vote);
+        if(vote.getVoteType() == VoteType.UPVOTE){
+            post.setUpvoteCount(post.getUpvoteCount() - 1);
+        }else{
+            post.setDownvoteCount(post.getDownvoteCount() - 1);
+        }
 
         postRepository.save(post);
     }
@@ -121,8 +128,14 @@ public class PostService {
         Member member = memberService.findById(memberId);
 
         PostVote vote = new PostVote(type, post, member);
-
         post.addVote(vote);
+
+        if(vote.getVoteType() == VoteType.UPVOTE){
+            post.setUpvoteCount(post.getUpvoteCount() + 1);
+        }else{
+            post.setDownvoteCount(post.getDownvoteCount() + 1);
+        }
+
         postRepository.save(post);
     }
 }

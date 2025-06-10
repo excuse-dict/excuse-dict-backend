@@ -9,6 +9,7 @@ import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostSummaryResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.PostVote;
+import net.whgkswo.excuse_bundle.entities.vote.dto.PostVoteDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -38,7 +39,7 @@ public interface PostMapper {
         return comments != null ? comments.size() : 0;
     }
 
-    default PostResponseDto summaryToMultiPostResponseDto(PostSummaryResponseDto summary, Post post, Optional<PostVote> optionalVote){
+    default PostResponseDto summaryToMultiPostResponseDto(PostSummaryResponseDto summary, Optional<PostVoteDto> optionalVote){
 
         return new PostResponseDto(
                 summary.getPostId(),

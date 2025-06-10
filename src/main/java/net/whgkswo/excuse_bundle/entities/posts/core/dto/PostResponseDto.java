@@ -1,18 +1,21 @@
 package net.whgkswo.excuse_bundle.entities.posts.core.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.whgkswo.excuse_bundle.entities.excuses.dto.ExcuseResponseDto;
 import net.whgkswo.excuse_bundle.entities.members.core.dto.MemberResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.PostVote;
+import net.whgkswo.excuse_bundle.entities.vote.dto.PostVoteDto;
 import net.whgkswo.excuse_bundle.responses.dtos.Dto;
 
 import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
 public class PostResponseDto extends PostSummaryResponseDto implements Dto {
-    private PostVote myVote;
+    private PostVoteDto myVote;
 
     public PostResponseDto(long postId,
                            MemberResponseDto author,
@@ -22,7 +25,7 @@ public class PostResponseDto extends PostSummaryResponseDto implements Dto {
                            int commentCount,
                            LocalDateTime createdAt,
                            LocalDateTime modifiedAt,
-                           PostVote myVote){
+                           PostVoteDto myVote){
         super(postId, author, excuse, upvoteCount, downvoteCount, commentCount, createdAt, modifiedAt);
         this.myVote = myVote;
     }
