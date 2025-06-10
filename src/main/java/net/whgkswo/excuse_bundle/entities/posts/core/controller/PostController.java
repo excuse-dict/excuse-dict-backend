@@ -4,9 +4,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.service.AuthService;
 import net.whgkswo.excuse_bundle.entities.excuses.dto.ExcuseRequestDto;
-import net.whgkswo.excuse_bundle.entities.posts.core.dto.MultiPostResponseDto;
-import net.whgkswo.excuse_bundle.entities.posts.core.dto.MultiPostSummaryResponseDto;
-import net.whgkswo.excuse_bundle.entities.posts.core.dto.SinglePostResponseDto;
+import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostCommentDto;
+import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.VoteCommand;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.posts.core.service.GetPostsCommand;
@@ -66,7 +65,7 @@ public class PostController {
         if(authentication != null) memberId = authService.getMemberIdFromAuthentication(authentication);
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<MultiPostResponseDto> posts = postService.getPosts(new GetPostsCommand(pageable, searchInput, memberId));
+        Page<PostResponseDto> posts = postService.getPosts(new GetPostsCommand(pageable, searchInput, memberId));
         PageInfo pageInfo = new PageInfo(page, posts.getTotalPages(), posts.getTotalElements(), posts.hasNext());
 
         return ResponseEntity.ok(
@@ -74,10 +73,10 @@ public class PostController {
         );
     }
 
-    // 게시물 조회 (단일)
-    @GetMapping("/{postId}")
-    public ResponseEntity<?> handleGetPost(@PathVariable long postId){
-        SinglePostResponseDto post = postService.getPost(postId);
+    // 게시물 댓글 조회 (단일)
+    @GetMapping("/{postId}/comments")
+    public ResponseEntity<?> handleGetPostComments(@PathVariable long postId){
+        PostCommentDto post = postService.getPost(postId);
 
         return ResponseEntity.ok(
                 Response.of(post)

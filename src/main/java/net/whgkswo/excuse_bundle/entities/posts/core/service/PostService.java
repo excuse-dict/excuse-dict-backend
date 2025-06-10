@@ -5,8 +5,8 @@ import net.whgkswo.excuse_bundle.entities.excuses.Excuse;
 import net.whgkswo.excuse_bundle.entities.excuses.service.ExcuseService;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import net.whgkswo.excuse_bundle.entities.members.core.service.MemberService;
-import net.whgkswo.excuse_bundle.entities.posts.core.dto.MultiPostResponseDto;
-import net.whgkswo.excuse_bundle.entities.posts.core.dto.SinglePostResponseDto;
+import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostCommentDto;
+import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.VoteCommand;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.posts.core.mapper.PostMapper;
@@ -45,13 +45,13 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public Page<MultiPostResponseDto> getPosts(GetPostsCommand command){
+    public Page<PostResponseDto> getPosts(GetPostsCommand command){
 
         Page<Post> posts = postRepository.findAllForList(command.pageable());
 
         return postMapper.postsToMultiPostResponseDtos(posts)
                 .map(summary -> {
-                    Post post = findPost(summary.postId());
+                    Post post = findPost(summary.getPostId());
                     Optional<PostVote> optionalVote = getVoteFromCertainMember(post, command.memberId());
 
                     return postMapper.summaryToMultiPostResponseDto(summary, post, optionalVote);
@@ -59,10 +59,10 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public SinglePostResponseDto getPost(long postId){
+    public PostCommentDto getPost(long postId){
         Post post = findPost(postId);
 
-        return postMapper.postToPostResponseDto(post);
+        return postMapper.postToPostCommentDto(post);
     }
 
     @Transactional(readOnly = true)
@@ -79,8 +79,8 @@ public class PostService {
         Post post = optionalPost.orElseThrow(() -> new BusinessLogicException(ExceptionType.POST_NOT_FOUND));
 
         // 자추 불가
-        if(post.getMember().getId().equals(command.memberId()))
-            throw new BusinessLogicException(ExceptionType.SELF_VOTE_NOT_ALLOWED);
+        /*if(post.getMember().getId().equals(command.memberId()))
+            throw new BusinessLogicException(ExceptionType.SELF_VOTE_NOT_ALLOWED);*/
 
         // 이미 추천/비추천했는지
         Optional<PostVote> optionalVote = getVoteFromCertainMember(post, command.memberId());

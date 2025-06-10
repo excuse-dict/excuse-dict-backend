@@ -6,6 +6,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.whgkswo.excuse_bundle.entities.TimeStampedEntity;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
@@ -15,6 +16,7 @@ import net.whgkswo.excuse_bundle.entities.vote.entity.VoteType;
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public class PostVote extends TimeStampedEntity {
 
     private VoteType type;
