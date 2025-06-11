@@ -16,7 +16,7 @@ import net.whgkswo.excuse_bundle.entities.vote.entity.VoteType;
 @AllArgsConstructor
 public class CommentVote extends TimeStampedEntity {
     @Enumerated(EnumType.STRING)
-    private VoteType voteType;
+    private VoteType type;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comment_id")

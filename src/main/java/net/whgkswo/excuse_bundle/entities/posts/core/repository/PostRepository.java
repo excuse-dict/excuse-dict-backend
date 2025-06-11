@@ -31,10 +31,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     // 댓글 조회
     @Query("SELECT c FROM Comment c " +
-            "LEFT JOIN FETCH c.member m " +
-            "LEFT JOIN FETCH m.memberRank " +
-            "LEFT JOIN FETCH c.votes " +
-            "WHERE c.post.id = :postId AND c.status = 'ACTIVE' " +
+            "WHERE c.post.id = :postId " +
             "ORDER BY c.createdAt DESC")
     Page<Comment> findCommentsByPostId(@Param("postId") long postId, Pageable pageable);
 }
