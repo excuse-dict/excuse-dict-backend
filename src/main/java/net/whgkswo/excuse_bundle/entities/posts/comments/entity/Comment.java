@@ -7,7 +7,7 @@ import lombok.Setter;
 import net.whgkswo.excuse_bundle.entities.TimeStampedEntity;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
-import net.whgkswo.excuse_bundle.entities.posts.core.entity.PostVote;
+import net.whgkswo.excuse_bundle.entities.vote.entity.Vote;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +33,7 @@ public class Comment extends TimeStampedEntity {
     private String content;
 
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CommentVote> votes = new ArrayList<>();
+    private List<Vote> votes = new ArrayList<>();
 
     private int upvoteCount = 0;
 
@@ -55,7 +55,7 @@ public class Comment extends TimeStampedEntity {
     }
 
     // Vote <-> Comment
-    public void addVote(CommentVote vote){
+    public void addVote(Vote vote){
         votes.add(vote);
         if(vote.getComment() == null){
             vote.setComment(this);

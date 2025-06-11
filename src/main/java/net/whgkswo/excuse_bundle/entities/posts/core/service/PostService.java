@@ -16,7 +16,7 @@ import net.whgkswo.excuse_bundle.entities.posts.core.dto.VoteCommand;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.posts.core.mapper.PostMapper;
 import net.whgkswo.excuse_bundle.entities.posts.core.repository.PostRepository;
-import net.whgkswo.excuse_bundle.entities.posts.core.entity.PostVote;
+import net.whgkswo.excuse_bundle.entities.vote.entity.Vote;
 import net.whgkswo.excuse_bundle.entities.vote.entity.VoteType;
 import net.whgkswo.excuse_bundle.entities.vote.mapper.VoteMapper;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
@@ -62,7 +62,7 @@ public class PostService {
         return postMapper.postsToMultiPostResponseDtos(posts)
                 .map(summary -> {
                     Post post = findPost(summary.getPostId());
-                    Optional<PostVote> optionalVote = getVoteFromCertainMember(post, command.memberId());
+                    Optional<Vote> optionalVote = getVoteFromCertainMember(post, command.memberId());
 
                     return postMapper.summaryToMultiPostResponseDto(summary, optionalVote.map(voteMapper::postVoteToPostVoteDto));
                 });
@@ -86,10 +86,10 @@ public class PostService {
             throw new BusinessLogicException(ExceptionType.SELF_VOTE_NOT_ALLOWED);*/
 
         // 이미 추천/비추천했는지
-        Optional<PostVote> optionalVote = getVoteFromCertainMember(post, command.memberId());
+        Optional<Vote> optionalVote = getVoteFromCertainMember(post, command.memberId());
         if(optionalVote.isPresent()){
             // 추천 비추천 취소
-            PostVote vote = optionalVote.get();
+            Vote vote = optionalVote.get();
             if(vote.getVoteType().equals(command.voteType())){ // 같은 타입일 때만 취소
                 removeVote(post, vote);
                 return false; // 취소됨
@@ -104,7 +104,7 @@ public class PostService {
     }
 
     // 게시물에 특정 유저가 추천/비추천을 눌렀는지 조회
-    private Optional<PostVote> getVoteFromCertainMember(Post post, Long memberId) {
+    private Optional<Vote> getVoteFromCertainMember(Post post, Long memberId) {
         if(memberId == null) return Optional.empty();
 
         return post.getVotes().stream()
@@ -113,7 +113,7 @@ public class PostService {
     }
 
     // 추천/비추천 취소 (이미 앞에서 post-myVote 관계 검증했을 때만 사용)
-    private void removeVote(Post post, PostVote vote){
+    private void removeVote(Post post, Vote vote){
         post.getVotes().remove(vote);
         if(vote.getVoteType() == VoteType.UPVOTE){
             post.setUpvoteCount(post.getUpvoteCount() - 1);
@@ -128,7 +128,7 @@ public class PostService {
     private void saveVote(Post post, VoteType type, long memberId){
         Member member = memberService.findById(memberId);
 
-        PostVote vote = new PostVote(type, post, member);
+        Vote vote = new Vote(post, member, type);
         post.addVote(vote);
 
         if(vote.getVoteType() == VoteType.UPVOTE){

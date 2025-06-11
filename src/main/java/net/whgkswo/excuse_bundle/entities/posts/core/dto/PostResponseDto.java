@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.whgkswo.excuse_bundle.entities.excuses.dto.ExcuseResponseDto;
 import net.whgkswo.excuse_bundle.entities.members.core.dto.MemberResponseDto;
-import net.whgkswo.excuse_bundle.entities.posts.core.entity.PostVote;
 import net.whgkswo.excuse_bundle.entities.vote.dto.PostVoteDto;
 import net.whgkswo.excuse_bundle.responses.dtos.Dto;
 
