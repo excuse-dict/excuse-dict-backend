@@ -8,7 +8,6 @@ import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CommentRequestDto;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CommentResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CreateCommentCommand;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.GetCommentsCommand;
-import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.VoteCommand;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
@@ -86,7 +85,7 @@ public class PostController {
 
         long memberId = authService.getMemberIdFromAuthentication(authentication);
 
-        boolean created = postService.vote(new VoteCommand(postId, memberId, dto.voteType()));
+        boolean created = postService.voteToPost(new VoteCommand(postId, memberId, dto.voteType()));
 
         return ResponseEntity.ok(
                 Response.of(new SimpleBooleanDto(created))
@@ -125,6 +124,20 @@ public class PostController {
 
         return ResponseEntity.ok(
                 Response.of(new PageSearchResponseDto<>(comments, pageInfo))
+        );
+    }
+
+    // 댓글 추천 / 비추천
+    @PostMapping("/comments/{commentId}/votes")
+    public ResponseEntity<?> handleCommentVoteRequest(@PathVariable long commentId,
+                                                      @RequestBody @Valid VoteRequestDto dto,
+                                                      Authentication authentication){
+        long memberId = authService.getMemberIdFromAuthentication(authentication);
+
+        boolean created = postService.voteToComment(new VoteCommand(commentId, memberId, dto.voteType()));
+
+        return ResponseEntity.ok(
+                Response.of(new SimpleBooleanDto(created))
         );
     }
 }

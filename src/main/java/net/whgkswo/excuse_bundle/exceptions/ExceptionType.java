@@ -30,6 +30,7 @@ public record ExceptionType(int status, String code, String message){
     public static final ExceptionType MEMBER_NOT_FOUND = ExceptionType.of(404, "MEMBER_NOT_FOUND","회원을 찾을 수 없습니다.");
     public static final ExceptionType MEMBER_NOT_FOUND_BY_EMAIL = ExceptionType.of(404, "MEMBER_NOT_FOUND_BY_EMAIL","해당 이메일로 가입된 회원을 찾을 수 없습니다.");
     public static final ExceptionType ES_QUERY_NOT_FOUND = ExceptionType.of(404, "ES_QUERY_NOT_FOUND", "ES 쿼리를 찾을 수 없습니다.");
+    public static final ExceptionType COMMENT_NOT_FOUND = ExceptionType.of(404, "COMMENT_NOT_FOUND", "댓글을 찾을 수 없습니다.");
     public static final ExceptionType POST_NOT_FOUND = ExceptionType.of(404, "POST_NOT_FOUND", "게시물을 찾을 수 없습니다.");
     public static final ExceptionType REDIS_CONNECTION_LOST = ExceptionType.of(500, "REDIS_CONNECTION_LOST","Redis 서버 연결 불가");
     public static final ExceptionType FAILED_TO_SEND_MAIL = ExceptionType.of(500, "FAILED_TO_SEND_MAIL","메일 전송 실패!");
@@ -64,7 +65,7 @@ public record ExceptionType(int status, String code, String message){
     }
 
     public static ExceptionType alreadyVoted(VoteType voteType){
-        String type = voteType == VoteType.UPVOTE ? "추천" : "비추천";
+        String type = voteType == VoteType.UPVOTE ? "비추천" : "추천";
         return ExceptionType.of(409, "ALREADY_VOTED", "이미 " + type + "하셨습니다. 먼저 취소한 뒤 다시 시도해주세요.");
     }
 

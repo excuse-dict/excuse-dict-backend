@@ -7,6 +7,7 @@ import net.whgkswo.excuse_bundle.responses.dtos.Dto;
 import java.time.LocalDateTime;
 
 public record CommentResponseDto(
+        long id,
         boolean isReply,
         String content,
         MemberResponseDto member,
