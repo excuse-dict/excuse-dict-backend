@@ -2,8 +2,9 @@ package net.whgkswo.excuse_bundle.entities.posts.comments;
 
 import net.whgkswo.excuse_bundle.entities.members.core.mapper.MemberMapper;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CommentResponseDto;
+import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CommentVoteResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
-import net.whgkswo.excuse_bundle.entities.posts.comments.entity.CommentVoteDto;
+import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CommentVoteRequestDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
@@ -13,6 +14,6 @@ import org.mapstruct.ReportingPolicy;
 public interface CommentMapper {
 
     @Mapping(target = "isReply", expression = "java(comment.getPost() == null)")
-    CommentResponseDto commentToCommentResponseDto(Comment comment, CommentVoteDto myVote);
+    CommentResponseDto commentToCommentResponseDto(Comment comment, CommentVoteResponseDto myVote);
 
 }

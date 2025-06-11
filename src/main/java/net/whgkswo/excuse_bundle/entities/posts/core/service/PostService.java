@@ -6,13 +6,12 @@ import net.whgkswo.excuse_bundle.entities.excuses.service.ExcuseService;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import net.whgkswo.excuse_bundle.entities.members.core.service.MemberService;
 import net.whgkswo.excuse_bundle.entities.posts.comments.CommentMapper;
-import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CommentResponseDto;
-import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CreateCommentCommand;
-import net.whgkswo.excuse_bundle.entities.posts.comments.dto.GetCommentsCommand;
+import net.whgkswo.excuse_bundle.entities.posts.comments.dto.*;
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
-import net.whgkswo.excuse_bundle.entities.posts.comments.entity.CommentVoteDto;
+import net.whgkswo.excuse_bundle.entities.posts.comments.entity.CommentVote;
+import net.whgkswo.excuse_bundle.entities.posts.comments.repository.CommentRepository;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostResponseDto;
-import net.whgkswo.excuse_bundle.entities.posts.core.dto.VoteCommand;
+import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostVoteCommand;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.posts.core.mapper.PostMapper;
 import net.whgkswo.excuse_bundle.entities.posts.core.repository.PostRepository;
@@ -33,8 +32,10 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 public class PostService {
+
     private final ExcuseService excuseService;
     private final MemberService memberService;
+    private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final VoteMapper voteMapper;
@@ -61,14 +62,14 @@ public class PostService {
 
         return postMapper.postsToMultiPostResponseDtos(posts)
                 .map(summary -> {
-                    Post post = findPost(summary.getPostId());
-                    Optional<PostVote> optionalVote = getVoteFromCertainMember(post, command.memberId());
+                    Post post = getPost(summary.getPostId());
+                    Optional<PostVote> optionalVote = getPostVoteFromCertainMember(post, command.memberId());
 
                     return postMapper.summaryToMultiPostResponseDto(summary, optionalVote.map(voteMapper::postVoteToPostVoteDto));
                 });
     }
 
-    private Post findPost(long postId){
+    public Post getPost(long postId){
         Optional<Post> optionalPost = postRepository.findByIdForDetail(postId);
         Post post = optionalPost.orElseThrow(() -> new BusinessLogicException(ExceptionType.POST_NOT_FOUND));
 
@@ -76,7 +77,7 @@ public class PostService {
     }
 
     @Transactional
-    public boolean vote(VoteCommand command){
+    public boolean voteToPost(PostVoteCommand command){
         Optional<Post> optionalPost = postRepository.findById(command.postId());
         Post post = optionalPost.orElseThrow(() -> new BusinessLogicException(ExceptionType.POST_NOT_FOUND));
 
@@ -86,25 +87,25 @@ public class PostService {
             throw new BusinessLogicException(ExceptionType.SELF_VOTE_NOT_ALLOWED);*/
 
         // 이미 추천/비추천했는지
-        Optional<PostVote> optionalVote = getVoteFromCertainMember(post, command.memberId());
+        Optional<PostVote> optionalVote = getPostVoteFromCertainMember(post, command.memberId());
         if(optionalVote.isPresent()){
             // 추천 비추천 취소
             PostVote vote = optionalVote.get();
             if(vote.getVoteType().equals(command.voteType())){ // 같은 타입일 때만 취소
-                removeVote(post, vote);
+                removePostVote(post, vote);
                 return false; // 취소됨
             }else{ // 추천 눌렀는데 취소 안하고 비추천 누르거나 그 반대
                 throw new BusinessLogicException(ExceptionType.alreadyVoted(command.voteType()));
             }
         }else{
             // 추천 비추천 등록
-            saveVote(post, command.voteType(), command.memberId());
+            savePostVote(post, command.voteType(), command.memberId());
             return true; // 생성됨
         }
     }
 
     // 게시물에 특정 유저가 추천/비추천을 눌렀는지 조회
-    private Optional<PostVote> getVoteFromCertainMember(Post post, Long memberId) {
+    private Optional<PostVote> getPostVoteFromCertainMember(Post post, Long memberId) {
         if(memberId == null) return Optional.empty();
 
         return post.getVotes().stream()
@@ -112,8 +113,8 @@ public class PostService {
                 .findFirst();
     }
 
-    // 추천/비추천 취소 (이미 앞에서 post-myVote 관계 검증했을 때만 사용)
-    private void removeVote(Post post, PostVote vote){
+    // 게시물 추천/비추천 취소 (이미 앞에서 post-myVote 관계 검증했을 때만 사용)
+    private void removePostVote(Post post, PostVote vote){
         post.getVotes().remove(vote);
         if(vote.getVoteType() == VoteType.UPVOTE){
             post.setUpvoteCount(post.getUpvoteCount() - 1);
@@ -124,8 +125,8 @@ public class PostService {
         postRepository.save(post);
     }
 
-    // 추천/비추천 등록
-    private void saveVote(Post post, VoteType type, long memberId){
+    // 게시물 추천/비추천 등록
+    private void savePostVote(Post post, VoteType type, long memberId){
         Member member = memberService.findById(memberId);
 
         PostVote vote = new PostVote(type, post, member);
@@ -143,7 +144,7 @@ public class PostService {
     // 댓글 작성
     @Transactional
     public void createComment(CreateCommentCommand command){
-        Post post = findPost(command.postId());
+        Post post = getPost(command.postId());
         Member member = memberService.findById(command.memberId());
 
         Comment comment = new Comment(post, member, command.content());
@@ -161,12 +162,77 @@ public class PostService {
 
         return comments.map(comment ->  {
             // 내가 누른 추천/비추천 있는지 조회
-            CommentVoteDto myVote = comment.getVotes().stream()
+            CommentVoteResponseDto myVote = comment.getVotes().stream()
                     .filter(vote -> vote.getMember().getId().equals(command.memberId()))
-                    .map(voteMapper::commentToCommentVoteDto)
+                    .map(voteMapper::commentToCommentVoteResponseDto)
                     .findFirst()
                     .orElse(null);
             return commentMapper.commentToCommentResponseDto(comment, myVote);
         });
+    }
+
+    @Transactional
+    public boolean voteToComment(CommentVoteCommand command){
+        Optional<Comment> optionalComment = commentRepository.findByIdAndStatus(command.commentId(), Comment.Status.ACTIVE);
+        Comment comment = optionalComment.orElseThrow(() -> new BusinessLogicException(ExceptionType.COMMENT_NOT_FOUND));
+
+        // 자추 불가
+        // TODO: 주석 해제
+        /*if(comment.getMember().getId().equals(command.memberId()))
+            throw new BusinessLogicException(ExceptionType.SELF_VOTE_NOT_ALLOWED);*/
+
+        // 이미 추천/비추천했는지
+        Optional<CommentVote> optionalVote = getCommentVoteFromCertainMember(comment, command.memberId());
+        if(optionalVote.isPresent()){
+            // 추천 비추천 취소
+            CommentVote vote = optionalVote.get();
+            if(vote.getVoteType().equals(command.voteType())){ // 같은 타입일 때만 취소
+                removeCommentVote(comment, vote);
+                return false; // 취소됨
+            }else{ // 추천 눌렀는데 취소 안하고 비추천 누르거나 그 반대
+                throw new BusinessLogicException(ExceptionType.alreadyVoted(command.voteType()));
+            }
+        }else{
+            // 추천 비추천 등록
+            saveCommentVote(comment, command.voteType(), command.memberId());
+            return true; // 생성됨
+        }
+    }
+
+    // 댓글에 특정 유저가 추천/비추천을 눌렀는지 조회
+    private Optional<CommentVote> getCommentVoteFromCertainMember(Comment comment, Long memberId) {
+        if(memberId == null) return Optional.empty();
+
+        return comment.getVotes().stream()
+                .filter(vote -> vote.getMember().getId().equals(memberId))
+                .findFirst();
+    }
+
+    // 댓글 추천/비추천 취소 (이미 앞에서 post-myVote 관계 검증했을 때만 사용)
+    private void removeCommentVote(Comment comment, CommentVote vote){
+        comment.getVotes().remove(vote);
+        if(vote.getVoteType() == VoteType.UPVOTE){
+            comment.setUpvoteCount(comment.getUpvoteCount() - 1);
+        }else{
+            comment.setDownvoteCount(comment.getDownvoteCount() - 1);
+        }
+
+        commentRepository.save(comment);
+    }
+
+    // 댓글 추천/비추천 등록
+    private void saveCommentVote(Comment comment, VoteType type, long memberId){
+        Member member = memberService.findById(memberId);
+
+        CommentVote vote = new CommentVote(type, comment, member);
+        comment.addVote(vote);
+
+        if(vote.getVoteType() == VoteType.UPVOTE){
+            comment.setUpvoteCount(comment.getUpvoteCount() + 1);
+        }else{
+            comment.setDownvoteCount(comment.getDownvoteCount() + 1);
+        }
+
+        commentRepository.save(comment);
     }
 }
