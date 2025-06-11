@@ -7,6 +7,10 @@ import lombok.Setter;
 import net.whgkswo.excuse_bundle.entities.TimeStampedEntity;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
+import net.whgkswo.excuse_bundle.entities.posts.core.entity.PostVote;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -28,6 +32,13 @@ public class Comment extends TimeStampedEntity {
 
     private String content;
 
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CommentVote> votes = new ArrayList<>();
+
+    private int upvoteCount = 0;
+
+    private int downvoteCount = 0;
+
     @Enumerated(EnumType.STRING)
     private Status status = Status.ACTIVE;
 
@@ -41,6 +52,14 @@ public class Comment extends TimeStampedEntity {
         this.comment = comment;
         this.member = member;
         this.content = content;
+    }
+
+    // Vote <-> Comment
+    public void addVote(CommentVote vote){
+        votes.add(vote);
+        if(vote.getComment() == null){
+            vote.setComment(this);
+        }
     }
 
     public enum Status{

@@ -1,9 +1,6 @@
 package net.whgkswo.excuse_bundle.entities.posts.core.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,7 +15,7 @@ import net.whgkswo.excuse_bundle.entities.vote.entity.VoteType;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PostVote extends TimeStampedEntity {
-
+    @Enumerated(EnumType.STRING)
     private VoteType voteType;
 
     @ManyToOne(fetch = FetchType.LAZY)

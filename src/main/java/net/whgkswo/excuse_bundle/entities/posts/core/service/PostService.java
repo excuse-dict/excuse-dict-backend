@@ -10,6 +10,7 @@ import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CommentResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CreateCommentCommand;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.GetCommentsCommand;
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
+import net.whgkswo.excuse_bundle.entities.posts.comments.entity.CommentVoteDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.VoteCommand;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
@@ -56,7 +57,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public Page<PostResponseDto> getPosts(GetPostsCommand command){
 
-        Page<Post> posts = postRepository.findAllForList(command.pageable());
+        Page<Post> posts = postRepository.findAllForList(command.pageable(), Post.Status.ACTIVE);
 
         return postMapper.postsToMultiPostResponseDtos(posts)
                 .map(summary -> {
@@ -80,6 +81,7 @@ public class PostService {
         Post post = optionalPost.orElseThrow(() -> new BusinessLogicException(ExceptionType.POST_NOT_FOUND));
 
         // 자추 불가
+        // TODO: 주석 해제
         /*if(post.getMember().getId().equals(command.memberId()))
             throw new BusinessLogicException(ExceptionType.SELF_VOTE_NOT_ALLOWED);*/
 
@@ -156,6 +158,15 @@ public class PostService {
         Pageable pageable = PageRequest.of(command.page(), command.size());
 
         Page<Comment> comments = postRepository.findCommentsByPostId(command.postId(), pageable);
-        return comments.map(commentMapper::commentToCommentResponseDto);
+
+        return comments.map(comment ->  {
+            // 내가 누른 추천/비추천 있는지 조회
+            CommentVoteDto myVote = comment.getVotes().stream()
+                    .filter(vote -> vote.getMember().getId().equals(command.memberId()))
+                    .map(voteMapper::commentToCommentVoteDto)
+                    .findFirst()
+                    .orElse(null);
+            return commentMapper.commentToCommentResponseDto(comment, myVote);
+        });
     }
 }

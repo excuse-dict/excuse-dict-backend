@@ -14,12 +14,9 @@ import net.whgkswo.excuse_bundle.exceptions.BadRequestException;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.security.Principal;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
@@ -125,5 +122,12 @@ public class AuthService {
 
         CustomPrincipal principal = (CustomPrincipal) authentication.getPrincipal();
         return principal.memberId();
+    }
+
+    // 토큰에서 id 회원 id 추출 (옵셔널)
+    public Optional<Long> getOptionalMemberIdFromAuthentication(Authentication authentication){
+        if(authentication == null) return Optional.empty();
+
+        return Optional.of(getMemberIdFromAuthentication(authentication));
     }
 }

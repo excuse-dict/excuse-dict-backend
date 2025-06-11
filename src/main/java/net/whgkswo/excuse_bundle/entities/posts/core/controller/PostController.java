@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(PostController.BASE_PATH)
@@ -113,10 +114,13 @@ public class PostController {
     @GetMapping("/{postId}/comments")
     public ResponseEntity<?> handleGetComments(@PathVariable long postId,
                                                @RequestParam(defaultValue = "0") int page,
-                                               @RequestParam(defaultValue = "5") int size
+                                               @RequestParam(defaultValue = "5") int size,
+                                               @Nullable Authentication authentication
                                                ){
 
-        Page<CommentResponseDto> comments = postService.getComments(new GetCommentsCommand(postId, page, size));
+        Optional<Long> memberId = authService.getOptionalMemberIdFromAuthentication(authentication);
+
+        Page<CommentResponseDto> comments = postService.getComments(new GetCommentsCommand(postId, memberId.orElse(null), page, size));
         PageInfo pageInfo = PageInfo.from(comments);
 
         return ResponseEntity.ok(

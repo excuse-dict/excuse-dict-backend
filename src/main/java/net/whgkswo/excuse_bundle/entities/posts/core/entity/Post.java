@@ -32,6 +32,7 @@ public class Post extends TimeStampedEntity {
     private List<Comment> comments = new ArrayList<>();
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 1000)
     private List<PostVote> votes = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
