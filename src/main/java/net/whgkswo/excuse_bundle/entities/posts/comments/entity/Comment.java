@@ -7,7 +7,6 @@ import lombok.Setter;
 import net.whgkswo.excuse_bundle.entities.TimeStampedEntity;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
-import net.whgkswo.excuse_bundle.entities.vote.entity.Vote;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,31 +15,14 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Comment extends TimeStampedEntity {
+public class Comment extends AbstractComment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
-    private Post post;  // 최상위 댓글인 경우 사용
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "comment_id")
-    private Comment comment;    // 대댓글인 경우 사용
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
-    private Member member;
-
-    private String content;
+    private Post post;
 
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Vote> votes = new ArrayList<>();
-
-    private int upvoteCount = 0;
-
-    private int downvoteCount = 0;
-
-    @Enumerated(EnumType.STRING)
-    private Status status = Status.ACTIVE;
+    private List<CommentVote> votes = new ArrayList<>();
 
     public Comment(Post post, Member member, String content){
         this.post = post;
@@ -49,13 +31,12 @@ public class Comment extends TimeStampedEntity {
     }
 
     public Comment(Comment comment, Member member, String content){
-        this.comment = comment;
         this.member = member;
         this.content = content;
     }
 
     // Vote <-> Comment
-    public void addVote(Vote vote){
+    public void addVote(CommentVote vote){
         votes.add(vote);
         if(vote.getComment() == null){
             vote.setComment(this);

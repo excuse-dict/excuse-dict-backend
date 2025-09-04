@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.AbstractComment;
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
-import net.whgkswo.excuse_bundle.entities.vote.entity.Vote;
+import net.whgkswo.excuse_bundle.entities.posts.comments.entity.CommentVote;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,13 +24,13 @@ public class Reply extends AbstractComment {
     private Comment comment;
 
     @OneToMany(mappedBy = "reply", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Vote> votes = new ArrayList<>();
+    private List<ReplyVote> votes = new ArrayList<>();
 
     // Vote <-> Reply
-    public void addVote(Vote vote){
+    public void addVote(ReplyVote vote){
         votes.add(vote);
         if(vote.getReply() == null){
-            vote.setReply(this);
+            vote.setComment(this);
         }
     }
 }
