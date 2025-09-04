@@ -21,11 +21,13 @@ public class MemberAuthenticationFailureHandler implements AuthenticationFailure
     private void sendErrorResponse(HttpServletResponse response) throws IOException{
         ObjectMapper mapper = new ObjectMapper();
 
+        // 응답 구성
         ErrorResponseDto errorResponseDto = ErrorResponseDto.of(ExceptionType.AUTHENTICATION_FAILED);
 
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(401);
 
+        // 응답 전송
         response.getWriter().write(mapper.writeValueAsString(errorResponseDto));
     }
 }

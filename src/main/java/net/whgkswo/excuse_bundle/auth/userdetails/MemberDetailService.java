@@ -31,6 +31,7 @@ public class MemberDetailService implements UserDetailsService {
         return new MemberDetails(member);
     }
 
+    // UserDetails 구현체 선언
     private final class MemberDetails extends Member implements UserDetails{
         MemberDetails(Member member) {
             setId(member.getId());
@@ -77,5 +78,4 @@ public class MemberDetailService implements UserDetailsService {
             return true;
         }
     }
-
 }

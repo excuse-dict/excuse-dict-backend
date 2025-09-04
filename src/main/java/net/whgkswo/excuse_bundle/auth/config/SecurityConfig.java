@@ -96,7 +96,7 @@ public class SecurityConfig {
         return source;
     }
 
-    // JWT인증 필터를 스프링 시큐리티에 등록
+    // 추가 필터를 시큐리티 필터 체인에 일괄 등록
     public class CustomFilterConfigurer extends AbstractHttpConfigurer<CustomFilterConfigurer, HttpSecurity>{
         @Override
         public void configure(HttpSecurity builder) {

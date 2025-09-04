@@ -1,3 +1,6 @@
+admin:
+  emails: ${ADMIN_EMAILS}
+
 app:
   server:
     host: localhost
@@ -13,6 +16,8 @@ spring:
   datasource:
     url: jdbc:mysql://${app.server.host}:13306/${spring.application.name}
     driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: ${MYSQL_PASSWORD}
   sql:
     init:
       mode: never # data.sql 자동 실행여부 제어 (always / embedded / never)
@@ -25,6 +30,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
+    username: ${GMAIL_USERNAME}
+    password: ${GMAIL_PASSWORD}
     properties:
       mail:
         debug: true # 콘솔 디버깅
@@ -36,10 +43,6 @@ spring:
           starttls:
             enable: true
             required: true
-  elasticsearch:
-    uris: http://localhost:9200
-    connection-timeout: 5s
-    socket-timeout: 30s
 logging:
   level:
     #org.springframework.security: DEBUG
@@ -47,5 +50,9 @@ logging:
     org.springframework.boot.autoconfigure.sql.init.SqlInitializationAutoConfiguration: DEBUG
     org.springframework.boot.sql.init: DEBUG
 jwt:
+  key: ${JWT_KEY}
   access-token-expiration-minutes: 30
   refresh-token-expiration-minutes: 50000
+
+recaptcha:
+  secret_key: ${RECAPTCHA_SECRET_KEY}

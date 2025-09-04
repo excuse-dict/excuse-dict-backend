@@ -30,26 +30,6 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
     command: --default-authentication-plugin=mysql_native_password
-
-  # ElasticSearch
-  elasticsearch:
-    image: elasticsearch:8.11.0
-    container_name: excuse-dict-elasticsearch
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    restart: unless-stopped
-    volumes:
-      - elasticsearch-data:/usr/share/elasticsearch/data
-    healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:9200 || exit 1" ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
 volumes:
   redis-data:
   mysql-data:
-  elasticsearch-data:

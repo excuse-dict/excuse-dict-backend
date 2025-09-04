@@ -62,7 +62,10 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
         return claims;
     }
 
-    // 인증 정보 설정
+    // 임시 인증 정보 설정 (요청 끝나면 삭제)
+    // JWT토큰인데 컨텍스트에 왜 저장하냐? -> 로그인 정보를 저장하지 않는다는 거고, 이건 일반 요청마다 임시로 생성하는 컨텍스트 정보임
+    // 요청 수행 이후 필터 체인이 자동으로 컨텍스트를 초기화
+    // 그럼 비JWT 방식에서 로그인 인증 시에 컨텍스트에 저장하는 Authentication은 왜 초기화되지 않는가? -> 컨텍스트를 거쳐 세션 저장소로 이동하기 때문
     private void setAuthenticationToContext(Map<String, Object> claims) {
         // claim 추출
         String username = (String) claims.get("username");
