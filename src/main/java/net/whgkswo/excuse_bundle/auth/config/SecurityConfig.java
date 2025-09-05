@@ -82,7 +82,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:3000",      // 로컬 개발용
+                "http://127.0.0.1:3000",      // 로컬 개발용
+                "http://218.146.27.34:3000",  // 집피 테스트용
+                "http://172.18.48.1:3000",    // 가상 어댑터 IP (혹시 몰라서)
+                "http://172.19.144.1:3000"    // WSL IP (혹시 몰라서)
+        ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
