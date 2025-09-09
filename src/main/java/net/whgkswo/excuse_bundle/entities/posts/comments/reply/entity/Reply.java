@@ -29,8 +29,12 @@ public class Reply extends AbstractComment {
     // Vote <-> Reply
     public void addVote(ReplyVote vote){
         votes.add(vote);
-        if(vote.getReply() == null){
-            vote.setComment(this);
-        }
+        if(vote.getReply() == null) vote.setComment(this);
+    }
+
+    // Comment <-> Reply
+    public void setComment(Comment comment){
+        this.comment = comment;
+        if(!comment.getReplies().contains(this)) comment.addReply(this);
     }
 }

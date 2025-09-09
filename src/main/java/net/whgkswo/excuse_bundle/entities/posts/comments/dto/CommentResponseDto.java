@@ -13,6 +13,7 @@ public record CommentResponseDto(
         MemberResponseDto author,
         int upvoteCount,
         int downvoteCount,
+        int replyCount,
         CommentVoteDto myVote,
         LocalDateTime createdAt,
         LocalDateTime modifiedAt
