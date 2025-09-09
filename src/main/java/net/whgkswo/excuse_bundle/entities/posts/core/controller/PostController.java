@@ -4,10 +4,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.service.AuthService;
 import net.whgkswo.excuse_bundle.entities.excuses.dto.ExcuseRequestDto;
-import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CommentRequestDto;
-import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CommentResponseDto;
-import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CreateCommentCommand;
-import net.whgkswo.excuse_bundle.entities.posts.comments.dto.GetCommentsCommand;
+import net.whgkswo.excuse_bundle.entities.posts.comments.dto.*;
+import net.whgkswo.excuse_bundle.entities.posts.comments.reply.entity.Reply;
+import net.whgkswo.excuse_bundle.entities.posts.comments.service.CommentService;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.VoteCommand;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
@@ -36,6 +35,7 @@ import java.util.Optional;
 public class PostController {
     private final AuthService authService;
     private final PostService postService;
+    private final CommentService commentService;
 
     public static final String BASE_PATH = "/api/v1/posts";
     public static final String BASE_PATH_ANY = "/api/*/posts";
@@ -99,7 +99,7 @@ public class PostController {
                                                      Authentication authentication){
         long memberId = authService.getMemberIdFromAuthentication(authentication);
 
-        postService.createComment(new CreateCommentCommand(postId, memberId, dto.comment()));
+        commentService.createComment(new CreateCommentCommand(postId, memberId, dto.comment()));
 
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -119,7 +119,8 @@ public class PostController {
 
         Optional<Long> memberId = authService.getOptionalMemberIdFromAuthentication(authentication);
 
-        Page<CommentResponseDto> comments = postService.getComments(new GetCommentsCommand(postId, memberId.orElse(null), page, size));
+        Pageable pageable = PageRequest.of(page, size);
+        Page<CommentResponseDto> comments = commentService.getComments(new GetCommentsCommand(postId, memberId.orElse(null), pageable));
         PageInfo pageInfo = PageInfo.from(comments);
 
         return ResponseEntity.ok(
@@ -134,10 +135,25 @@ public class PostController {
                                                       Authentication authentication){
         long memberId = authService.getMemberIdFromAuthentication(authentication);
 
-        boolean created = postService.voteToComment(new VoteCommand(commentId, memberId, dto.voteType()));
+        boolean created = commentService.voteToComment(new VoteCommand(commentId, memberId, dto.voteType()));
 
         return ResponseEntity.ok(
                 Response.of(new SimpleBooleanDto(created))
+        );
+    }
+
+    // 대댓글 조회
+    @GetMapping("/comments/{commentId}/replies")
+    public ResponseEntity<?> handleGetRepliesRequest(@PathVariable long commentId,
+                                                     @RequestParam int page,
+                                                     @RequestParam int size){
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<ReplyResponseDto> replies = commentService.getReplies(new GetRepliesCommand(commentId, pageable));
+
+        return ResponseEntity.ok(
+                Response.of(new PageSearchResponseDto<>(replies, PageInfo.from(replies)))
         );
     }
 }

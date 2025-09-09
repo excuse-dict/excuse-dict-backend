@@ -1,11 +1,10 @@
 package net.whgkswo.excuse_bundle.entities.posts.comments.dto;
 
-import org.springframework.data.domain.Pageable;
-import org.springframework.lang.Nullable;
 
-public record GetCommentsCommand(
-        long postId,
-        @Nullable Long memberId,
+import org.springframework.data.domain.Pageable;
+
+public record GetRepliesCommand(
+        long commentId,
         Pageable pageable
 ) {
 }

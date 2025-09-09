@@ -1,6 +1,5 @@
-package net.whgkswo.excuse_bundle.entities.posts.comments;
+package net.whgkswo.excuse_bundle.entities.posts.comments.mapper;
 
-import jdk.jfr.Name;
 import net.whgkswo.excuse_bundle.entities.members.core.mapper.MemberMapper;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CommentResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
@@ -17,7 +16,6 @@ import java.util.List;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = {MemberMapper.class})
 public interface CommentMapper {
 
-    @Mapping(target = "isReply", expression = "java(comment.getPost() == null)")
     @Mapping(target = "author", source = "comment.member")
     @Mapping(target = "replyCount", source = "comment.replies", qualifiedByName = "repliesToCount")
     CommentResponseDto commentToCommentResponseDto(Comment comment, CommentVoteDto myVote);
