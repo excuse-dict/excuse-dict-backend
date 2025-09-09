@@ -142,6 +142,22 @@ public class PostController {
         );
     }
 
+    // 대댓글 작성
+    @PostMapping("/comments/{commentId}/replies")
+    public ResponseEntity<?> handlePostReplyRequest(@PathVariable long commentId,
+                                                    @RequestBody @Valid CommentRequestDto dto,
+                                                    Authentication authentication){
+        long memberId = authService.getMemberIdFromAuthentication(authentication);
+        commentService.createReply(new CreateCommentCommand(commentId, memberId, dto.comment()));
+
+        URI uri = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .build()
+                .toUri();
+
+        return ResponseEntity.created(uri).build();
+    }
+
     // 대댓글 조회
     @GetMapping("/comments/{commentId}/replies")
     public ResponseEntity<?> handleGetRepliesRequest(@PathVariable long commentId,

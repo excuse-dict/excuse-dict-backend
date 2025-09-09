@@ -43,7 +43,7 @@ public class CommentService {
 
     // 댓글 조회 (Optional)
     private Optional<Comment> findComment(long commentId){
-        return commentRepository.findById(commentId);
+        return commentRepository.findByCommentId(commentId);
     }
 
     // 댓글 조회
@@ -54,7 +54,7 @@ public class CommentService {
     // 댓글 작성
     @Transactional
     public void createComment(CreateCommentCommand command){
-        Post post = postService.getPost(command.postId());
+        Post post = postService.getPost(command.parentContentId());
         Member member = memberService.findById(command.memberId());
 
         Comment comment = new Comment(post, member, command.content());
@@ -107,6 +107,19 @@ public class CommentService {
             voteService.saveCommentVote(comment, command.voteType(), command.memberId());
             return true; // 생성됨
         }
+    }
+
+    // 대댓글 작성
+    @Transactional
+    public void createReply(CreateCommentCommand command){
+        Comment comment = getComment(command.parentContentId());
+
+        Reply reply = new Reply();
+        reply.setContent(command.content());
+        reply.setComment(comment);
+        reply.setMember(comment.getMember());
+
+        commentRepository.save(comment);
     }
 
     // 대댓글 리스트 조회

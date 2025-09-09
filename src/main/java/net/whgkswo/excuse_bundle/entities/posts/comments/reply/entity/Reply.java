@@ -16,7 +16,6 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class Reply extends AbstractComment {
 
     @ManyToOne(fetch = FetchType.LAZY)
