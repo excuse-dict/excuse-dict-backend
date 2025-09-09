@@ -13,6 +13,7 @@ import org.mapstruct.ReportingPolicy;
 public interface CommentMapper {
 
     @Mapping(target = "isReply", expression = "java(comment.getPost() == null)")
+    @Mapping(target = "author", source = "comment.member")
     CommentResponseDto commentToCommentResponseDto(Comment comment, CommentVoteDto myVote);
 
 }

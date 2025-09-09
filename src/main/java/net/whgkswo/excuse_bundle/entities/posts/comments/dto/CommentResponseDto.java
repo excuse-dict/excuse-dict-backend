@@ -10,7 +10,7 @@ public record CommentResponseDto(
         long id,
         boolean isReply,
         String content,
-        MemberResponseDto member,
+        MemberResponseDto author,
         int upvoteCount,
         int downvoteCount,
         CommentVoteDto myVote,
