@@ -2,6 +2,7 @@ package net.whgkswo.excuse_bundle.entities.posts.comments.mapper;
 
 import net.whgkswo.excuse_bundle.entities.members.core.mapper.MemberMapper;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CommentResponseDto;
+import net.whgkswo.excuse_bundle.entities.posts.comments.dto.ReplyResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.CommentVoteDto;
 import net.whgkswo.excuse_bundle.entities.posts.comments.reply.entity.Reply;

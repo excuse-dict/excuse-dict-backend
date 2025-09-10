@@ -2,6 +2,8 @@ package net.whgkswo.excuse_bundle.entities.vote.mapper;
 
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.CommentVote;
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.CommentVoteDto;
+import net.whgkswo.excuse_bundle.entities.posts.comments.entity.ReplyVoteDto;
+import net.whgkswo.excuse_bundle.entities.posts.comments.reply.entity.ReplyVote;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.PostVote;
 import net.whgkswo.excuse_bundle.entities.vote.dto.PostVoteDto;
 import org.mapstruct.Mapper;
@@ -17,5 +19,9 @@ public interface VoteMapper {
 
     @Mapping(target = "commentId", source = "comment.id")
     @Mapping(target = "memberId", source = "member.id")
-    CommentVoteDto commentToCommentVoteDto(CommentVote commentVote);
+    CommentVoteDto commentVoteToCommentVoteDto(CommentVote commentVote);
+
+    @Mapping(target = "replyId", source = "reply.id")
+    @Mapping(target = "memberId", source = "member.id")
+    ReplyVoteDto replyVoteToReplyVoteDto(ReplyVote replyVote);
 }

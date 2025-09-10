@@ -3,12 +3,9 @@ package net.whgkswo.excuse_bundle.entities.posts.comments.service;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import net.whgkswo.excuse_bundle.entities.members.core.service.MemberService;
+import net.whgkswo.excuse_bundle.entities.posts.comments.entity.*;
 import net.whgkswo.excuse_bundle.entities.posts.comments.mapper.CommentMapper;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.*;
-import net.whgkswo.excuse_bundle.entities.posts.comments.entity.AbstractComment;
-import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
-import net.whgkswo.excuse_bundle.entities.posts.comments.entity.CommentVote;
-import net.whgkswo.excuse_bundle.entities.posts.comments.entity.CommentVoteDto;
 import net.whgkswo.excuse_bundle.entities.posts.comments.reply.entity.Reply;
 import net.whgkswo.excuse_bundle.entities.posts.comments.reply.entity.ReplyVote;
 import net.whgkswo.excuse_bundle.entities.posts.comments.reply.mapper.ReplyMapper;
@@ -74,7 +71,7 @@ public class CommentService {
             // 내가 누른 추천/비추천 있는지 조회
             CommentVoteDto myVote = comment.getVotes().stream()
                     .filter(vote -> vote.getMember().getId().equals(command.memberId()))
-                    .map(voteMapper::commentToCommentVoteDto)
+                    .map(voteMapper::commentVoteToCommentVoteDto)
                     .findFirst()
                     .orElse(null);
             return commentMapper.commentToCommentResponseDto(comment, myVote);
@@ -136,7 +133,15 @@ public class CommentService {
     public Page<ReplyResponseDto> getReplies(GetRepliesCommand command){
         Page<Reply> replies = replyRepository.findByIdAndStatus(command.commentId(), AbstractComment.Status.ACTIVE, command.pageable());
 
-        return replies.map(reply -> replyMapper.replyToReplyResponseDto(reply));
+        return replies.map(reply ->  {
+            // 내가 누른 추천/비추천 있는지 조회
+            ReplyVoteDto myVote = reply.getVotes().stream()
+                    .filter(vote -> vote.getMember().getId().equals(command.memberId()))
+                    .map(voteMapper::replyVoteToReplyVoteDto)
+                    .findFirst()
+                    .orElse(null);
+            return replyMapper.replyToReplyResponseDto(reply, myVote);
+        });
     }
     
     // 대댓글 추천/비추천

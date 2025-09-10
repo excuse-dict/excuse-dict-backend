@@ -162,11 +162,14 @@ public class PostController {
     @GetMapping("/comments/{commentId}/replies")
     public ResponseEntity<?> handleGetRepliesRequest(@PathVariable long commentId,
                                                      @RequestParam int page,
-                                                     @RequestParam int size){
+                                                     @RequestParam int size,
+                                                     @Nullable Authentication authentication){
+
+        Optional<Long> memberId = authService.getOptionalMemberIdFromAuthentication(authentication);
 
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<ReplyResponseDto> replies = commentService.getReplies(new GetRepliesCommand(commentId, pageable));
+        Page<ReplyResponseDto> replies = commentService.getReplies(new GetRepliesCommand(commentId, memberId.orElse(null), pageable));
 
         return ResponseEntity.ok(
                 Response.of(new PageSearchResponseDto<>(replies, PageInfo.from(replies)))
