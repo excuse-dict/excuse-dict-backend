@@ -31,6 +31,7 @@ public record ExceptionType(int status, String code, String message){
     public static final ExceptionType MEMBER_NOT_FOUND_BY_EMAIL = ExceptionType.of(404, "MEMBER_NOT_FOUND_BY_EMAIL","해당 이메일로 가입된 회원을 찾을 수 없습니다.");
     public static final ExceptionType ES_QUERY_NOT_FOUND = ExceptionType.of(404, "ES_QUERY_NOT_FOUND", "ES 쿼리를 찾을 수 없습니다.");
     public static final ExceptionType COMMENT_NOT_FOUND = ExceptionType.of(404, "COMMENT_NOT_FOUND", "댓글을 찾을 수 없습니다.");
+    public static final ExceptionType REPLY_NOT_FOUND = ExceptionType.of(404, "REPLY_NOT_FOUND", "대댓글을 찾을 수 없습니다.");
     public static final ExceptionType POST_NOT_FOUND = ExceptionType.of(404, "POST_NOT_FOUND", "게시물을 찾을 수 없습니다.");
     public static final ExceptionType REDIS_CONNECTION_LOST = ExceptionType.of(500, "REDIS_CONNECTION_LOST","Redis 서버 연결 불가");
     public static final ExceptionType FAILED_TO_SEND_MAIL = ExceptionType.of(500, "FAILED_TO_SEND_MAIL","메일 전송 실패!");

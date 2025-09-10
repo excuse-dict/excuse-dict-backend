@@ -10,6 +10,7 @@ import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.CommentVote;
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.CommentVoteDto;
 import net.whgkswo.excuse_bundle.entities.posts.comments.reply.entity.Reply;
+import net.whgkswo.excuse_bundle.entities.posts.comments.reply.entity.ReplyVote;
 import net.whgkswo.excuse_bundle.entities.posts.comments.reply.mapper.ReplyMapper;
 import net.whgkswo.excuse_bundle.entities.posts.comments.reply.repository.ReplyRepository;
 import net.whgkswo.excuse_bundle.entities.posts.comments.repository.CommentRepository;
@@ -42,13 +43,13 @@ public class CommentService {
     private final ReplyMapper replyMapper;
 
     // 댓글 조회 (Optional)
-    private Optional<Comment> findComment(long commentId){
+    private Optional<Comment> findCommentWithFetch(long commentId){
         return commentRepository.findByCommentId(commentId);
     }
 
     // 댓글 조회
     public Comment getComment(long commentId){
-        return findComment(commentId).orElseThrow(() -> new BusinessLogicException(ExceptionType.COMMENT_NOT_FOUND));
+        return findCommentWithFetch(commentId).orElseThrow(() -> new BusinessLogicException(ExceptionType.COMMENT_NOT_FOUND));
     }
 
     // 댓글 작성
@@ -83,12 +84,11 @@ public class CommentService {
     // 댓글 추천
     @Transactional
     public boolean voteToComment(VoteCommand command){
-        Optional<Comment> optionalComment = commentRepository.findById(command.targetId());
-        Comment comment = optionalComment.orElseThrow(() -> new BusinessLogicException(ExceptionType.POST_NOT_FOUND));
+        Comment comment = getComment(command.targetId());
 
         // 자추 불가
         // TODO: 주석 해제
-        /*if(post.getMember().getId().equals(command.memberId()))
+        /*if(comment.getMember().getId() == command.memberId())
             throw new BusinessLogicException(ExceptionType.SELF_VOTE_NOT_ALLOWED);*/
 
         // 이미 추천/비추천했는지
@@ -121,11 +121,49 @@ public class CommentService {
 
         commentRepository.save(comment);
     }
+    
+    // 대댓글 조회(Optional)
+    private Optional<Reply> findReplyWithFetch(long replyId){
+        return replyRepository.findByReplyId(replyId);
+    }
+    
+    // 대댓글 조회
+    public Reply getReply(long replyId){
+        return findReplyWithFetch(replyId).orElseThrow(() -> new BusinessLogicException(ExceptionType.REPLY_NOT_FOUND));
+    }
 
     // 대댓글 리스트 조회
     public Page<ReplyResponseDto> getReplies(GetRepliesCommand command){
-        Page<Reply> replies = replyRepository.findByCommentIdAndStatus(command.commentId(), AbstractComment.Status.ACTIVE, command.pageable());
+        Page<Reply> replies = replyRepository.findByIdAndStatus(command.commentId(), AbstractComment.Status.ACTIVE, command.pageable());
 
         return replies.map(reply -> replyMapper.replyToReplyResponseDto(reply));
+    }
+    
+    // 대댓글 추천/비추천
+    public boolean voteToReplies(VoteCommand command){
+        
+        Reply reply = getReply(command.targetId());
+
+        // 자추 불가
+        // TODO: 주석 해제
+        /*if(reply.getMember().getId() == command.memberId()) throw new BusinessLogicException(ExceptionType.SELF_VOTE_NOT_ALLOWED);*/
+
+        // 이미 추천/비추천했는지
+        Optional<ReplyVote> optionalVote = voteService.getReplyVoteFromCertainMember(reply, command.memberId());
+
+        if(optionalVote.isPresent()){
+            // 추천 비추천 취소
+            ReplyVote vote = optionalVote.get();
+            if(vote.getVoteType().equals(command.voteType())){ // 같은 타입일 때만 취소
+                voteService.removeReplyVote(reply, vote);
+                return false; // 취소됨
+            }else{ // 추천 눌렀는데 취소 안하고 비추천 누르거나 그 반대
+                throw new BusinessLogicException(ExceptionType.alreadyVoted(command.voteType()));
+            }
+        }else{
+            // 추천 비추천 등록
+            voteService.saveReplyVote(reply, command.voteType(), command.memberId());
+            return true; // 생성됨
+        }
     }
 }

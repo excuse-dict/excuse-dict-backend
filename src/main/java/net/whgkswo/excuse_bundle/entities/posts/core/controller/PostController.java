@@ -172,4 +172,19 @@ public class PostController {
                 Response.of(new PageSearchResponseDto<>(replies, PageInfo.from(replies)))
         );
     }
+
+    // 대댓글 추천/비추천
+    @PostMapping("/comments/replies/{replyId}/votes")
+    public ResponseEntity<?> handleVoteReplies(@PathVariable long replyId,
+                                               @RequestBody @Valid VoteRequestDto dto,
+                                               Authentication authentication){
+
+        long memberId = authService.getMemberIdFromAuthentication(authentication);
+
+        boolean created = commentService.voteToReplies(new VoteCommand(replyId, memberId, dto.voteType()));
+
+        return ResponseEntity.ok(
+                Response.of(new SimpleBooleanDto(created))
+        );
+    }
 }
