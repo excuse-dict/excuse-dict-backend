@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_bundle.entities.posts.comments.reply;
+package net.whgkswo.excuse_bundle.entities.posts.comments.reply.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -7,14 +7,15 @@ import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CommentRequestDto;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CreateCommentCommand;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.GetRepliesCommand;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.ReplyResponseDto;
+import net.whgkswo.excuse_bundle.entities.posts.comments.reply.service.ReplyService;
 import net.whgkswo.excuse_bundle.entities.posts.comments.service.CommentService;
 import net.whgkswo.excuse_bundle.entities.posts.core.controller.PostController;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.VoteCommand;
 import net.whgkswo.excuse_bundle.entities.vote.dto.VoteRequestDto;
-import net.whgkswo.excuse_bundle.responses.Response;
-import net.whgkswo.excuse_bundle.responses.dtos.PageSearchResponseDto;
-import net.whgkswo.excuse_bundle.responses.dtos.SimpleBooleanDto;
-import net.whgkswo.excuse_bundle.responses.page.PageInfo;
+import net.whgkswo.excuse_bundle.general.responses.Response;
+import net.whgkswo.excuse_bundle.general.responses.dtos.PageSearchResponseDto;
+import net.whgkswo.excuse_bundle.general.responses.dtos.SimpleBooleanDto;
+import net.whgkswo.excuse_bundle.general.responses.page.PageInfo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,6 +35,7 @@ public class ReplyController {
 
     private final AuthService authService;
     private final CommentService commentService;
+    private final ReplyService replyService;
 
     // 대댓글 작성
     @PostMapping("/{commentId}/replies")
@@ -41,7 +43,7 @@ public class ReplyController {
                                                     @RequestBody @Valid CommentRequestDto dto,
                                                     Authentication authentication){
         long memberId = authService.getMemberIdFromAuthentication(authentication);
-        commentService.createReply(new CreateCommentCommand(commentId, memberId, dto.comment()));
+        replyService.createReply(new CreateCommentCommand(commentId, memberId, dto.comment()));
 
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -62,7 +64,7 @@ public class ReplyController {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<ReplyResponseDto> replies = commentService.getReplies(new GetRepliesCommand(commentId, memberId.orElse(null), pageable));
+        Page<ReplyResponseDto> replies = replyService.getReplies(new GetRepliesCommand(commentId, memberId.orElse(null), pageable));
 
         return ResponseEntity.ok(
                 Response.of(new PageSearchResponseDto<>(replies, PageInfo.from(replies)))
@@ -77,7 +79,7 @@ public class ReplyController {
 
         long memberId = authService.getMemberIdFromAuthentication(authentication);
 
-        boolean created = commentService.voteToReplies(new VoteCommand(replyId, memberId, dto.voteType()));
+        boolean created = replyService.voteToReplies(new VoteCommand(replyId, memberId, dto.voteType()));
 
         return ResponseEntity.ok(
                 Response.of(new SimpleBooleanDto(created))

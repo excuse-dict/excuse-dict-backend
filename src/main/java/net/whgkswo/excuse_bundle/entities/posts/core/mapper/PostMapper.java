@@ -2,6 +2,7 @@ package net.whgkswo.excuse_bundle.entities.posts.core.mapper;
 
 import net.whgkswo.excuse_bundle.entities.excuses.mapper.ExcuseMapper;
 import net.whgkswo.excuse_bundle.entities.members.core.mapper.MemberMapper;
+import net.whgkswo.excuse_bundle.entities.posts.comments.entity.AbstractComment;
 import net.whgkswo.excuse_bundle.entities.posts.comments.mapper.CommentMapper;
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostResponseDto;
@@ -32,7 +33,11 @@ public interface PostMapper {
     // 댓글 리스트 -> 카운트 변환기
     @Named("commentsToCount")
     default int commentsToCount(List<Comment> comments) {
-        return comments != null ? comments.size() : 0;
+        if(comments == null) return 0;
+
+        return (int) comments.stream()
+                .filter(comment -> comment.getStatus().equals(AbstractComment.Status.ACTIVE))
+                .count();
     }
 
     default PostResponseDto summaryToMultiPostResponseDto(PostSummaryResponseDto summary, Optional<PostVoteDto> optionalVote){

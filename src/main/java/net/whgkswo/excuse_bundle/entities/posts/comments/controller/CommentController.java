@@ -11,10 +11,11 @@ import net.whgkswo.excuse_bundle.entities.posts.comments.service.CommentService;
 import net.whgkswo.excuse_bundle.entities.posts.core.controller.PostController;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.VoteCommand;
 import net.whgkswo.excuse_bundle.entities.vote.dto.VoteRequestDto;
-import net.whgkswo.excuse_bundle.responses.Response;
-import net.whgkswo.excuse_bundle.responses.dtos.PageSearchResponseDto;
-import net.whgkswo.excuse_bundle.responses.dtos.SimpleBooleanDto;
-import net.whgkswo.excuse_bundle.responses.page.PageInfo;
+import net.whgkswo.excuse_bundle.general.dto.DeleteCommand;
+import net.whgkswo.excuse_bundle.general.responses.Response;
+import net.whgkswo.excuse_bundle.general.responses.dtos.PageSearchResponseDto;
+import net.whgkswo.excuse_bundle.general.responses.dtos.SimpleBooleanDto;
+import net.whgkswo.excuse_bundle.general.responses.page.PageInfo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -83,5 +84,17 @@ public class CommentController {
         return ResponseEntity.ok(
                 Response.of(new SimpleBooleanDto(created))
         );
+    }
+
+    // 댓글 삭제
+    @DeleteMapping("/comments/{commentId}")
+    public ResponseEntity<?> handleDeleteComment(@PathVariable long commentId,
+                                                 Authentication authentication){
+
+        long memberId = authService.getMemberIdFromAuthentication(authentication);
+
+        commentService.deleteComment(new DeleteCommand(commentId, memberId));
+
+        return ResponseEntity.noContent().build();
     }
 }

@@ -1,11 +1,11 @@
-package net.whgkswo.excuse_bundle.responses;
+package net.whgkswo.excuse_bundle.general.responses;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import net.whgkswo.excuse_bundle.responses.dtos.Dto;
-import net.whgkswo.excuse_bundle.responses.dtos.SimpleBooleanDto;
-import net.whgkswo.excuse_bundle.responses.dtos.SimpleStringDto;
+import net.whgkswo.excuse_bundle.general.responses.dtos.Dto;
+import net.whgkswo.excuse_bundle.general.responses.dtos.SimpleBooleanDto;
+import net.whgkswo.excuse_bundle.general.responses.dtos.SimpleStringDto;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE) // 생성자를 숨기고 팩토리 메서드 사용 강제
 @Getter

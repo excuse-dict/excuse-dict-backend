@@ -1,8 +1,7 @@
 package net.whgkswo.excuse_bundle.entities.excuses.dto;
 
 import jakarta.annotation.Nullable;
-import jakarta.validation.constraints.NotBlank;
-import net.whgkswo.excuse_bundle.responses.dtos.Dto;
+import net.whgkswo.excuse_bundle.general.responses.dtos.Dto;
 import org.hibernate.validator.constraints.Length;
 
 import java.util.Set;

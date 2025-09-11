@@ -4,8 +4,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.service.AuthService;
 import net.whgkswo.excuse_bundle.entities.excuses.dto.ExcuseRequestDto;
-import net.whgkswo.excuse_bundle.entities.posts.comments.dto.*;
-import net.whgkswo.excuse_bundle.entities.posts.comments.reply.entity.Reply;
 import net.whgkswo.excuse_bundle.entities.posts.comments.service.CommentService;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.VoteCommand;
@@ -13,10 +11,10 @@ import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.posts.core.service.GetPostsCommand;
 import net.whgkswo.excuse_bundle.entities.posts.core.service.PostService;
 import net.whgkswo.excuse_bundle.entities.vote.dto.VoteRequestDto;
-import net.whgkswo.excuse_bundle.responses.Response;
-import net.whgkswo.excuse_bundle.responses.dtos.PageSearchResponseDto;
-import net.whgkswo.excuse_bundle.responses.dtos.SimpleBooleanDto;
-import net.whgkswo.excuse_bundle.responses.page.PageInfo;
+import net.whgkswo.excuse_bundle.general.responses.Response;
+import net.whgkswo.excuse_bundle.general.responses.dtos.PageSearchResponseDto;
+import net.whgkswo.excuse_bundle.general.responses.dtos.SimpleBooleanDto;
+import net.whgkswo.excuse_bundle.general.responses.page.PageInfo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,7 +25,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.Optional;
 
 @RestController
 @RequestMapping(PostController.BASE_PATH)

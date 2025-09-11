@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.whgkswo.excuse_bundle.entities.excuses.dto.ExcuseResponseDto;
 import net.whgkswo.excuse_bundle.entities.members.core.dto.MemberResponseDto;
-import net.whgkswo.excuse_bundle.responses.dtos.Dto;
+import net.whgkswo.excuse_bundle.general.responses.dtos.Dto;
 
 import java.time.LocalDateTime;
 

@@ -2,7 +2,7 @@ package net.whgkswo.excuse_bundle.entities.posts.tags.dto;
 
 import jakarta.annotation.Nullable;
 import net.whgkswo.excuse_bundle.entities.posts.tags.entity.Tag;
-import net.whgkswo.excuse_bundle.responses.dtos.Dto;
+import net.whgkswo.excuse_bundle.general.responses.dtos.Dto;
 
 import java.util.List;
 

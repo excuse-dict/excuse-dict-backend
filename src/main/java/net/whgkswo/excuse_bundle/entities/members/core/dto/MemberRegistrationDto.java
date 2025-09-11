@@ -3,7 +3,7 @@ package net.whgkswo.excuse_bundle.entities.members.core.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import net.whgkswo.excuse_bundle.entities.members.passwords.ValidPassword;
-import net.whgkswo.excuse_bundle.responses.dtos.Dto;
+import net.whgkswo.excuse_bundle.general.responses.dtos.Dto;
 
 public record MemberRegistrationDto(
         @Email(message = "이메일 형식이 바르지 않습니다.")

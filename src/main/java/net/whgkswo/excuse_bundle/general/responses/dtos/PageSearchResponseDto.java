@@ -1,6 +1,6 @@
-package net.whgkswo.excuse_bundle.responses.dtos;
+package net.whgkswo.excuse_bundle.general.responses.dtos;
 
-import net.whgkswo.excuse_bundle.responses.page.PageInfo;
+import net.whgkswo.excuse_bundle.general.responses.page.PageInfo;
 import org.springframework.data.domain.Page;
 
 public record PageSearchResponseDto<T>(

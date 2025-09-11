@@ -8,7 +8,7 @@ import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import net.whgkswo.excuse_bundle.entities.members.core.service.MemberService;
 import net.whgkswo.excuse_bundle.entities.members.nicknames.NicknameService;
 import net.whgkswo.excuse_bundle.entities.members.passwords.ResetPasswordDto;
-import net.whgkswo.excuse_bundle.responses.Response;
+import net.whgkswo.excuse_bundle.general.responses.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;

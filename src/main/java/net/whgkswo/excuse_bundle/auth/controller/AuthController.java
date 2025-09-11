@@ -13,7 +13,7 @@ import net.whgkswo.excuse_bundle.entities.members.core.service.MemberService;
 import net.whgkswo.excuse_bundle.entities.members.email.service.EmailService;
 import net.whgkswo.excuse_bundle.entities.members.email.dto.EmailVerificationRequestDto;
 import net.whgkswo.excuse_bundle.entities.members.email.dto.VerificationPurpose;
-import net.whgkswo.excuse_bundle.responses.Response;
+import net.whgkswo.excuse_bundle.general.responses.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

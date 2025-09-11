@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_bundle.responses.page;
+package net.whgkswo.excuse_bundle.general.responses.page;
 
 import org.springframework.data.domain.Page;
 

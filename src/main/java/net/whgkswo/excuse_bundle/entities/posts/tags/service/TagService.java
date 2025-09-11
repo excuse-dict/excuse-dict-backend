@@ -6,7 +6,7 @@ import net.whgkswo.excuse_bundle.entities.posts.tags.dto.TagSearchResult;
 import net.whgkswo.excuse_bundle.entities.posts.tags.entity.Tag;
 import net.whgkswo.excuse_bundle.entities.posts.tags.repository.TagRepository;
 import net.whgkswo.excuse_bundle.komoran.KomoranService;
-import net.whgkswo.excuse_bundle.responses.page.PageUtil;
+import net.whgkswo.excuse_bundle.general.responses.page.PageUtil;
 import net.whgkswo.excuse_bundle.words.WordService;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;

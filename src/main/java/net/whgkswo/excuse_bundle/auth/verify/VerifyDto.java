@@ -3,7 +3,7 @@ package net.whgkswo.excuse_bundle.auth.verify;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import net.whgkswo.excuse_bundle.responses.dtos.Dto;
+import net.whgkswo.excuse_bundle.general.responses.dtos.Dto;
 
 public record VerifyDto(
         @NotBlank(message = "이메일은 공백이 아니어야 합니다.")
