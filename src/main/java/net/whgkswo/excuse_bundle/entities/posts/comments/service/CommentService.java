@@ -6,10 +6,6 @@ import net.whgkswo.excuse_bundle.entities.members.core.service.MemberService;
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.*;
 import net.whgkswo.excuse_bundle.entities.posts.comments.mapper.CommentMapper;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.*;
-import net.whgkswo.excuse_bundle.entities.posts.comments.reply.entity.Reply;
-import net.whgkswo.excuse_bundle.entities.posts.comments.reply.entity.ReplyVote;
-import net.whgkswo.excuse_bundle.entities.posts.comments.reply.mapper.ReplyMapper;
-import net.whgkswo.excuse_bundle.entities.posts.comments.reply.repository.ReplyRepository;
 import net.whgkswo.excuse_bundle.entities.posts.comments.repository.CommentRepository;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.VoteCommand;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
@@ -24,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -54,7 +51,7 @@ public class CommentService {
 
     // 댓글 작성
     @Transactional
-    public void createComment(CreateCommentCommand command){
+    public void createComment(CreateOrUpdateCommentCommand command){
         Post post = postService.getPost(command.parentContentId());
         Member member = memberService.findById(command.memberId());
 
@@ -108,6 +105,19 @@ public class CommentService {
             voteService.saveCommentVote(comment, command.voteType(), command.memberId());
             return true; // 생성됨
         }
+    }
+
+    // 댓글 수정
+    public void updateComment(CreateOrUpdateCommentCommand command){
+        Comment comment = getComment(command.parentContentId());
+
+        // 자기가 쓴 댓글만 수정 가능
+        if(!comment.getMember().getId().equals(command.memberId())) throw new BusinessLogicException(ExceptionType.UPDATE_FORBIDDEN);
+
+        comment.setContent(command.content());
+        comment.setModifiedAt(LocalDateTime.now());
+
+        commentRepository.save(comment);
     }
 
     // 댓글 삭제

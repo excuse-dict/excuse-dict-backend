@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.service.AuthService;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CommentRequestDto;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CommentResponseDto;
-import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CreateCommentCommand;
+import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CreateOrUpdateCommentCommand;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.GetCommentsCommand;
 import net.whgkswo.excuse_bundle.entities.posts.comments.service.CommentService;
 import net.whgkswo.excuse_bundle.entities.posts.core.controller.PostController;
@@ -43,7 +43,7 @@ public class CommentController {
                                                      Authentication authentication){
         long memberId = authService.getMemberIdFromAuthentication(authentication);
 
-        commentService.createComment(new CreateCommentCommand(postId, memberId, dto.comment()));
+        commentService.createComment(new CreateOrUpdateCommentCommand(postId, memberId, dto.comment()));
 
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -84,6 +84,19 @@ public class CommentController {
         return ResponseEntity.ok(
                 Response.of(new SimpleBooleanDto(created))
         );
+    }
+
+    // 댓글 수정
+    @PatchMapping("/comments/{commentId}")
+    public ResponseEntity<?> handleUpdateComment(@PathVariable long commentId,
+                                                 @RequestBody @Valid CommentRequestDto dto,
+                                                 Authentication authentication){
+
+        long memberId = authService.getMemberIdFromAuthentication(authentication);
+
+        commentService.updateComment(new CreateOrUpdateCommentCommand(commentId, memberId, dto.comment()));
+
+        return ResponseEntity.noContent().build();
     }
 
     // 댓글 삭제

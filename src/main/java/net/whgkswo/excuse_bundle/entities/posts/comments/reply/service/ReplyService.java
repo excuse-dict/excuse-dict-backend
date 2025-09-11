@@ -1,7 +1,7 @@
 package net.whgkswo.excuse_bundle.entities.posts.comments.reply.service;
 
 import lombok.RequiredArgsConstructor;
-import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CreateCommentCommand;
+import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CreateOrUpdateCommentCommand;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.GetRepliesCommand;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.ReplyResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.AbstractComment;
@@ -37,7 +37,7 @@ public class ReplyService {
 
     // 대댓글 작성
     @Transactional
-    public void createReply(CreateCommentCommand command){
+    public void createReply(CreateOrUpdateCommentCommand command){
         Comment comment = commentService.getComment(command.parentContentId());
 
         Reply reply = new Reply();

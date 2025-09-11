@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.service.AuthService;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CommentRequestDto;
-import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CreateCommentCommand;
+import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CreateOrUpdateCommentCommand;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.GetRepliesCommand;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.ReplyResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.comments.reply.service.ReplyService;
@@ -43,7 +43,7 @@ public class ReplyController {
                                                     @RequestBody @Valid CommentRequestDto dto,
                                                     Authentication authentication){
         long memberId = authService.getMemberIdFromAuthentication(authentication);
-        replyService.createReply(new CreateCommentCommand(commentId, memberId, dto.comment()));
+        replyService.createReply(new CreateOrUpdateCommentCommand(commentId, memberId, dto.comment()));
 
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest()
