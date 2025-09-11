@@ -43,14 +43,12 @@ public class ReplyController {
                                                     @RequestBody @Valid CommentRequestDto dto,
                                                     Authentication authentication){
         long memberId = authService.getMemberIdFromAuthentication(authentication);
-        replyService.createReply(new CreateOrUpdateCommentCommand(commentId, memberId, dto.comment()));
+        int repliesCount = replyService.createReply(new CreateOrUpdateCommentCommand(commentId, memberId, dto.comment()));
 
-        URI uri = ServletUriComponentsBuilder
-                .fromCurrentRequest()
-                .build()
-                .toUri();
-
-        return ResponseEntity.created(uri).build();
+        // 댓글의 현재 답글수를 리턴
+        return ResponseEntity.ok(
+                Response.simpleNumber(repliesCount)
+        );
     }
 
     // 대댓글 조회

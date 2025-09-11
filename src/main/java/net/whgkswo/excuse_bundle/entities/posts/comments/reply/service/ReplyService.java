@@ -35,9 +35,9 @@ public class ReplyService {
     private final VoteMapper voteMapper;
     private final VoteService voteService;
 
-    // 대댓글 작성
+    // 대댓글 작성, 댓글의 현재 답글수를 리턴
     @Transactional
-    public void createReply(CreateOrUpdateCommentCommand command){
+    public int createReply(CreateOrUpdateCommentCommand command){
         Comment comment = commentService.getComment(command.parentContentId());
 
         Reply reply = new Reply();
@@ -46,6 +46,8 @@ public class ReplyService {
         reply.setMember(comment.getMember());
 
         commentRepository.save(comment);
+
+        return comment.getReplies().size();
     }
 
     // 대댓글 조회(Optional)
