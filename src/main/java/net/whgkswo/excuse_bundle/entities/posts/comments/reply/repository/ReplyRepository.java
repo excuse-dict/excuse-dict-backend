@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public interface ReplyRepository extends JpaRepository<Reply, Long> {
 
-    Page<Reply> findByIdAndStatus(long replyId, AbstractComment.Status status, Pageable pageable);
+    Page<Reply> findByCommentIdAndStatus(long commentId, AbstractComment.Status status, Pageable pageable);
 
     // 지연로딩 문제로 fetch join 사용
     @Query("SELECT r FROM Reply r " +

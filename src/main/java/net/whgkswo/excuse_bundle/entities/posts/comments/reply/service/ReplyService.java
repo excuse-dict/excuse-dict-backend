@@ -60,7 +60,7 @@ public class ReplyService {
 
     // 대댓글 리스트 조회
     public Page<ReplyResponseDto> getReplies(GetRepliesCommand command){
-        Page<Reply> replies = replyRepository.findByIdAndStatus(command.commentId(), AbstractComment.Status.ACTIVE, command.pageable());
+        Page<Reply> replies = replyRepository.findByCommentIdAndStatus(command.commentId(), AbstractComment.Status.ACTIVE, command.pageable());
 
         return replies.map(reply ->  {
             // 내가 누른 추천/비추천 있는지 조회
