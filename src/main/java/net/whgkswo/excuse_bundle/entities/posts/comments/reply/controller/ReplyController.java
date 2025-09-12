@@ -12,6 +12,7 @@ import net.whgkswo.excuse_bundle.entities.posts.comments.service.CommentService;
 import net.whgkswo.excuse_bundle.entities.posts.core.controller.PostController;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.VoteCommand;
 import net.whgkswo.excuse_bundle.entities.vote.dto.VoteRequestDto;
+import net.whgkswo.excuse_bundle.general.dto.DeleteCommand;
 import net.whgkswo.excuse_bundle.general.responses.Response;
 import net.whgkswo.excuse_bundle.general.responses.dtos.PageSearchResponseDto;
 import net.whgkswo.excuse_bundle.general.responses.dtos.SimpleBooleanDto;
@@ -82,5 +83,30 @@ public class ReplyController {
         return ResponseEntity.ok(
                 Response.of(new SimpleBooleanDto(created))
         );
+    }
+
+    // 답글 수정
+    @PatchMapping("/replies/{replyId}")
+    public ResponseEntity<?> handleUpdateReply(@PathVariable long replyId,
+                                               @RequestBody @Valid CommentRequestDto dto,
+                                               Authentication authentication){
+
+        long memberId = authService.getMemberIdFromAuthentication(authentication);
+
+        replyService.updateReply(new CreateOrUpdateCommentCommand(replyId, memberId, dto.comment()));
+
+        return ResponseEntity.noContent().build();
+    }
+
+    // 답글 삭제
+    @DeleteMapping("/replies/{replyId}")
+    public ResponseEntity<?> handleDeleteReply(@PathVariable long replyId,
+                                               Authentication authentication){
+
+        long memberId = authService.getMemberIdFromAuthentication(authentication);
+
+        replyService.deleteReply(new DeleteCommand(replyId, memberId));
+
+        return ResponseEntity.noContent().build();
     }
 }

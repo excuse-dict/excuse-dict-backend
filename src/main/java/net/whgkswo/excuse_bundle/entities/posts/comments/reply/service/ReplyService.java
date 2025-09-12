@@ -18,10 +18,12 @@ import net.whgkswo.excuse_bundle.entities.vote.mapper.VoteMapper;
 import net.whgkswo.excuse_bundle.entities.vote.service.VoteService;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
+import net.whgkswo.excuse_bundle.general.dto.DeleteCommand;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -101,5 +103,29 @@ public class ReplyService {
             voteService.saveReplyVote(reply, command.voteType(), command.memberId());
             return true; // 생성됨
         }
+    }
+
+    // 답글 수정
+    public void updateReply(CreateOrUpdateCommentCommand command){
+        Reply reply = getReply(command.parentContentId());
+
+        // 자기가 쓴 답글만 수정 가능
+        if(!reply.getMember().getId().equals(command.memberId())) throw new BusinessLogicException(ExceptionType.UPDATE_FORBIDDEN);
+
+        reply.setContent(command.content());
+        reply.setModifiedAt(LocalDateTime.now());
+
+        replyRepository.save(reply);
+    }
+
+    // 답글 삭제
+    public void deleteReply(DeleteCommand command){
+        Reply reply = getReply(command.targetId());
+
+        // 자기가 쓴 댓글만 삭제 가능
+        if(reply.getMember().getId() != command.memberId()) throw new BusinessLogicException(ExceptionType.DELETE_FORBIDDEN);
+
+        reply.setStatus(AbstractComment.Status.DELETED);
+        replyRepository.save(reply);
     }
 }
