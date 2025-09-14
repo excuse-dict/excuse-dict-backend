@@ -2,9 +2,10 @@ package net.whgkswo.excuse_bundle.entities.excuses.service;
 
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.entities.excuses.Excuse;
+import net.whgkswo.excuse_bundle.entities.excuses.dto.UpdateExcuseCommand;
 import net.whgkswo.excuse_bundle.entities.posts.tags.entity.Tag;
 import net.whgkswo.excuse_bundle.entities.posts.tags.repository.TagRepository;
-import net.whgkswo.excuse_bundle.exceptions.BadRequestException;
+import net.whgkswo.excuse_bundle.entities.posts.tags.service.TagService;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ExcuseService {
     private final TagRepository tagRepository;
+    private final TagService tagService;
 
+    // 핑계 등록
     public Excuse createExcuse(String situation, String excuseStr, Set<String> tagKeys){
         Excuse excuse = new Excuse();
 
@@ -25,17 +28,25 @@ public class ExcuseService {
         excuse.setExcuse(excuseStr);
 
         Set<Tag> tags = tagKeys.stream()
-                        .map(key -> {
-                            String[] splitKeys = key.split(":", 2);
-                            Tag.Category category = Tag.Category.valueOf(splitKeys[0]);
-                            Optional<Tag> tag = tagRepository.findByCategoryAndValue(category, splitKeys[1]);
-                            return tag.orElseThrow(() -> new BusinessLogicException(ExceptionType.tagNotFound(key)));
-                        })
+                        .map(tagService::tagKeyToTag)
                         .collect(Collectors.toSet());
 
         excuse.setTags(tags);
 
         // post 등록하며 함께 등록되기 때문에 저장 없이 반환
         return excuse;
+    }
+
+    // 핑계 수정
+    public void updateExcuse(Excuse excuse, UpdateExcuseCommand command){
+        command.situation().ifPresent(excuse::setSituation);
+        command.excuseStr().ifPresent(excuse::setExcuse);
+        command.tagKeys().ifPresent(tagKeys -> {
+                excuse.setTags(tagKeys.stream()
+                        .map(tagService::tagKeyToTag)
+                        .collect(Collectors.toSet())
+                );
+            }
+        );
     }
 }

@@ -5,6 +5,8 @@ import net.whgkswo.excuse_bundle.entities.posts.tags.commands.SearchTagCommand;
 import net.whgkswo.excuse_bundle.entities.posts.tags.dto.TagSearchResult;
 import net.whgkswo.excuse_bundle.entities.posts.tags.entity.Tag;
 import net.whgkswo.excuse_bundle.entities.posts.tags.repository.TagRepository;
+import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
+import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
 import net.whgkswo.excuse_bundle.komoran.KomoranService;
 import net.whgkswo.excuse_bundle.general.responses.page.PageUtil;
 import net.whgkswo.excuse_bundle.words.WordService;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,6 +33,13 @@ public class TagService {
 
 
     private static final double MIN_SIMILARITY_THRESHOLD = 0.7; // 최소 유사도
+
+    public Tag tagKeyToTag(String key){
+        String[] splitKeys = key.split(":", 2);
+        Tag.Category category = Tag.Category.valueOf(splitKeys[0]);
+        Optional<Tag> tag = tagRepository.findByCategoryAndValue(category, splitKeys[1]);
+        return tag.orElseThrow(() -> new BusinessLogicException(ExceptionType.tagNotFound(key)));
+    }
 
     // 컨트롤러 요청 받아 페이지로 래핑해 반환
     public Page<Tag> searchTags(SearchTagCommand command){

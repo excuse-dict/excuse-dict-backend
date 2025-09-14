@@ -2,6 +2,7 @@ package net.whgkswo.excuse_bundle.entities.posts.core.service;
 
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.entities.excuses.Excuse;
+import net.whgkswo.excuse_bundle.entities.excuses.dto.UpdateExcuseCommand;
 import net.whgkswo.excuse_bundle.entities.excuses.service.ExcuseService;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import net.whgkswo.excuse_bundle.entities.members.core.service.MemberService;
@@ -15,10 +16,12 @@ import net.whgkswo.excuse_bundle.entities.vote.mapper.VoteMapper;
 import net.whgkswo.excuse_bundle.entities.vote.service.VoteService;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
+import net.whgkswo.excuse_bundle.general.dto.DeleteCommand;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
 
@@ -98,5 +101,32 @@ public class PostService {
             voteService.savePostVote(post, command.voteType(), command.memberId());
             return true; // 생성됨
         }
+    }
+
+    // 게시물 수정
+    public void updatePost(long memberId, long postId, UpdateExcuseCommand command){
+
+        Post post = getPost(postId);
+
+        // 자기 게시물만 수정 가능
+        if(memberId != post.getMember().getId()) throw new BusinessLogicException(ExceptionType.UPDATE_FORBIDDEN);
+
+        excuseService.updateExcuse(post.getExcuse(), command);
+
+        post.setModifiedAt(LocalDateTime.now());
+
+        postRepository.save(post);
+    }
+
+    // 게시물 삭제
+    public void deletePost(DeleteCommand command){
+        Post post = getPost(command.targetId());
+
+        // 본인 작성글만 삭제 가능
+        if(!post.getMember().getId().equals(command.memberId())) throw new BusinessLogicException(ExceptionType.DELETE_FORBIDDEN);
+
+        post.setStatus(Post.Status.DELETED);
+
+        postRepository.save(post);
     }
 }

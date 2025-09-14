@@ -11,6 +11,7 @@ import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.posts.core.service.GetPostsCommand;
 import net.whgkswo.excuse_bundle.entities.posts.core.service.PostService;
 import net.whgkswo.excuse_bundle.entities.vote.dto.VoteRequestDto;
+import net.whgkswo.excuse_bundle.general.dto.DeleteCommand;
 import net.whgkswo.excuse_bundle.general.responses.Response;
 import net.whgkswo.excuse_bundle.general.responses.dtos.PageSearchResponseDto;
 import net.whgkswo.excuse_bundle.general.responses.dtos.SimpleBooleanDto;
@@ -87,5 +88,29 @@ public class PostController {
         return ResponseEntity.ok(
                 Response.of(new SimpleBooleanDto(created))
         );
+    }
+
+    // 게시물 수정
+    @PatchMapping("/{postId}")
+    public ResponseEntity<?> handleUpdateRequest(@PathVariable long postId,
+                                                 @RequestBody @Valid ExcuseRequestDto dto,
+                                                 Authentication authentication
+                                                 ){
+        long memberId = authService.getMemberIdFromAuthentication(authentication);
+
+        postService.updatePost(memberId, postId, dto.toUpdateCommand());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    // 게시물 삭제
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<?> handleDeleteRequest(@PathVariable long postId,
+                                                 Authentication authentication){
+        long memberId = authService.getMemberIdFromAuthentication(authentication);
+
+        postService.deletePost(new DeleteCommand(postId, memberId));
+
+        return ResponseEntity.noContent().build();
     }
 }
