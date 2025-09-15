@@ -26,7 +26,6 @@ public class AuthService {
     private final RedisService redisService;
     private final RedisKeyMapper redisKeyMapper;
     private final AdminEmailConfig adminEmailConfig;
-    private final JwtTokenizer jwtTokenizer;
 
     // 메일 인증정보 만료 시간
     private static final int EMAIL_VERIFICATION_DURATION_SEC = 3600;

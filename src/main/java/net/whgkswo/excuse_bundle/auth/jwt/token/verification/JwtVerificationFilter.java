@@ -1,5 +1,6 @@
 package net.whgkswo.excuse_bundle.auth.jwt.token.verification;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,12 +33,13 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
             Map<String, Object> claims = verifyJws(request);
             setAuthenticationToContext(claims);
         }catch (Exception e){
+            request.setAttribute("exception", e);
+
             // 예외 발생 시 SecurifyContext에 Authentication이 저장되지 않음 -> AuthenticationException 발생
             // AuthenticationEntryPoint가 AuthenticationException를 캐치해서 처리하는데
-            // 여기서 attribute를 설정해 둔 정보를 뽑아서 사용함
-            request.setAttribute("exception", e);
+            // 여기서 attribute를 설정해 둔 구체적인 예외 정보를 뽑아서 사용함
+            //request.setAttribute("exception", e);
         }
-
         // 다음 필터로 진행
         filterChain.doFilter(request, response);
     }

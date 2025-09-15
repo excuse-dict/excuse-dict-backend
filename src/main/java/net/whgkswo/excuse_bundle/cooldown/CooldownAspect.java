@@ -30,6 +30,13 @@ public class CooldownAspect {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
+        HttpServletRequest request = getCurrentRequest();
+
+        // 요청에 문제가 있을 시 쿨다운 체크 스킵 (ex: 401)
+        if(request.getAttribute("exception") != null){
+            return;
+        }
+
         String identifier = getIdentifier(authentication);
 
         RedisKey redisKey = new RedisKey(RedisKey.Prefix.GENERATOR_COOLDOWN, identifier);
@@ -42,7 +49,7 @@ public class CooldownAspect {
             throw new BusinessLogicException(ExceptionType.tooManyGenerate(remainingTime));
         }
 
-        int cooldown = getCooldown(authentication, annotation);
+        int cooldown = annotation.cooldownSeconds();
 
         // redis에 요청 기록
         redisService.put(redisKey, true, cooldown);
@@ -54,21 +61,9 @@ public class CooldownAspect {
 
         boolean isValidUser = authService.isValidUser(authentication);
 
-        try{
-            return isValidUser ?
-                    authService.getMemberIdFromAuthentication(authentication) + "" // 회원이면 회원 id
-                    : getClientIp(request); // 비회원일 경우 ip
-        } catch (ClassCastException e) {
-            return getClientIp(request);
-        }
-    }
-
-    private int getCooldown(Authentication authentication, Cooldown annotation){
-        boolean isValidUser = authService.isValidUser(authentication);
-
-        return isValidUser
-                ? annotation.memberSeconds()
-                : annotation.guestSeconds();
+        return isValidUser ?
+                authService.getMemberIdFromAuthentication(authentication) + "" // 회원이면 회원 id
+                : getClientIp(request); // 비회원일 경우 ip
     }
 
     private HttpServletRequest getCurrentRequest() {

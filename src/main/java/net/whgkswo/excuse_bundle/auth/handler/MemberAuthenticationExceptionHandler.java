@@ -22,6 +22,7 @@ public class MemberAuthenticationExceptionHandler implements AuthenticationEntry
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    // 시큐리티 필터 체인에서 .permitAll()로 설정된 엔드포인트들은 AuthenticationException이 발생하지 않음
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         // JwtVerificationFilter에서 attribute에 넣어 둔 예외 추출
