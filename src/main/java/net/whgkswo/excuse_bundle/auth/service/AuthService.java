@@ -120,6 +120,8 @@ public class AuthService {
         if(authentication == null || !authentication.isAuthenticated())
             throw new BadRequestException(ExceptionType.AUTHENTICATION_FAILED);
 
+        // Postman으로 요청한 경우 String Principal이기 때문에 ClassCastException 발생 가능
+        // 실제 어플리케이션에서는 정상 동작함
         CustomPrincipal principal = (CustomPrincipal) authentication.getPrincipal();
         return principal.memberId();
     }
@@ -129,5 +131,12 @@ public class AuthService {
         if(authentication == null) return Optional.empty();
 
         return Optional.of(getMemberIdFromAuthentication(authentication));
+    }
+
+    public boolean isValidUser(Authentication authentication){
+
+        if(authentication == null || !authentication.isAuthenticated()) return false;
+
+        return authentication.getPrincipal() instanceof CustomPrincipal;
     }
 }

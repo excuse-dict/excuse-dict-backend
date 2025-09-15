@@ -66,7 +66,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH,MemberController.BASE_PATH_ANY + "/passwords/reset").permitAll() // 비밀번호 변경도 허용
                         .requestMatchers(EmailController.BASE_PATH_ANY + "/**").permitAll() // 이메일 관련 API는 예외
                         .requestMatchers(AuthController.BASE_PATH_ANY + "/**").permitAll() // auth 전체 허용
-                        .requestMatchers(HttpMethod.GET, ExcuseController.BASE_URL_ANY + "/generate").permitAll() // 핑계 생성기 전체 허용
+                        .requestMatchers(HttpMethod.POST, ExcuseController.BASE_URL_ANY + "/generate").permitAll() // 핑계 생성기 전체 허용
                         .requestMatchers("/h2/**").permitAll() // h2 볼때는 예외
                         .requestMatchers(HttpMethod.GET, PostController.BASE_PATH + "/**").permitAll() // 비회원도 조회는 허용
                         .anyRequest().authenticated() // 위에 명시하지 않은 요청은 전부 인증 필요

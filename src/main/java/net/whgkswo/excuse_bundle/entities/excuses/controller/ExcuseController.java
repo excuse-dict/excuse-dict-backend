@@ -1,13 +1,15 @@
 package net.whgkswo.excuse_bundle.entities.excuses.controller;
 
+import jakarta.annotation.Nullable;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import net.whgkswo.excuse_bundle.cooldown.Cooldown;
+import net.whgkswo.excuse_bundle.entities.excuses.dto.GenerateExcuseDto;
 import net.whgkswo.excuse_bundle.gemini.prompt.PromptBuilder;
 import net.whgkswo.excuse_bundle.gemini.service.GeminiService;
 import org.hibernate.validator.constraints.Length;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -21,10 +23,12 @@ public class ExcuseController {
     private final GeminiService geminiService;
     private final PromptBuilder promptBuilder;
 
-    @GetMapping("/generate")
-    public Mono<String> generateExcuse(@RequestParam @Length(min = 5, max = 100, message = "상황은 5~100자로 입력해주세요.") String situation){
+    @PostMapping("/generate")
+    @Cooldown(memberSeconds = 5, guestSeconds = 60)
+    public Mono<String> generateExcuse(@RequestBody @Valid GenerateExcuseDto dto,
+                                       @Nullable Authentication authentication){
 
-        String prompt = promptBuilder.buildExcusePrompt(situation);
+        String prompt = promptBuilder.buildExcusePrompt(dto.situation());
 
         return geminiService.generateText(prompt);
     }

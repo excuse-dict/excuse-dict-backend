@@ -76,4 +76,8 @@ public record ExceptionType(int status, String code, String message){
     public static ExceptionType tooManyVerificationCodeRequest(long timeToWait){
         return ExceptionType.of(429, "TOO_MANY_VERIFICATION_CODE_REQUEST", String.format("연달아 코드를 발급하실 수 없습니다. %d초 후 다시 시도해주세요.", timeToWait));
     }
+
+    public static ExceptionType tooManyGenerate(long remainingTime){
+        return ExceptionType.of(429, "TOO_MANY_GENERATE", String.format("연속해서 핑계 생성기를 이용하실 수 없습니다. %d초 후 다시 시도해주세요", remainingTime));
+    }
 }
