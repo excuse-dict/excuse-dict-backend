@@ -1,12 +1,14 @@
 package net.whgkswo.excuse_bundle.entities.posts.core.service;
 
 import lombok.RequiredArgsConstructor;
+import net.whgkswo.excuse_bundle.auth.redis.RedisService;
 import net.whgkswo.excuse_bundle.entities.excuses.Excuse;
 import net.whgkswo.excuse_bundle.entities.excuses.dto.UpdateExcuseCommand;
 import net.whgkswo.excuse_bundle.entities.excuses.service.ExcuseService;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import net.whgkswo.excuse_bundle.entities.members.core.service.MemberService;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostResponseDto;
+import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostSummaryResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.VoteCommand;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.posts.core.mapper.PostMapper;
@@ -17,11 +19,16 @@ import net.whgkswo.excuse_bundle.entities.vote.service.VoteService;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
 import net.whgkswo.excuse_bundle.general.dto.DeleteCommand;
+import net.whgkswo.excuse_bundle.pager.PageHelper;
+import net.whgkswo.excuse_bundle.ranking.RankingScheduler;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -34,6 +41,8 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final VoteMapper voteMapper;
+    private final RedisService redisService;
+    private final PageHelper pageHelper;
 
     // 게시글 등록
     @Transactional
@@ -72,6 +81,24 @@ public class PostService {
     public Post getPost(long postId){
         Optional<Post> optionalPost = findPost(postId);
         return optionalPost.orElseThrow(() -> new BusinessLogicException(ExceptionType.POST_NOT_FOUND));
+    }
+
+    // 순추천수 Top 게시글 조회
+    public Page<Post> getTopNetLikes(Pageable pageable){
+        return postRepository.findTopNetLikes(pageable, Post.Status.ACTIVE);
+    }
+
+    // 명예의 전당 게시글 조회
+    public Page<PostSummaryResponseDto> getHallOfFamePosts(Pageable pageable){
+        Optional<List<Long>> optionalPosts = redisService.getAsList(RankingScheduler.HALL_OF_FAME_REDISKEY, Long.class);
+        List<Long> postIdList = optionalPosts.orElse(new ArrayList<>());
+
+        // ID를 바탕으로 게시글 조회
+        List<Post> posts = postRepository.findAllById(postIdList);
+
+        List<PostSummaryResponseDto> dtos = postMapper.postsToMultiPostResponseDtos(posts);
+
+        return pageHelper.paginate(dtos, pageable);
     }
 
     // 게시글 추천

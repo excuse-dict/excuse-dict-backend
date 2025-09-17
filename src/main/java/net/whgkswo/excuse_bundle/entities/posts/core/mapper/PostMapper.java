@@ -30,6 +30,12 @@ public interface PostMapper {
         return posts.map(this::postTomultiPostSummaryResponseDto);
     }
 
+    default List<PostSummaryResponseDto> postsToMultiPostResponseDtos(List<Post> posts){
+        return posts.stream()
+                .map(this::postTomultiPostSummaryResponseDto)
+                .toList();
+    }
+
     // 댓글 리스트 -> 카운트 변환기
     @Named("commentsToCount")
     default int commentsToCount(List<Comment> comments) {

@@ -1,0 +1,2 @@
+CREATE INDEX IF NOT EXISTS idx_net_votes
+ON post((upvote_count - downvote_count) DESC);

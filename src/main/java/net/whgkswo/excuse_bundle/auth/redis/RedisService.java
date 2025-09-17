@@ -1,5 +1,7 @@
 package net.whgkswo.excuse_bundle.auth.redis;
 
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
@@ -8,6 +10,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -16,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 public class RedisService {
     private final RedisTemplate<String, String> redisTemplate;
     private final JsonSerializer jsonSerializer;
+    private final ObjectMapper objectMapper;
 
     // 저장
     public <T> void put(RedisKey key, T value, int durationOfSec){
@@ -53,13 +57,28 @@ public class RedisService {
         }
     }
 
-    // 조회 (타입 지정)
+    // 조회 (단일 타입)
     public <T> Optional<T> get(RedisKey key, Class<T> clazz){
         try{
             String json = redisTemplate.opsForValue().get(key.toString());
             if(json == null) return Optional.empty();
 
             T value = jsonSerializer.deserialize(json, clazz);
+            return Optional.ofNullable(value);
+        } catch (Exception e) {
+            throw new BusinessLogicException(ExceptionType.REDIS_CONNECTION_LOST);
+        }
+    }
+
+    // 조회 (리스트)
+    public <T> Optional<List<T>> getAsList(RedisKey key, Class<T> elementType) {
+        try {
+            String json = redisTemplate.opsForValue().get(key.toString());
+            if(json == null) return Optional.empty();
+
+            JavaType listType = objectMapper.getTypeFactory()
+                    .constructCollectionType(List.class, elementType);
+            List<T> value = objectMapper.readValue(json, listType);
             return Optional.ofNullable(value);
         } catch (Exception e) {
             throw new BusinessLogicException(ExceptionType.REDIS_CONNECTION_LOST);

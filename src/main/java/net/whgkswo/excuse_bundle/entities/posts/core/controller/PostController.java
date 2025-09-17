@@ -6,6 +6,7 @@ import net.whgkswo.excuse_bundle.auth.service.AuthService;
 import net.whgkswo.excuse_bundle.entities.excuses.dto.ExcuseRequestDto;
 import net.whgkswo.excuse_bundle.entities.posts.comments.service.CommentService;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostResponseDto;
+import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostSummaryResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.VoteCommand;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.posts.core.service.GetPostsCommand;
@@ -68,6 +69,20 @@ public class PostController {
 
         Pageable pageable = PageRequest.of(page, size);
         Page<PostResponseDto> posts = postService.getPosts(new GetPostsCommand(pageable, searchInput, memberId));
+        PageInfo pageInfo = PageInfo.from(posts);
+
+        return ResponseEntity.ok(
+                Response.of(new PageSearchResponseDto<>(posts, pageInfo))
+        );
+    }
+
+    // 명예의 전당 게시글 조회
+    @GetMapping("/hall-of-fame")
+    public ResponseEntity<?> handleGetHallOfFame(@RequestParam(defaultValue = "0") int page,
+                                                 @RequestParam(defaultValue = "10") int size){
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<PostSummaryResponseDto> posts = postService.getHallOfFamePosts(pageable);
         PageInfo pageInfo = PageInfo.from(posts);
 
         return ResponseEntity.ok(
