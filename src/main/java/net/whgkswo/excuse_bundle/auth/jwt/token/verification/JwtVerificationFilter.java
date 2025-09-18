@@ -10,9 +10,12 @@ import net.whgkswo.excuse_bundle.auth.CustomAuthorityUtils;
 import net.whgkswo.excuse_bundle.auth.jwt.principal.CustomPrincipal;
 import net.whgkswo.excuse_bundle.auth.jwt.token.tokenizer.JwtTokenizer;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
+import net.whgkswo.excuse_bundle.entities.posts.core.controller.PostController;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -29,16 +32,23 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        try{
-            Map<String, Object> claims = verifyJws(request);
-            setAuthenticationToContext(claims);
-        }catch (Exception e){
-            request.setAttribute("exception", e);
 
+        String authorization = request.getHeader("Authorization");
+
+        try{
+            if (authorization != null && authorization.startsWith("Bearer ")) {
+                // 기존 JWT 처리 로직
+                Map<String, Object> claims = verifyJws(request);
+                setAuthenticationToContext(claims);
+            } else {
+                // 토큰이 없으면 익명 Authentication 생성
+                setAnonymousAuthenticationToContext();
+            }
+        }catch (Exception e){
             // 예외 발생 시 SecurifyContext에 Authentication이 저장되지 않음 -> AuthenticationException 발생
             // AuthenticationEntryPoint가 AuthenticationException를 캐치해서 처리하는데
             // 여기서 attribute를 설정해 둔 구체적인 예외 정보를 뽑아서 사용함
-            //request.setAttribute("exception", e);
+            request.setAttribute("exception", e);
         }
         // 다음 필터로 진행
         filterChain.doFilter(request, response);
@@ -47,6 +57,15 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
     // true면 필터 예외
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException{
+
+        String path = request.getRequestURI();
+        String method = request.getMethod();
+
+        // 특정 요청은 토큰 없으면 익명 인증 객체 생성
+        if(method.equals("GET") && path.startsWith(PostController.BASE_PATH)){
+            return false;
+        }
+
         String authorization = request.getHeader("Authorization");
         // Authorization 헤더가 없거나 토큰이 Bearer로 시작하지 않으면 스킵
         return authorization == null || !authorization.startsWith("Bearer");
@@ -85,5 +104,16 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
         Authentication authentication = new UsernamePasswordAuthenticationToken(principal, null, authorities);
         // SecurityContext에 인증정보 저장
         SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    // 익명 인증정보 생성
+    private void setAnonymousAuthenticationToContext() {
+        UsernamePasswordAuthenticationToken anonymousAuth = new UsernamePasswordAuthenticationToken(
+                "anonymous",
+                null,
+                List.of(new SimpleGrantedAuthority("ANONYMOUS"))
+        );
+        anonymousAuth.setAuthenticated(true);
+        SecurityContextHolder.getContext().setAuthentication(anonymousAuth);
     }
 }

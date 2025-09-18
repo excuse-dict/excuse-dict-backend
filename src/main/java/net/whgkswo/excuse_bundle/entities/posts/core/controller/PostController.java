@@ -65,7 +65,7 @@ public class PostController {
                                             @Nullable Authentication authentication){
 
         Long memberId = null;
-        if(authentication != null) memberId = authService.getMemberIdFromAuthentication(authentication);
+        if(authService.isValidUser(authentication)) memberId = authService.getMemberIdFromAuthentication(authentication);
 
         Pageable pageable = PageRequest.of(page, size);
         Page<PostResponseDto> posts = postService.getPosts(new GetPostsCommand(pageable, searchInput, memberId));
@@ -79,10 +79,14 @@ public class PostController {
     // 명예의 전당 게시글 조회
     @GetMapping("/hall-of-fame")
     public ResponseEntity<?> handleGetHallOfFame(@RequestParam(defaultValue = "0") int page,
-                                                 @RequestParam(defaultValue = "10") int size){
+                                                 @RequestParam(defaultValue = "10") int size,
+                                                 @Nullable Authentication authentication){
+
+        Long memberId = null;
+        if(authService.isValidUser(authentication)) memberId = authService.getMemberIdFromAuthentication(authentication);
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<PostSummaryResponseDto> posts = postService.getHallOfFamePosts(pageable);
+        Page<PostResponseDto> posts = postService.getHallOfFamePosts(pageable, memberId);
         PageInfo pageInfo = PageInfo.from(posts);
 
         return ResponseEntity.ok(

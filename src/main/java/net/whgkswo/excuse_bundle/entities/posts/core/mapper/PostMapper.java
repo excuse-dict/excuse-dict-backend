@@ -46,7 +46,7 @@ public interface PostMapper {
                 .count();
     }
 
-    default PostResponseDto summaryToMultiPostResponseDto(PostSummaryResponseDto summary, Optional<PostVoteDto> optionalVote){
+    default PostResponseDto postSummaryResponseDtoToPostResponseDto(PostSummaryResponseDto summary, Optional<PostVoteDto> optionalVote){
 
         return new PostResponseDto(
                 summary.getPostId(),

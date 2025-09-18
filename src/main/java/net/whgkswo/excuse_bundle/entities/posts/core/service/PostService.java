@@ -66,12 +66,14 @@ public class PostService {
         Page<Post> posts = postRepository.findAllForList(command.pageable(), Post.Status.ACTIVE);
 
         return postMapper.postsToMultiPostResponseDtos(posts)
-                .map(summary -> {
-                    Post post = getPost(summary.getPostId());
-                    Optional<PostVote> optionalVote = voteService.getPostVoteFromCertainMember(post, command.memberId());
+                .map(summary -> mapSummaryToResponseDto(summary, command.memberId()));
+    }
 
-                    return postMapper.summaryToMultiPostResponseDto(summary, optionalVote.map(voteMapper::postVoteToPostVoteDto));
-                });
+    private PostResponseDto mapSummaryToResponseDto(PostSummaryResponseDto summary, Long memberId){
+        Post post = getPost(summary.getPostId());
+        Optional<PostVote> optionalVote = voteService.getPostVoteFromCertainMember(post, memberId);
+
+        return postMapper.postSummaryResponseDtoToPostResponseDto(summary, optionalVote.map(voteMapper::postVoteToPostVoteDto));
     }
 
     private Optional<Post> findPost(long postId){
@@ -89,14 +91,18 @@ public class PostService {
     }
 
     // 명예의 전당 게시글 조회
-    public Page<PostSummaryResponseDto> getHallOfFamePosts(Pageable pageable){
+    public Page<PostResponseDto> getHallOfFamePosts(Pageable pageable, Long memberId){
         Optional<List<Long>> optionalPosts = redisService.getAsList(RankingScheduler.HALL_OF_FAME_REDISKEY, Long.class);
         List<Long> postIdList = optionalPosts.orElse(new ArrayList<>());
 
         // ID를 바탕으로 게시글 조회
         List<Post> posts = postRepository.findAllById(postIdList);
 
-        List<PostSummaryResponseDto> dtos = postMapper.postsToMultiPostResponseDtos(posts);
+        List<PostSummaryResponseDto> summaries = postMapper.postsToMultiPostResponseDtos(posts);
+
+        List<PostResponseDto> dtos = summaries.stream()
+                .map(summary -> mapSummaryToResponseDto(summary, memberId))
+                .toList();
 
         return pageHelper.paginate(dtos, pageable);
     }
