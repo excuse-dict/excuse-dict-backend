@@ -94,6 +94,23 @@ public class PostController {
         );
     }
 
+    // 주간 Top 게시물 조회
+    @GetMapping("/weekly-top")
+    public ResponseEntity<?> handleGetWeeklyTop(@RequestParam(defaultValue = "0") int page,
+                                                @RequestParam(defaultValue = "10") int size,
+                                                @Nullable Authentication authentication){
+        Long memberId = null;
+        if(authService.isValidUser(authentication)) memberId = authService.getMemberIdFromAuthentication(authentication);
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<PostResponseDto> posts = postService.getWeeklyTopPosts(pageable, memberId);
+        PageInfo pageInfo = PageInfo.from(posts);
+
+        return ResponseEntity.ok(
+                Response.of(new PageSearchResponseDto<>(posts, pageInfo))
+        );
+    }
+
     // 게시물 추천/비추천
     @PostMapping("/{postId}/votes")
     public ResponseEntity<?> handleVoteRequest(@PathVariable long postId,

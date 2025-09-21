@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
@@ -28,9 +30,27 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "LEFT JOIN FETCH e.tags " + // 태그가 없을 수 있음
             "WHERE p.status = :status " +
             "ORDER BY p.upvoteCount - p.downvoteCount DESC ",
-            countQuery = "SELECT COUNT(p) FROM Post p"
+            countQuery = "SELECT COUNT(p) FROM Post p WHERE p.status = :status"
     )
     Page<Post> findTopNetLikes(Pageable pageable, @Param("status") Post.Status status);
+
+    // 최근 n일간 순추천수 Top 게시글 조회
+    @Query(value = "SELECT p FROM Post p " +
+            "JOIN FETCH p.member m " +
+            "JOIN FETCH m.memberRank " +
+            "JOIN FETCH p.excuse e " +
+            "LEFT JOIN FETCH e.tags " + // 태그가 없을 수 있음
+            "WHERE p.status = :status " +
+            "AND p.createdAt >= :startDateTime " +
+            "ORDER BY p.upvoteCount - p.downvoteCount DESC ",
+            countQuery = "SELECT COUNT(p) FROM Post p " +
+                    "WHERE p.status = :status " +
+                    "AND p.createdAt >= :startDateTime"
+    )
+    Page<Post> findRecentTopNetLikes(Pageable pageable,
+                                     @Param("status") Post.Status status,
+                                     @Param("startDateTime") LocalDateTime startDateTime
+    );
 
     // 게시물 상세 조회용
     @Query("SELECT p FROM Post p " +

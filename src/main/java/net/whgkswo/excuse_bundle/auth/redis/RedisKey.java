@@ -16,5 +16,6 @@ public record RedisKey(Prefix prefix, String identifier) {
         VERIFICATION_COMPLETE_REGISTRATION, // 회원가입 메일 인증여부
         VERIFICATION_COMPLETE_RESET_PASSWORD, // 비밀번호 재설정 메일 인증여부
         PASSWORD_RESET_TOKEN, // 비밀번호 재설정 인증 후 토큰
+        WEEKLY_TOP, // 주간 Top 게시글
     }
 }

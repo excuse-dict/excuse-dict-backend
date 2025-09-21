@@ -87,16 +87,40 @@ public class PostService {
         return optionalPost.orElseThrow(() -> new BusinessLogicException(ExceptionType.POST_NOT_FOUND));
     }
 
-    // 순추천수 Top 게시글 조회
+    // 올타임 순추천수 Top 게시글 조회
     public Page<Post> getTopNetLikes(Pageable pageable){
         return postRepository.findTopNetLikes(pageable, Post.Status.ACTIVE);
+    }
+
+    // 최근 n일 순추천수 Top 게시글 조회
+    public Page<Post> getRecentTopNetLikes(Pageable pageable, int days){
+
+        LocalDateTime startDateTime = LocalDateTime.now().minusDays(days);
+        
+        return postRepository.findRecentTopNetLikes(pageable, Post.Status.ACTIVE, startDateTime);
     }
 
     // 명예의 전당 게시글 조회
     public Page<PostResponseDto> getHallOfFamePosts(Pageable pageable, Long memberId){
         List<Long> postIdList = redisService.getAsList(RankingScheduler.HALL_OF_FAME_REDISKEY, Long.class);
 
-        // ID를 바탕으로 게시글 조회
+        // redis에서 추출한 ID를 바탕으로 게시글 조회
+        List<Post> posts = postRepository.findAllById(postIdList);
+
+        List<PostSummaryResponseDto> summaries = postMapper.postsToMultiPostResponseDtos(posts);
+
+        List<PostResponseDto> dtos = summaries.stream()
+                .map(summary -> mapSummaryToResponseDto(summary, memberId))
+                .toList();
+
+        return pageHelper.paginate(dtos, pageable);
+    }
+
+    // 주간 top 게시글 조회
+    public Page<PostResponseDto> getWeeklyTopPosts(Pageable pageable, Long memberId){
+        List<Long> postIdList = redisService.getAsList(RankingScheduler.WEEKLY_TOP_REDISKEY, Long.class);
+
+        // redis에서 추출한 ID를 바탕으로 게시글 조회
         List<Post> posts = postRepository.findAllById(postIdList);
 
         List<PostSummaryResponseDto> summaries = postMapper.postsToMultiPostResponseDtos(posts);
