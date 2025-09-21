@@ -16,7 +16,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "JOIN FETCH p.member m " +
             "JOIN FETCH m.memberRank " +
             "JOIN FETCH p.excuse e " +
-            "JOIN FETCH e.tags " +
+            "LEFT JOIN FETCH e.tags " + // 태그가 없을 수 있음
             "WHERE p.status = :status")
     Page<Post> findAllForList(Pageable pageable, @Param("status") Post.Status status);
 
@@ -25,7 +25,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "JOIN FETCH p.member m " +
             "JOIN FETCH m.memberRank " +
             "JOIN FETCH p.excuse e " +
-            "JOIN FETCH e.tags " +
+            "LEFT JOIN FETCH e.tags " + // 태그가 없을 수 있음
             "WHERE p.status = :status " +
             "ORDER BY p.upvoteCount - p.downvoteCount DESC ",
             countQuery = "SELECT COUNT(p) FROM Post p"
@@ -37,7 +37,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "JOIN FETCH p.member m " +
             "JOIN FETCH m.memberRank " +
             "JOIN FETCH p.excuse e " +
-            "JOIN FETCH e.tags " +
+            "LEFT JOIN FETCH e.tags " + // 태그가 없을 수 있음
             "WHERE p.id = :id")
     Optional<Post> findByIdForDetail(@Param("id") Long id);
 
