@@ -94,8 +94,7 @@ public class PostService {
 
     // 명예의 전당 게시글 조회
     public Page<PostResponseDto> getHallOfFamePosts(Pageable pageable, Long memberId){
-        Optional<List<Long>> optionalPosts = redisService.getAsList(RankingScheduler.HALL_OF_FAME_REDISKEY, Long.class);
-        List<Long> postIdList = optionalPosts.orElse(new ArrayList<>());
+        List<Long> postIdList = redisService.getAsList(RankingScheduler.HALL_OF_FAME_REDISKEY, Long.class);
 
         // ID를 바탕으로 게시글 조회
         List<Post> posts = postRepository.findAllById(postIdList);

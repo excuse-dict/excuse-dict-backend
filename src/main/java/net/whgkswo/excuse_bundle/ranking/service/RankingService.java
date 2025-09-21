@@ -16,7 +16,7 @@ public class RankingService {
 
     public boolean isPostInHallOfFame(long postId){
 
-        List<Long> hallOfFame = redisService.getAsList(RankingScheduler.HALL_OF_FAME_REDISKEY, Long.class).orElse(new ArrayList<>());
+        List<Long> hallOfFame = redisService.getAsList(RankingScheduler.HALL_OF_FAME_REDISKEY, Long.class);
 
         return hallOfFame.contains(postId);
     }

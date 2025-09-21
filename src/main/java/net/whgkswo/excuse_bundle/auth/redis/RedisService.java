@@ -10,6 +10,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -71,15 +73,17 @@ public class RedisService {
     }
 
     // 조회 (리스트)
-    public <T> Optional<List<T>> getAsList(RedisKey key, Class<T> elementType) {
+    public <T> List<T> getAsList(RedisKey key, Class<T> elementType) {
         try {
             String json = redisTemplate.opsForValue().get(key.toString());
-            if(json == null) return Optional.empty();
+            if(json == null) return Collections.emptyList();
 
             JavaType listType = objectMapper.getTypeFactory()
                     .constructCollectionType(List.class, elementType);
             List<T> value = objectMapper.readValue(json, listType);
-            return Optional.ofNullable(value);
+
+            if(value == null) return Collections.emptyList();
+            return value;
         } catch (Exception e) {
             throw new BusinessLogicException(ExceptionType.REDIS_CONNECTION_LOST);
         }
