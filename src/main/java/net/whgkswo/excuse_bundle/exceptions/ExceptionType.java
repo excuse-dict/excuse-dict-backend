@@ -27,8 +27,9 @@ public record ExceptionType(int status, String code, String message){
     public static final ExceptionType ACCESS_TOKEN_EXPIRED = ExceptionType.of(401, "ACCESS_TOKEN_EXPIRED", "액세스 토큰이 만료되었습니다. 다시 발급해주세요.");
     public static final ExceptionType REFRESH_TOKEN_INVALID = ExceptionType.of(401, "REFRESH_TOKEN_INVALID", "리프레시 토큰이 유효하지 않습니다.");
     public static final ExceptionType REFRESH_TOKEN_EXPIRED = ExceptionType.of(401, "REFRESH_TOKEN_EXPIRED", "리프레시 토큰이 만료되었습니다. 다시 발급해주세요.");
-    public static final ExceptionType UPDATE_FORBIDDEN = ExceptionType.of(403, "UPDATE_FORBIDDEN", "콘텐츠 작성자만 수정할 수 있습니다.");
     public static final ExceptionType DELETE_FORBIDDEN = ExceptionType.of(403, "DELETE_FORBIDDEN", "콘텐츠 작성자만 삭제할 수 있습니다.");
+    public static final ExceptionType HALL_OF_FAME_PROTECTED = ExceptionType.of(403, "HALL_OF_FAME_PROTECTED", "명예의 전당 게시글은 수정/삭제할 수 없습니다.");
+    public static final ExceptionType UPDATE_FORBIDDEN = ExceptionType.of(403, "UPDATE_FORBIDDEN", "콘텐츠 작성자만 수정할 수 있습니다.");
     public static final ExceptionType MEMBER_NOT_FOUND = ExceptionType.of(404, "MEMBER_NOT_FOUND","회원을 찾을 수 없습니다.");
     public static final ExceptionType MEMBER_NOT_FOUND_BY_EMAIL = ExceptionType.of(404, "MEMBER_NOT_FOUND_BY_EMAIL","해당 이메일로 가입된 회원을 찾을 수 없습니다.");
     public static final ExceptionType COMMENT_NOT_FOUND = ExceptionType.of(404, "COMMENT_NOT_FOUND", "댓글을 찾을 수 없습니다.");

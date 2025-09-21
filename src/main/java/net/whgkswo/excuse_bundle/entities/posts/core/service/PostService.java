@@ -20,7 +20,8 @@ import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
 import net.whgkswo.excuse_bundle.general.dto.DeleteCommand;
 import net.whgkswo.excuse_bundle.pager.PageHelper;
-import net.whgkswo.excuse_bundle.ranking.RankingScheduler;
+import net.whgkswo.excuse_bundle.ranking.scheduler.RankingScheduler;
+import net.whgkswo.excuse_bundle.ranking.service.RankingService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -38,6 +39,7 @@ public class PostService {
     private final ExcuseService excuseService;
     private final MemberService memberService;
     private final VoteService voteService;
+    private final RankingService rankingService;
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final VoteMapper voteMapper;
@@ -144,6 +146,9 @@ public class PostService {
         // 자기 게시물만 수정 가능
         if(memberId != post.getMember().getId()) throw new BusinessLogicException(ExceptionType.UPDATE_FORBIDDEN);
 
+        // 명예의 전당 게시글은 수정 불가
+        if(rankingService.isPostInHallOfFame(postId)) throw new BusinessLogicException(ExceptionType.HALL_OF_FAME_PROTECTED);
+
         excuseService.updateExcuse(post.getExcuse(), command);
 
         post.setModifiedAt(LocalDateTime.now());
@@ -157,6 +162,9 @@ public class PostService {
 
         // 본인 작성글만 삭제 가능
         if(!post.getMember().getId().equals(command.memberId())) throw new BusinessLogicException(ExceptionType.DELETE_FORBIDDEN);
+
+        // 명예의 전당 게시물은 삭제 불가
+        if(rankingService.isPostInHallOfFame(command.targetId())) throw new BusinessLogicException(ExceptionType.HALL_OF_FAME_PROTECTED);
 
         post.setStatus(Post.Status.DELETED);
 
