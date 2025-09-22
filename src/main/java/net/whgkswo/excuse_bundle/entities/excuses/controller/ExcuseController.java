@@ -24,9 +24,10 @@ public class ExcuseController {
     public static final String BASE_URL = "/api/v1/excuses";
     public static final String BASE_URL_ANY = "/api/*/excuses";
 
+    public static final String GEMINI_FALLBACK = "Gemini 요청 실패";
+
     private final GeminiService geminiService;
     private final PromptBuilder promptBuilder;
-    private final AuthService authService;
 
     // 비회원용 (회원도 가능 - 회원용과 쿨타임을 공유)
     @PostMapping("/generate/guests")
@@ -35,7 +36,7 @@ public class ExcuseController {
 
         String prompt = promptBuilder.buildExcusePrompt(dto.situation());
 
-        return geminiService.generateText(prompt);
+        return geminiService.generateText(prompt, String.class, GEMINI_FALLBACK);
     }
 
     // 회원용
@@ -50,6 +51,6 @@ public class ExcuseController {
         String prompt = promptBuilder.buildExcusePrompt(dto.situation());
 
         // 비동기 요청시 스레드 간 Security Context가 유실되는 문제가 발생하여 동기로 전환
-        return geminiService.generateText(prompt).block();
+        return geminiService.generateText(prompt, String.class, GEMINI_FALLBACK).block();
     }
 }
