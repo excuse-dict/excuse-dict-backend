@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import net.whgkswo.excuse_bundle.entities.BaseEntity;
-import net.whgkswo.excuse_bundle.serializers.StringJsonToSetConverter;
+import net.whgkswo.excuse_bundle.lib.json.StringJsonToSetConverter;
 
 import java.util.Set;
 

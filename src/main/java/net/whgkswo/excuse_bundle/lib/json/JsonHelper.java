@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_bundle.serializers;
+package net.whgkswo.excuse_bundle.lib.json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,10 +6,11 @@ import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
-public class JsonSerializer {
+public class JsonHelper {
 
     private final ObjectMapper objectMapper;
 
@@ -39,5 +40,14 @@ public class JsonSerializer {
         } catch (JsonProcessingException e) {
             throw new BusinessLogicException(ExceptionType.DESERIALIZATION_FAILED);
         }
+    }
+
+    // 역직렬화 (Mono)
+    public <T> Mono<T> deserializeMono(String jsonData, Class<T> responseType) {
+        return Mono.fromCallable(() -> deserialize(jsonData, responseType))
+                .onErrorMap(
+                        BusinessLogicException.class,
+                        e -> new RuntimeException("JSON 파싱 실패: " + e.getMessage())
+                );
     }
 }

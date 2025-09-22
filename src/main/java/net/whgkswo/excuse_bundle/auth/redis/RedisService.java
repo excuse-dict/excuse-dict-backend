@@ -5,12 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
-import net.whgkswo.excuse_bundle.serializers.JsonSerializer;
+import net.whgkswo.excuse_bundle.lib.json.JsonHelper;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -20,13 +19,13 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class RedisService {
     private final RedisTemplate<String, String> redisTemplate;
-    private final JsonSerializer jsonSerializer;
+    private final JsonHelper jsonHelper;
     private final ObjectMapper objectMapper;
 
     // 저장
     public <T> void put(RedisKey key, T value, int durationOfSec){
         try{
-            String json = jsonSerializer.serialize(value);
+            String json = jsonHelper.serialize(value);
 
             redisTemplate.opsForValue().set(
                     key.toString(),
@@ -41,7 +40,7 @@ public class RedisService {
     // 저장 (만료 기한 없음)
     public <T> void put(RedisKey key, T value){
         try{
-            String json = jsonSerializer.serialize(value);
+            String json = jsonHelper.serialize(value);
 
             redisTemplate.opsForValue().set(key.toString(), json);
         } catch (Exception e) {
@@ -65,7 +64,7 @@ public class RedisService {
             String json = redisTemplate.opsForValue().get(key.toString());
             if(json == null) return Optional.empty();
 
-            T value = jsonSerializer.deserialize(json, clazz);
+            T value = jsonHelper.deserialize(json, clazz);
             return Optional.ofNullable(value);
         } catch (Exception e) {
             throw new BusinessLogicException(ExceptionType.REDIS_CONNECTION_LOST);

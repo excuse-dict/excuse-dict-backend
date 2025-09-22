@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_bundle.serializers;
+package net.whgkswo.excuse_bundle.lib.json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

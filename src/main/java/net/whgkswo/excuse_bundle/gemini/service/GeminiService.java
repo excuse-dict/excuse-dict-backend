@@ -1,15 +1,13 @@
 package net.whgkswo.excuse_bundle.gemini.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
+import net.whgkswo.excuse_bundle.lib.json.JsonHelper;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +20,7 @@ public class GeminiService {
 
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
+    private final JsonHelper jsonHelper;
 
     public <T> Mono<T> generateText(String prompt, Class<T> responseType, T fallback) {
 
@@ -40,7 +39,7 @@ public class GeminiService {
                 .retrieve()
                 .bodyToMono(Map.class)
                 .map(this::extractResponse)
-                .flatMap(text -> parseResponse(text, responseType))
+                .flatMap(text -> jsonHelper.deserializeMono(text, responseType))
                 .onErrorResume(e -> Mono.just(fallback));
     }
 
@@ -63,20 +62,6 @@ public class GeminiService {
             return (String) parts.get(0).get("text");
         } catch (Exception e) {
             throw new RuntimeException("응답 파싱 실패: " + e.getMessage());
-        }
-    }
-
-    // 응답 데이터 파싱
-    private <T> Mono<T> parseResponse(String text, Class<T> responseType) {
-        try {
-            if (responseType == String.class) {
-                return Mono.just((T) text);
-            }
-            // JSON 파싱 시도
-            T parsed = objectMapper.readValue(text, responseType);
-            return Mono.just(parsed);
-        } catch (Exception e) {
-            return Mono.error(new RuntimeException("JSON 파싱 실패: " + e.getMessage()));
         }
     }
 }
