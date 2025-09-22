@@ -5,7 +5,7 @@ import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.PostVote;
 import net.whgkswo.excuse_bundle.entities.vote.entity.VoteType;
-import net.whgkswo.excuse_bundle.lib.TimeHelper;
+import net.whgkswo.excuse_bundle.lib.time.TimeHelper;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -25,8 +25,8 @@ public class HotScoreService {
     // 201 ~ 300 -> 15점
     // 301+ -> 10점
     private static final List<Integer> SCORE_THRESHOLD = List.of(10, 50, 100, 200, 300, Integer.MAX_VALUE);
-    private static final List<Integer> SCORE_VALUES_LIKES = List.of(100, 65, 40, 25, 15, 10);
-    private static final List<Integer> SCORE_VALUES_COMMENTS = List.of(300, 180, 120, 80, 50, 30);
+    private static final List<Integer> SCORE_VALUES_LIKES = List.of(100, 65, 40, 25, 15, 10); // 좋아요
+    private static final List<Integer> SCORE_VALUES_COMMENTS = List.of(300, 180, 120, 80, 50, 30); // 이건 댓글
 
     private static final int WEEK_TO_MINUTES = 60 * 24 * 7;
 

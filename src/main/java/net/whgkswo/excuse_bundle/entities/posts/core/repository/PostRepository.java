@@ -47,6 +47,14 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                                @Param("startDateTime") LocalDateTime startDateTime
     );
 
+    // 랜덤 게시물 n개 조회
+    @Query(value = "SELECT * FROM post " +
+            "ORDER BY RAND() " +
+            "LIMIT :amount",
+            nativeQuery = true
+    )
+    List<Post> findRandomPosts(@Param("amount") int amount);
+
     // 게시물 상세 조회용
     @Query("SELECT p FROM Post p " +
             "JOIN FETCH p.member m " +

@@ -13,6 +13,7 @@ import net.whgkswo.excuse_bundle.entities.members.core.repositoriy.MemberReposit
 import net.whgkswo.excuse_bundle.entities.members.email.dto.VerificationPurpose;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
+import net.whgkswo.excuse_bundle.lib.random.RandomCodeGenerator;
 import org.springframework.core.env.Environment;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -32,10 +33,12 @@ public class EmailService {
     private final RedisService redisService;
     private final RedisKeyMapper redisKeyMapper;
     private final AuthService authService;
+    private final RandomCodeGenerator randomCodeGenerator;
 
     private static final int CODE_DURATION_SEC = 300; // 코드 유효기간
     private static final int CODE_RECREATION_COOLDOWN = 30; // 코드 재발급 최소 대기시간
     private static final int MIN_TTL_FOR_CODE_RECREATION = CODE_DURATION_SEC - CODE_RECREATION_COOLDOWN;
+    private static final int VERIFICATION_CODE_LENGTH = 6;
 
     // 이메일 유효성 검사
     public void validateEmail(String email){
@@ -59,7 +62,7 @@ public class EmailService {
         }
 
         // 인증 코드 생성
-        VerificationCode code = authService.generateVerificationCode();
+        VerificationCode code = new VerificationCode(randomCodeGenerator.generateRandomCode(VERIFICATION_CODE_LENGTH));
 
         // 코드 만료시간 계산
         LocalDateTime expiryTime = getCodeExpiryTime();

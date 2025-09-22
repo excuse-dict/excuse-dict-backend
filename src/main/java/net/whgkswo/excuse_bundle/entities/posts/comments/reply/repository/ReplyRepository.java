@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ReplyRepository extends JpaRepository<Reply, Long> {
@@ -19,4 +20,12 @@ public interface ReplyRepository extends JpaRepository<Reply, Long> {
             "JOIN FETCH r.member " +
             "WHERE r.id = :replyId")
     Optional<Reply> findByReplyId(@Param("replyId") long replyId);
+
+    // 랜덤 답글 n개 조회
+    @Query(value = "SELECT * FROM reply " +
+            "ORDER BY RAND() " +
+            "LIMIT :amount",
+            nativeQuery = true
+    )
+    List<Reply> findRandomReplies(@Param("amount") int amount);
 }

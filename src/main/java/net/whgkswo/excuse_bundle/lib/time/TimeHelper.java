@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_bundle.lib;
+package net.whgkswo.excuse_bundle.lib.time;
 
 import org.springframework.stereotype.Component;
 

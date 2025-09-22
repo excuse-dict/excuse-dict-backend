@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -75,6 +76,11 @@ public class ReplyService {
                     .orElse(null);
             return replyMapper.replyToReplyResponseDto(reply, myVote);
         });
+    }
+
+    // 랜덤 답글 n개 조회
+    public List<Reply> getRandomReplies(int amount){
+        return replyRepository.findRandomReplies(amount);
     }
 
     // 대댓글 추천/비추천

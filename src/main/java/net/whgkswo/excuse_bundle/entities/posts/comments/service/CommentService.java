@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -61,7 +62,7 @@ public class CommentService {
         postRepository.save(post);
     }
 
-    // 댓글 조회
+    // 댓글 조회(다수)
     @Transactional(readOnly = true)
     public Page<CommentResponseDto> getComments(GetCommentsCommand command){
 
@@ -77,6 +78,11 @@ public class CommentService {
                     .orElse(null);
             return commentMapper.commentToCommentResponseDto(comment, myVote);
         });
+    }
+
+    // 랜덤 댓글 n개 조회
+    public List<Comment> getRandomComments(int amount){
+        return commentRepository.findRandomComments(amount);
     }
 
     // 댓글 추천
