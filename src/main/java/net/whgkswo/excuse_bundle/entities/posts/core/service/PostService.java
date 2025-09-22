@@ -14,6 +14,8 @@ import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.posts.core.mapper.PostMapper;
 import net.whgkswo.excuse_bundle.entities.posts.core.repository.PostRepository;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.PostVote;
+import net.whgkswo.excuse_bundle.entities.posts.hotscore.HotScoreService;
+import net.whgkswo.excuse_bundle.entities.posts.hotscore.PostWithHotScoreDto;
 import net.whgkswo.excuse_bundle.entities.vote.mapper.VoteMapper;
 import net.whgkswo.excuse_bundle.entities.vote.service.VoteService;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
@@ -23,12 +25,12 @@ import net.whgkswo.excuse_bundle.pager.PageHelper;
 import net.whgkswo.excuse_bundle.ranking.scheduler.RankingScheduler;
 import net.whgkswo.excuse_bundle.ranking.service.RankingService;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -45,6 +47,7 @@ public class PostService {
     private final VoteMapper voteMapper;
     private final RedisService redisService;
     private final PageHelper pageHelper;
+    private final HotScoreService hotScoreService;
 
     // 게시글 등록
     @Transactional
@@ -93,11 +96,21 @@ public class PostService {
     }
 
     // 최근 n일 순추천수 Top 게시글 조회
-    public Page<Post> getRecentTopNetLikes(Pageable pageable, int days){
+    public List<Post> getRecentTopNetLikes(int days){
 
         LocalDateTime startDateTime = LocalDateTime.now().minusDays(days);
+
+        List<Post> posts = postRepository.findRecentPosts( Post.Status.ACTIVE, startDateTime);
+
+        // 가중치 적용하여 재정렬
+        List<Post> sortedPosts = posts.stream()
+                .map(post -> new PostWithHotScoreDto(post, hotScoreService.calculateHotScore(post)))
+                .sorted((a, b) -> Double.compare(b.hotScore(), a.hotScore()))
+                .limit(RankingScheduler.WEEKLY_TOP_SIZE)
+                .map(dto -> dto.post())
+                .toList();
         
-        return postRepository.findRecentTopNetLikes(pageable, Post.Status.ACTIVE, startDateTime);
+        return sortedPosts;
     }
 
     // 명예의 전당 게시글 조회

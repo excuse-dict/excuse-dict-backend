@@ -27,7 +27,7 @@ public class RankingScheduler {
     private static final int HALL_OF_FAME_SIZE = 100;
     public static final RedisKey HALL_OF_FAME_REDISKEY = new RedisKey(RedisKey.Prefix.HALL_OF_FAME, "posts");
 
-    private static final int WEEKLY_TOP_SIZE = 20;
+    public static final int WEEKLY_TOP_SIZE = 20;
     public static final RedisKey WEEKLY_TOP_REDISKEY = new RedisKey(RedisKey.Prefix.WEEKLY_TOP, "posts");
 
     @Transactional(readOnly = true)
@@ -55,8 +55,7 @@ public class RankingScheduler {
     @Scheduled(cron = "0 0 * * * *")
     protected void setWeeklyTop(){
 
-        Pageable pageable = PageRequest.of(0, WEEKLY_TOP_SIZE);
-        List<Post> posts = postService.getRecentTopNetLikes(pageable, 7).stream().toList();
+        List<Post> posts = postService.getRecentTopNetLikes(7);
 
         // 레디스에 id 저장
         List<Long> postIdList = posts.stream()
