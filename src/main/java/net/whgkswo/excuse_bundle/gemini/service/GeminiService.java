@@ -2,12 +2,14 @@ package net.whgkswo.excuse_bundle.gemini.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import net.whgkswo.excuse_bundle.gemini.fallback.GeminiFallbackProvider;
 import net.whgkswo.excuse_bundle.lib.json.JsonHelper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 
@@ -19,10 +21,9 @@ public class GeminiService {
     private String apiKey;
 
     private final WebClient webClient;
-    private final ObjectMapper objectMapper;
     private final JsonHelper jsonHelper;
 
-    public <T> Mono<T> generateText(String prompt, Class<T> responseType, T fallback) {
+    public <T extends GeminiFallbackProvider<T>> Mono<T> generateText(String prompt, Class<T> responseType) {
 
         // 요청 바디 생성
         Map<String, Object> requestBody = createRequestBody(prompt);
@@ -39,8 +40,16 @@ public class GeminiService {
                 .retrieve()
                 .bodyToMono(Map.class)
                 .map(this::extractResponse)
+                .map(jsonHelper::clearJson)
                 .flatMap(text -> jsonHelper.deserializeMono(text, responseType))
-                .onErrorResume(e -> Mono.just(fallback));
+                .onErrorResume(e -> {
+                    try {
+                        T fallback = responseType.getDeclaredConstructor().newInstance().getFallback();
+                        return Mono.just(fallback);
+                    } catch (Exception ex) {
+                        return Mono.error(ex);
+                    }
+                });
     }
 
     // 요청 바디 생성

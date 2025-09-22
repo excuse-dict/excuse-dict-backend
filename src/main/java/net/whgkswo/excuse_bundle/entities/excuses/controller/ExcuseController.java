@@ -6,8 +6,10 @@ import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.service.AuthService;
 import net.whgkswo.excuse_bundle.cooldown.Cooldown;
 import net.whgkswo.excuse_bundle.entities.excuses.dto.GenerateExcuseDto;
+import net.whgkswo.excuse_bundle.gemini.dto.GenerateExcuseResponseDto;
 import net.whgkswo.excuse_bundle.gemini.prompt.PromptBuilder;
 import net.whgkswo.excuse_bundle.gemini.service.GeminiService;
+import net.whgkswo.excuse_bundle.general.responses.dtos.SimpleStringDto;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
@@ -32,11 +34,11 @@ public class ExcuseController {
     // 비회원용 (회원도 가능 - 회원용과 쿨타임을 공유)
     @PostMapping("/generate/guests")
     @Cooldown(cooldownSeconds = 60)
-    public Mono<String> generateExcuse(@RequestBody @Valid GenerateExcuseDto dto){
+    public Mono<GenerateExcuseResponseDto> generateExcuse(@RequestBody @Valid GenerateExcuseDto dto){
 
-        String prompt = promptBuilder.buildExcusePrompt(dto.situation());
+        String prompt = promptBuilder.buildExcusePrompt(dto.situation(), 5);
 
-        return geminiService.generateText(prompt, String.class, GEMINI_FALLBACK);
+        return geminiService.generateText(prompt, GenerateExcuseResponseDto.class);
     }
 
     // 회원용
@@ -45,12 +47,12 @@ public class ExcuseController {
     // 따라서 회원은 반드시 회원용 엔드포인트로 요청을 보내야 함
     @PostMapping("/generate/members")
     @Cooldown(cooldownSeconds = 5)
-    public String generateExcuse(@RequestBody @Valid GenerateExcuseDto dto,
+    public GenerateExcuseResponseDto generateExcuse(@RequestBody @Valid GenerateExcuseDto dto,
                                        Authentication authentication){
 
-        String prompt = promptBuilder.buildExcusePrompt(dto.situation());
+        String prompt = promptBuilder.buildExcusePrompt(dto.situation(), 5);
 
         // 비동기 요청시 스레드 간 Security Context가 유실되는 문제가 발생하여 동기로 전환
-        return geminiService.generateText(prompt, String.class, GEMINI_FALLBACK).block();
+        return geminiService.generateText(prompt, GenerateExcuseResponseDto.class).block();
     }
 }

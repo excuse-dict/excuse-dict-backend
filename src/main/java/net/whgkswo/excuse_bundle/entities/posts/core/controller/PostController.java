@@ -35,7 +35,6 @@ import java.net.URI;
 public class PostController {
     private final AuthService authService;
     private final PostService postService;
-    private final CommentService commentService;
 
     public static final String BASE_PATH = "/api/v1/posts";
     public static final String BASE_PATH_ANY = "/api/*/posts";
@@ -47,7 +46,7 @@ public class PostController {
 
         long memberId = authService.getMemberIdFromAuthentication(authentication);
 
-        Post post = postService.createPost(memberId, dto.situation(), dto.excuse(), dto.tags());
+        Post post = postService.createPost(memberId, dto.getSituation(), dto.getExcuse(), dto.getTags());
 
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest()
