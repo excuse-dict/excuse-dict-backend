@@ -3,6 +3,7 @@ package net.whgkswo.excuse_bundle.entities.posts.core.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import net.whgkswo.excuse_bundle.entities.excuses.dto.ExcuseResponseDto;
 import net.whgkswo.excuse_bundle.entities.members.core.dto.MemberResponseDto;
 import net.whgkswo.excuse_bundle.entities.vote.dto.PostVoteDto;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Setter
 public class WeeklyTopPostResponseDto extends PostResponseDto implements Dto {
 
     private int hotScore;

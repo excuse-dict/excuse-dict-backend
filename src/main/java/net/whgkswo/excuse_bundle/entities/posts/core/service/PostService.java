@@ -103,7 +103,7 @@ public class PostService {
 
         LocalDateTime startDateTime = LocalDateTime.now().minusDays(days);
 
-        List<Post> posts = postRepository.findRecentPosts( Post.Status.ACTIVE, startDateTime);
+        List<Post> posts = postRepository.findRecentPosts(Post.Status.ACTIVE, startDateTime);
 
         // 가중치 적용하여 재정렬
         List<PostIdWithHotScoreDto> sortedPosts = posts.stream()
@@ -141,15 +141,15 @@ public class PostService {
                 .map(dto -> dto.postId())
                 .toList();
 
+        // redis에서 추출한 ID를 바탕으로 게시글 조회
+        List<Post> posts = getPostsFromIdList(postIdList);
+
         // hotScore 매핑용 중간다리
         Map<Long, Integer> hotScoreMap = hotPostDtos.stream()
                 .collect(Collectors.toMap(
                         PostIdWithHotScoreDto::postId,
                         PostIdWithHotScoreDto::hotScore
                 ));
-
-        // redis에서 추출한 ID를 바탕으로 게시글 조회
-        List<Post> posts = postRepository.findAllById(postIdList); // TODO: 순서 보장 되는지 추후 확인
 
         // post -> summary -> response -> weekly dto로 3단 변환
         List<WeeklyTopPostResponseDto> dtos = posts.stream()
@@ -162,6 +162,20 @@ public class PostService {
                 .toList();
 
         return pageHelper.paginate(dtos, pageable);
+    }
+
+    // id 리스트 -> 객체 리스트 변환 (순서 유지하며)
+    private List<Post> getPostsFromIdList(List<Long> postIdList){
+        // 그냥 이걸로 조회하면 순서 보장 안 됨
+        List<Post> posts = postRepository.findAllById(postIdList);
+
+        // id, post 맵 생성
+        Map<Long, Post> postMap = posts.stream()
+                .collect(Collectors.toMap(Post::getId, post -> post));
+        // 원래의 순서를 유지하며 리스트 반환
+        return postIdList.stream()
+                .map(postMap::get)
+                .toList();
     }
 
     // 게시글 추천
