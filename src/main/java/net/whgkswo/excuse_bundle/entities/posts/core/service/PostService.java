@@ -10,10 +10,12 @@ import net.whgkswo.excuse_bundle.entities.members.core.service.MemberService;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostSummaryResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.VoteCommand;
+import net.whgkswo.excuse_bundle.entities.posts.core.dto.WeeklyTopPostResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.posts.core.mapper.PostMapper;
 import net.whgkswo.excuse_bundle.entities.posts.core.repository.PostRepository;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.PostVote;
+import net.whgkswo.excuse_bundle.entities.posts.hotscore.PostIdWithHotScoreDto;
 import net.whgkswo.excuse_bundle.entities.posts.hotscore.HotScoreService;
 import net.whgkswo.excuse_bundle.entities.posts.hotscore.PostWithHotScoreDto;
 import net.whgkswo.excuse_bundle.entities.vote.mapper.VoteMapper;
@@ -25,15 +27,16 @@ import net.whgkswo.excuse_bundle.pager.PageHelper;
 import net.whgkswo.excuse_bundle.ranking.scheduler.RankingScheduler;
 import net.whgkswo.excuse_bundle.ranking.service.RankingService;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -96,18 +99,18 @@ public class PostService {
     }
 
     // 최근 n일 순추천수 Top 게시글 조회
-    public List<Post> getRecentTopNetLikes(int days){
+    public List<PostIdWithHotScoreDto> getRecentTopNetLikes(int days){
 
         LocalDateTime startDateTime = LocalDateTime.now().minusDays(days);
 
         List<Post> posts = postRepository.findRecentPosts( Post.Status.ACTIVE, startDateTime);
 
         // 가중치 적용하여 재정렬
-        List<Post> sortedPosts = posts.stream()
+        List<PostIdWithHotScoreDto> sortedPosts = posts.stream()
                 .map(post -> new PostWithHotScoreDto(post, hotScoreService.calculateHotScore(post)))
                 .sorted((a, b) -> Double.compare(b.hotScore(), a.hotScore()))
                 .limit(RankingScheduler.WEEKLY_TOP_SIZE)
-                .map(dto -> dto.post())
+                .map(dto -> new PostIdWithHotScoreDto(dto.post().getId(), dto.hotScore()))
                 .toList();
         
         return sortedPosts;
@@ -130,16 +133,32 @@ public class PostService {
     }
 
     // 주간 top 게시글 조회
-    public Page<PostResponseDto> getWeeklyTopPosts(Pageable pageable, Long memberId){
-        List<Long> postIdList = redisService.getAsList(RankingScheduler.WEEKLY_TOP_REDISKEY, Long.class);
+    public Page<WeeklyTopPostResponseDto> getWeeklyTopPosts(Pageable pageable, Long memberId){
+        // redis에서 id, hotscore 조회
+        List<PostIdWithHotScoreDto> hotPostDtos = redisService.getAsList(RankingScheduler.WEEKLY_TOP_REDISKEY, PostIdWithHotScoreDto.class);
+
+        List<Long> postIdList = hotPostDtos.stream()
+                .map(dto -> dto.postId())
+                .toList();
+
+        // hotScore 매핑용 중간다리
+        Map<Long, Integer> hotScoreMap = hotPostDtos.stream()
+                .collect(Collectors.toMap(
+                        PostIdWithHotScoreDto::postId,
+                        PostIdWithHotScoreDto::hotScore
+                ));
 
         // redis에서 추출한 ID를 바탕으로 게시글 조회
-        List<Post> posts = postRepository.findAllById(postIdList);
+        List<Post> posts = postRepository.findAllById(postIdList); // TODO: 순서 보장 되는지 추후 확인
 
-        List<PostSummaryResponseDto> summaries = postMapper.postsToMultiPostResponseDtos(posts);
-
-        List<PostResponseDto> dtos = summaries.stream()
+        // post -> summary -> response -> weekly dto로 3단 변환
+        List<WeeklyTopPostResponseDto> dtos = posts.stream()
+                .map(post -> postMapper.postTomultiPostSummaryResponseDto(post))
                 .map(summary -> mapSummaryToResponseDto(summary, memberId))
+                .map(dto -> {
+                    int hotScore = hotScoreMap.get(dto.getPostId());
+                    return postMapper.postResponseDtoToWeeklyTopPostResponseDto(dto, hotScore);
+                })
                 .toList();
 
         return pageHelper.paginate(dtos, pageable);

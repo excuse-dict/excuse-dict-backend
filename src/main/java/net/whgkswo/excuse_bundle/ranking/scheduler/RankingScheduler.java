@@ -6,6 +6,7 @@ import net.whgkswo.excuse_bundle.auth.redis.RedisService;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.posts.core.repository.PostRepository;
 import net.whgkswo.excuse_bundle.entities.posts.core.service.PostService;
+import net.whgkswo.excuse_bundle.entities.posts.hotscore.PostIdWithHotScoreDto;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.PageRequest;
@@ -55,12 +56,9 @@ public class RankingScheduler {
     @Scheduled(cron = "0 0 * * * *")
     protected void setWeeklyTop(){
 
-        List<Post> posts = postService.getRecentTopNetLikes(7);
+        List<PostIdWithHotScoreDto> posts = postService.getRecentTopNetLikes(7);
 
-        // 레디스에 id 저장
-        List<Long> postIdList = posts.stream()
-                        .map(post -> post.getId())
-                        .toList();
-        redisService.put(WEEKLY_TOP_REDISKEY, postIdList);
+        // 레디스에 저장
+        redisService.put(WEEKLY_TOP_REDISKEY, posts);
     }
 }

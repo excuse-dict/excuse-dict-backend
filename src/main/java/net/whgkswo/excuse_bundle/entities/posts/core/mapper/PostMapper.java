@@ -7,6 +7,7 @@ import net.whgkswo.excuse_bundle.entities.posts.comments.mapper.CommentMapper;
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostSummaryResponseDto;
+import net.whgkswo.excuse_bundle.entities.posts.core.dto.WeeklyTopPostResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.vote.dto.PostVoteDto;
 import org.mapstruct.Mapper;
@@ -60,4 +61,6 @@ public interface PostMapper {
                 optionalVote.orElse(null)
                 );
     }
+
+    WeeklyTopPostResponseDto postResponseDtoToWeeklyTopPostResponseDto(PostResponseDto dto, int hotScore);
 }

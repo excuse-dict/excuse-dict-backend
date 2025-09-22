@@ -8,6 +8,7 @@ import net.whgkswo.excuse_bundle.entities.posts.comments.service.CommentService;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostSummaryResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.VoteCommand;
+import net.whgkswo.excuse_bundle.entities.posts.core.dto.WeeklyTopPostResponseDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.posts.core.service.GetPostsCommand;
 import net.whgkswo.excuse_bundle.entities.posts.core.service.PostService;
@@ -103,7 +104,7 @@ public class PostController {
         if(authService.isValidUser(authentication)) memberId = authService.getMemberIdFromAuthentication(authentication);
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<PostResponseDto> posts = postService.getWeeklyTopPosts(pageable, memberId);
+        Page<WeeklyTopPostResponseDto> posts = postService.getWeeklyTopPosts(pageable, memberId);
         PageInfo pageInfo = PageInfo.from(posts);
 
         return ResponseEntity.ok(
