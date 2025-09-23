@@ -1,5 +1,6 @@
 package net.whgkswo.excuse_bundle.dummy.scheduler;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.dummy.comments.DummyCommentsHelper;
 import net.whgkswo.excuse_bundle.dummy.dto.CreateDummyExcuseDto;
@@ -51,6 +52,7 @@ public class DummyScheduler {
 
     // 게시물 자동 등록
     @Scheduled(cron = "0 0 */3 * * *")
+    @Transactional
     public void createDummyPosts(){
         // 남은 거 없으면 채우기
         if(DUMMY_EXCUSES.isEmpty()) {
@@ -76,6 +78,7 @@ public class DummyScheduler {
 
     // 게시물 자동 추천/비추천
     @Scheduled(cron = "0 10 * * * *")
+    @Transactional
     public void createDummyVote(){
 
         Member dummyMember = dummyMemberGenerator.createDummyMember();
@@ -98,6 +101,7 @@ public class DummyScheduler {
 
     // 댓글 자동 생성
     @Scheduled(cron = "0 20 * * * *")
+    @Transactional
     public void createDummyComment(){
         Member dummyMember = dummyMemberGenerator.createDummyMember();
 
@@ -120,6 +124,7 @@ public class DummyScheduler {
 
     // 답글 자동 생성
     @Scheduled(cron = "0 30 * * * *")
+    @Transactional
     public void createDummyReply(){
         Member dummyMember = dummyMemberGenerator.createDummyMember();
 
@@ -142,6 +147,7 @@ public class DummyScheduler {
 
     // 댓글 자동 추천/비추천
     @Scheduled(cron = "0 40 * * * *")
+    @Transactional
     public void createDummyCommentVote(){
         Member dummyMember = dummyMemberGenerator.createDummyMember();
 
@@ -163,6 +169,7 @@ public class DummyScheduler {
 
     // 답글 자동 추천/비추천
     @Scheduled(cron = "0 50 * * * *")
+    @Transactional
     public void createDummyReplyVote(){
         Member dummyMember = dummyMemberGenerator.createDummyMember();
 
