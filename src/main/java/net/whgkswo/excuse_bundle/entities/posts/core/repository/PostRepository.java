@@ -59,7 +59,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     // 랜덤 게시물 n개 조회 (최근 m일간)
     @Query(value = "SELECT * FROM post " +
             "WHERE status = 'ACTIVE' " +
-            "AND createdAt >= CURRENT_DATE - :maxDaysAgo " +
+            "AND created_at >= CURRENT_DATE - :maxDaysAgo " +
             "ORDER BY RAND() " +
             "LIMIT :amount",
             nativeQuery = true

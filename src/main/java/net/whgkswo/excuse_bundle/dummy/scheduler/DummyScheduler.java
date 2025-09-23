@@ -24,11 +24,8 @@ import net.whgkswo.excuse_bundle.entities.posts.tags.service.TagService;
 import net.whgkswo.excuse_bundle.entities.vote.entity.VoteType;
 import net.whgkswo.excuse_bundle.gemini.prompt.PromptBuilder;
 import net.whgkswo.excuse_bundle.gemini.service.GeminiService;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;

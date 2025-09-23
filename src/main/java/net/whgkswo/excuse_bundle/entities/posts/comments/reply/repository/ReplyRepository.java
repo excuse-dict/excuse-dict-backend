@@ -31,9 +31,9 @@ public interface ReplyRepository extends JpaRepository<Reply, Long> {
     List<Reply> findRandomReplies(@Param("amount") int amount);
 
     // 랜덤 답글 n개 조회 (최근 m일간)
-    @Query(value = "SELECT * FROM reply r " +
-            "WHERE r.status = 'ACTIVE' " +
-            "AND r.createdAt >= CURRENT_DATE - :maxDaysAgo " +
+    @Query(value = "SELECT * FROM reply " +
+            "WHERE status = 'ACTIVE' " +
+            "AND created_at >= CURRENT_DATE - :maxDaysAgo " +
             "ORDER BY RAND() " +
             "LIMIT :amount",
             nativeQuery = true

@@ -26,9 +26,9 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findRandomComments(@Param("amount") int amount);
 
     // 랜덤 댓글 n개 조회 (최근 m일간)
-    @Query(value = "SELECT * FROM comment c " +
-            "WHERE c.status = 'ACTIVE' " +
-            "AND c.createdAt >= CURRENT_DATE - :maxDaysAgo " +
+    @Query(value = "SELECT * FROM comment " +
+            "WHERE status = 'ACTIVE' " +
+            "AND created_at >= CURRENT_DATE - :maxDaysAgo " +
             "ORDER BY RAND() " +
             "LIMIT :amount",
             nativeQuery = true
