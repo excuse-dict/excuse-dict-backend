@@ -11,20 +11,17 @@ import org.hibernate.validator.constraints.Length;
 import java.util.Optional;
 import java.util.Set;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-public class ExcuseRequestDto extends GeminiFallbackProvider<ExcuseRequestDto> implements Dto {
-    @Length(min = 3, message = "상황은 3글자 이상으로 입력해주세요.")
-    private String situation;
+public record ExcuseRequestDto(
+        @Length(min = 3, message = "상황은 3글자 이상으로 입력해주세요.")
+        String situation,
 
-    @Length(min = 5, max = 100, message = "핑계는 5~100글자 사이로 입력해주세요.")
-    private String excuse;
+        @Length(min = 5, max = 100, message = "핑계는 5~100글자 사이로 입력해주세요.")
+        String excuse,
 
-    @Nullable
-    private Set<String> tags;
+        @Nullable
+        Set<String> tags
+) implements Dto {
 
-    private static final ExcuseRequestDto DUMMY = new ExcuseRequestDto("", "", null);
 
         public UpdateExcuseCommand toUpdateCommand(){
                 return new UpdateExcuseCommand(
@@ -32,10 +29,5 @@ public class ExcuseRequestDto extends GeminiFallbackProvider<ExcuseRequestDto> i
                         Optional.ofNullable(excuse),
                         Optional.ofNullable(tags)
                 );
-        }
-
-        @Override
-        public ExcuseRequestDto getFallback(){
-            return DUMMY;
         }
 }

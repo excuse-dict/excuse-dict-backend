@@ -47,4 +47,8 @@ public class Tag extends BaseEntity {
             this.categoryKeywords = categoryKeywords;
         }
     }
+
+    public String getTagKey(){
+        return category.name() + ":" + value;
+    }
 }

@@ -40,11 +40,23 @@ public class MemberService {
         nicknameService.validateNickname(dto.nickname());
     }
 
-    // 회원가입
+    // 일반 회원가입용
     @Transactional
     public Member createMember(MemberRegistrationDto dto){
-        // 유효성 검증
+        // 유효성 및 인증여부 검증
         validateRegistrationDto(dto);
+        return saveMember(dto);
+    }
+
+    // 더미 데이터 생성용/테스트용
+    @Transactional
+    public Member createMemberWithoutValidation(MemberRegistrationDto dto){
+        return saveMember(dto);
+    }
+
+    // 회원가입
+    @Transactional
+    private Member saveMember(MemberRegistrationDto dto){
 
         Member member = memberMapper.dtoToUser(dto);
 

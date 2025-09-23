@@ -75,6 +75,11 @@ public class TagService {
         return tagRepository.findByCategoryIn(categories);
     }
 
+    // 랜덤 태그 n개 조회
+    public List<Tag> getRandomTags(int amount){
+        return tagRepository.findRandomTags(amount);
+    }
+
     public List<TagSearchResult> searchTagBySimilarity(String userInput, List<Tag.Category> categories) {
         // 사용자 입력 형태소 분해
         List<String> morphemes = komoranService.getMeaningfulMorphemes(userInput.trim());

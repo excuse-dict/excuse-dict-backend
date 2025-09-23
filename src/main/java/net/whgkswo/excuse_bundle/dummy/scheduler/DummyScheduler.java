@@ -1,6 +1,7 @@
 package net.whgkswo.excuse_bundle.dummy.scheduler;
 
 import lombok.RequiredArgsConstructor;
+import net.whgkswo.excuse_bundle.dummy.dto.CreateDummyExcuseDto;
 import net.whgkswo.excuse_bundle.dummy.member.DummyMemberGenerator;
 import net.whgkswo.excuse_bundle.entities.excuses.dto.ExcuseRequestDto;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
@@ -16,13 +17,19 @@ import net.whgkswo.excuse_bundle.entities.posts.core.dto.VoteCommand;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.posts.core.repository.PostRepository;
 import net.whgkswo.excuse_bundle.entities.posts.core.service.PostService;
+import net.whgkswo.excuse_bundle.entities.posts.tags.entity.Tag;
+import net.whgkswo.excuse_bundle.entities.posts.tags.service.TagService;
 import net.whgkswo.excuse_bundle.entities.vote.entity.VoteType;
 import net.whgkswo.excuse_bundle.gemini.prompt.PromptBuilder;
 import net.whgkswo.excuse_bundle.gemini.service.GeminiService;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -34,6 +41,7 @@ public class DummyScheduler {
     private final ReplyService replyService;
     private final GeminiService geminiService;
     private final PromptBuilder promptBuilder;
+    private final TagService tagService;
     private final Random random = new Random();
 
     private static final double UPVOTE_CHANCE = 0.8;
@@ -44,10 +52,26 @@ public class DummyScheduler {
     // 게시물 자동 등록
     @Scheduled(cron = "0 0 */3 * * *")
     public void createDummyPosts(){
+        // 남은 거 없으면 채우기
         if(DUMMY_EXCUSES.isEmpty()) {
             String prompt = promptBuilder.buildPostPrompt(GENERATE_DUMMY_EXCUSES_AMOUNT);
-            //List<ExcuseRequestDto> excuses = geminiService.generateText(prompt, ExcuseRequestDto.class);
+            CreateDummyExcuseDto excuses = geminiService.generateText(prompt, CreateDummyExcuseDto.class).block();
+
+            DUMMY_EXCUSES.addAll(excuses.getExcuses());
         }
+
+        // 더미 계정 생성
+        Member dummyMember = dummyMemberGenerator.createDummyMember();
+
+        // 하나씩 뽑아서 게시글 등록
+        ExcuseRequestDto excuse = DUMMY_EXCUSES.poll();
+
+        // 태그는 그냥 랜덤 선정
+        int tagCount = random.nextInt(5); // 0~4 갯수 랜덤
+        Set<String> tags = tagService.getRandomTags(tagCount).stream()
+                        .map(Tag::getTagKey)
+                        .collect(Collectors.toSet());
+        postService.createPost(dummyMember.getId(), excuse.situation(), excuse.excuse(), tags);
     }
 
     // 게시물 자동 추천/비추천

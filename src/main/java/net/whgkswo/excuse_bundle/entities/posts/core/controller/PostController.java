@@ -46,7 +46,7 @@ public class PostController {
 
         long memberId = authService.getMemberIdFromAuthentication(authentication);
 
-        Post post = postService.createPost(memberId, dto.getSituation(), dto.getExcuse(), dto.getTags());
+        Post post = postService.createPost(memberId, dto.situation(), dto.excuse(), dto.tags());
 
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest()

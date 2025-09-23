@@ -16,10 +16,11 @@ public class DummyMemberGenerator {
 
     public Member createDummyMember(){
 
-        String nickname = "dummy_" + System.currentTimeMillis() + randomCodeGenerator.generateRandomCode(4);
-        String email = nickname + "@gmail.com";
+        String randomCode = randomCodeGenerator.generateRandomCode(8);
+        String nickname = "더미#" + randomCode;
+        String email = "dummy_" + randomCode + "@gmail.com";
         String password = randomCodeGenerator.generateRandomCode(16);
 
-        return memberService.createMember(new MemberRegistrationDto(email, password, nickname));
+        return memberService.createMemberWithoutValidation(new MemberRegistrationDto(email, password, nickname));
     }
 }
