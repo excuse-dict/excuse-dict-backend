@@ -169,6 +169,11 @@ public class PostService {
         return postRepository.findRandomPosts(amount);
     }
 
+    // 랜덤 게시글 n개 조회(최근 m일간)
+    public List<Post> getRandomPosts(int amount, int maxDaysAgo){
+        return postRepository.findRandomPosts(amount, maxDaysAgo);
+    }
+
     // id 리스트 -> 객체 리스트 변환 (순서 유지하며)
     private List<Post> getPostsFromIdList(List<Long> postIdList){
         // 그냥 이걸로 조회하면 순서 보장 안 됨

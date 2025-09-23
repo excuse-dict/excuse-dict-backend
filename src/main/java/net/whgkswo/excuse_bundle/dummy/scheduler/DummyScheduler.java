@@ -1,12 +1,14 @@
 package net.whgkswo.excuse_bundle.dummy.scheduler;
 
 import lombok.RequiredArgsConstructor;
+import net.whgkswo.excuse_bundle.dummy.comments.DummyCommentsHelper;
 import net.whgkswo.excuse_bundle.dummy.dto.CreateDummyExcuseDto;
 import net.whgkswo.excuse_bundle.dummy.member.DummyMemberGenerator;
 import net.whgkswo.excuse_bundle.entities.excuses.dto.ExcuseRequestDto;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import net.whgkswo.excuse_bundle.entities.members.core.repositoriy.MemberRepository;
 import net.whgkswo.excuse_bundle.entities.members.email.config.AdminEmailConfig;
+import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CreateOrUpdateCommentCommand;
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
 import net.whgkswo.excuse_bundle.entities.posts.comments.reply.entity.Reply;
 import net.whgkswo.excuse_bundle.entities.posts.comments.reply.repository.ReplyRepository;
@@ -42,6 +44,7 @@ public class DummyScheduler {
     private final GeminiService geminiService;
     private final PromptBuilder promptBuilder;
     private final TagService tagService;
+    private final DummyCommentsHelper dummyCommentsHelper;
     private final Random random = new Random();
 
     private static final double UPVOTE_CHANCE = 0.8;
@@ -80,32 +83,105 @@ public class DummyScheduler {
 
         Member dummyMember = dummyMemberGenerator.createDummyMember();
 
-        // 랜덤 5개 게시물 선정
-        List<Post> randomPosts = postService.getRandomPosts(5);
+        // Set으로 중복 제거
+        Set<Post> posts = new HashSet<>();
 
-        for(Post post : randomPosts){
+        // 최근 7일 간 게시물 중 랜덤 3개
+        posts.addAll(postService.getRandomPosts(3, 7));
+
+        // 전체 중 랜덤 2개
+        posts.addAll(postService.getRandomPosts(2));
+
+        for(Post post : posts){
             // 일정 확률로 추천/비추천
             VoteCommand command = createDummyVoteCommand(post.getId(), dummyMember.getId());
             postService.voteToPost(command);
         }
     }
 
-    // 댓글 자동 추천/비추천
+    // 댓글 자동 생성
     @Scheduled(cron = "0 20 * * * *")
+    public void createDummyComment(){
+        Member dummyMember = dummyMemberGenerator.createDummyMember();
+
+        // set으로 중복 제거
+        Set<Post> posts = new HashSet<>();
+
+        // 최근 일주일간 게시글 2개
+        posts.addAll(postService.getRandomPosts(2, 7));
+
+        // 전체 게시글 중 하나
+        posts.addAll(postService.getRandomPosts(1));
+
+        for(Post post : posts){
+            // 랜덤 댓글 하나 가져오기
+            String dummyComment = dummyCommentsHelper.getRandomComment();
+            // 댓글 작성
+            commentService.createComment(new CreateOrUpdateCommentCommand(post.getId(), dummyMember.getId(), dummyComment));
+        }
+    }
+
+    // 답글 자동 생성
+    @Scheduled(cron = "0 30 * * * *")
+    public void createDummyReply(){
+        Member dummyMember = dummyMemberGenerator.createDummyMember();
+
+        // set으로 중복 제거
+        Set<Comment> comments = new HashSet<>();
+
+        // 최근 일주일간 댓글 3개
+        comments.addAll(commentService.getRandomComments(3, 7));
+
+        // 전체 댓글 중 2개
+        comments.addAll(commentService.getRandomComments(2));
+
+        for(Comment comment : comments){
+            // 랜덤 댓글 하나 가져오기
+            String dummyComment = dummyCommentsHelper.getRandomComment();
+            // 댓글 작성
+            replyService.createReply(new CreateOrUpdateCommentCommand(comment.getId(), dummyMember.getId(), dummyComment));
+        }
+    }
+
+    // 댓글 자동 추천/비추천
+    @Scheduled(cron = "0 40 * * * *")
     public void createDummyCommentVote(){
         Member dummyMember = dummyMemberGenerator.createDummyMember();
 
-        // 랜덤 3개씩 댓글/답글 선정
-        List<Comment> randomComments = commentService.getRandomComments(3);
-        List<Reply> randomReplies = replyService.getRandomReplies(3);
+        // Set으로 중복 제거
+        Set<Comment> comments = new HashSet<>();
 
-        for (Comment comment : randomComments) {
-            VoteCommand command = createDummyVoteCommand(comment.getId(), dummyMember.getId());
-            commentService.voteToComment(command);
+        // 최근 일주일 간 랜덤 댓글 3개
+        comments.addAll(commentService.getRandomComments(3, 7));
+
+        // 전체 댓글 중 2개
+        comments.addAll(commentService.getRandomComments(2));
+
+        for(Comment comment : comments){
+            VoteType voteType = random.nextDouble() < UPVOTE_CHANCE ? VoteType.UPVOTE : VoteType.DOWNVOTE;
+
+            commentService.voteToComment(new VoteCommand(comment.getId(), dummyMember.getId(), voteType));
         }
-        for (Reply reply : randomReplies){
-            VoteCommand command = createDummyVoteCommand(reply.getId(), dummyMember.getId());
-            replyService.voteToReplies(command);
+    }
+
+    // 답글 자동 추천/비추천
+    @Scheduled(cron = "0 50 * * * *")
+    public void createDummyReplyVote(){
+        Member dummyMember = dummyMemberGenerator.createDummyMember();
+
+        // Set으로 중복 제거
+        Set<Reply> replies = new HashSet<>();
+
+        // 최근 일주일 간 랜덤 답글 3개
+        replies.addAll(replyService.getRandomReplies(3, 7));
+
+        // 전체 댓글 중 2개
+        replies.addAll(replyService.getRandomReplies(2));
+
+        for(Reply reply : replies){
+            VoteType voteType = random.nextDouble() < UPVOTE_CHANCE ? VoteType.UPVOTE : VoteType.DOWNVOTE;
+
+            replyService.voteToReplies(new VoteCommand(reply.getId(), dummyMember.getId(), voteType));
         }
     }
 

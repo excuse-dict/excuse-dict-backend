@@ -85,6 +85,11 @@ public class CommentService {
         return commentRepository.findRandomComments(amount);
     }
 
+    // 랜덤 댓글 n개 조회(최근 m일간)
+    public List<Comment> getRandomComments(int amount, int maxDaysAgo){
+        return commentRepository.findRandomComments(amount, maxDaysAgo);
+    }
+
     // 댓글 추천
     @Transactional
     public boolean voteToComment(VoteCommand command){
