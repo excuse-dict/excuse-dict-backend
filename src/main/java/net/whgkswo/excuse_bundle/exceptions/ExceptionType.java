@@ -15,13 +15,14 @@ public record ExceptionType(int status, String code, String message){
 
     // 고정 메시지들
     public static final ExceptionType DUPLICATED_EMAIL = ExceptionType.of(400, "DUPLICATED_EMAIL", "이미 가입하신 이메일입니다.");
-    public static final ExceptionType WRONG_VERIFICATION_CODE_LAST = ExceptionType.of(400, "WRONG_VERIFICATION_CODE_LAST","인증 코드가 틀립니다. 모든 시도 횟수를 소진하였습니다. 코드를 재발급해 주세요");
-    public static final ExceptionType VERIFICATION_CODE_EXPIRED = ExceptionType.of(400, "VERIFICATION_CODE_EXPIRED","인증 코드가 발급되지 않았거나 만료되었습니다.");
-    public static final ExceptionType WRONG_CHARACTER_IN_NICKNAME = ExceptionType.of(400, "WRONG_CHARACTER_IN_NICKNAME","닉네임에 사용할 수 없는 문자가 있습니다.");
     public static final ExceptionType EMAIL_NOT_VERIFIED = ExceptionType.of(400, "EMAIL_NOT_VERIFIED","이메일 인증이 완료되지 않았거나 인증 정보가 만료되었습니다.");
-    public static final ExceptionType RECAPTCHA_TOKEN_INVALID = ExceptionType.of(400, "RECAPTCHA_TOKEN_INVALID","잘못된 reCAPTCHA 토큰입니다. 페이지를 새로고침하거나 잠시 후에 시도해 주세요");
+    public static final ExceptionType IMPROPER_SITUATION = ExceptionType.of(400, "IMPROPER_SITUATION", "상황을 적절하게 다시 입력해주세요.");
     public static final ExceptionType JSON_FORMAT_INVALID = ExceptionType.of(400, "JSON_FORMAT_INVALID", "잘못된 형식의 JSON입니다.");
+    public static final ExceptionType RECAPTCHA_TOKEN_INVALID = ExceptionType.of(400, "RECAPTCHA_TOKEN_INVALID","잘못된 reCAPTCHA 토큰입니다. 페이지를 새로고침하거나 잠시 후에 시도해 주세요");
     public static final ExceptionType SELF_VOTE_NOT_ALLOWED = ExceptionType.of(400, "SELF_VOTE_NOT_ALLOWED", "자신의 게시글에 추천/비추천하실 수 없습니다.");
+    public static final ExceptionType VERIFICATION_CODE_EXPIRED = ExceptionType.of(400, "VERIFICATION_CODE_EXPIRED","인증 코드가 발급되지 않았거나 만료되었습니다.");
+    public static final ExceptionType WRONG_VERIFICATION_CODE_LAST = ExceptionType.of(400, "WRONG_VERIFICATION_CODE_LAST","인증 코드가 틀립니다. 모든 시도 횟수를 소진하였습니다. 코드를 재발급해 주세요");
+    public static final ExceptionType WRONG_CHARACTER_IN_NICKNAME = ExceptionType.of(400, "WRONG_CHARACTER_IN_NICKNAME","닉네임에 사용할 수 없는 문자가 있습니다.");
     public static final ExceptionType AUTHENTICATION_FAILED = ExceptionType.of(401, "AUTHENTICATION_FAILED", "인증에 실패하였습니다.");
     public static final ExceptionType ACCESS_TOKEN_INVALID = ExceptionType.of(401, "ACCESS_TOKEN_INVALID", "액세스 토큰이 유효하지 않습니다.");
     public static final ExceptionType ACCESS_TOKEN_EXPIRED = ExceptionType.of(401, "ACCESS_TOKEN_EXPIRED", "액세스 토큰이 만료되었습니다. 다시 발급해주세요.");

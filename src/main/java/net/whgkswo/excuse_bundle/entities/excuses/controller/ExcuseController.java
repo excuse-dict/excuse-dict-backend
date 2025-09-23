@@ -1,20 +1,12 @@
 package net.whgkswo.excuse_bundle.entities.excuses.controller;
 
-import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import net.whgkswo.excuse_bundle.auth.service.AuthService;
 import net.whgkswo.excuse_bundle.cooldown.Cooldown;
 import net.whgkswo.excuse_bundle.entities.excuses.dto.GenerateExcuseDto;
+import net.whgkswo.excuse_bundle.entities.excuses.service.ExcuseService;
 import net.whgkswo.excuse_bundle.gemini.dto.GenerateExcuseResponseDto;
-import net.whgkswo.excuse_bundle.gemini.prompt.PromptBuilder;
-import net.whgkswo.excuse_bundle.gemini.service.GeminiService;
-import net.whgkswo.excuse_bundle.general.responses.dtos.SimpleStringDto;
-import org.hibernate.validator.constraints.Length;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.ReactiveSecurityContextHolder;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -23,22 +15,17 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class ExcuseController {
 
+    private final ExcuseService excuseService;
+
     public static final String BASE_URL = "/api/v1/excuses";
     public static final String BASE_URL_ANY = "/api/*/excuses";
-
-    public static final String GEMINI_FALLBACK = "Gemini 요청 실패";
-
-    private final GeminiService geminiService;
-    private final PromptBuilder promptBuilder;
 
     // 비회원용 (회원도 가능 - 회원용과 쿨타임을 공유)
     @PostMapping("/generate/guests")
     @Cooldown(cooldownSeconds = 60)
     public Mono<GenerateExcuseResponseDto> generateExcuse(@RequestBody @Valid GenerateExcuseDto dto){
 
-        String prompt = promptBuilder.buildExcusePrompt(dto.situation(), 5);
-
-        return geminiService.generateText(prompt, GenerateExcuseResponseDto.class);
+        return excuseService.generateExcuse(dto.situation());
     }
 
     // 회원용
@@ -50,9 +37,7 @@ public class ExcuseController {
     public GenerateExcuseResponseDto generateExcuse(@RequestBody @Valid GenerateExcuseDto dto,
                                        Authentication authentication){
 
-        String prompt = promptBuilder.buildExcusePrompt(dto.situation(), 5);
-
         // 비동기 요청시 스레드 간 Security Context가 유실되는 문제가 발생하여 동기로 전환
-        return geminiService.generateText(prompt, GenerateExcuseResponseDto.class).block();
+        return excuseService.generateExcuseInSynchronous(dto.situation());
     }
 }
