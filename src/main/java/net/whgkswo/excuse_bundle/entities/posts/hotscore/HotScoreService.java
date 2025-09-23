@@ -128,15 +128,13 @@ public class HotScoreService {
         return baseScore + oneToThreeDaysScore + recentScore;
     }
 
+    // 댓글 갯수 구간별 가중치 적용해 점수 계산
     private int getCommentScore(int commentCount, double scaleFactor) {
         return getCumulativeScore(commentCount, scaleFactor, SCORE_VALUES_COMMENTS);
     }
 
     // 좋아요 갯수 구간별 가중치 적용해 점수 계산
     private int getVoteScore(int votesCount, double scaleFactor) {
-
-        // 좋아요 갯수가 음수일 경우 점수 내려버리기
-        if(votesCount < 0) return -WEEK_TO_MINUTES + votesCount * NEGATIVE_SCORE_PENALTY;
 
         return getCumulativeScore(votesCount, scaleFactor, SCORE_VALUES_LIKES);
     }

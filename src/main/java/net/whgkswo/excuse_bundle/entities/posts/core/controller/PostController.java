@@ -5,10 +5,7 @@ import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.service.AuthService;
 import net.whgkswo.excuse_bundle.entities.excuses.dto.ExcuseRequestDto;
 import net.whgkswo.excuse_bundle.entities.posts.comments.service.CommentService;
-import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostResponseDto;
-import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostSummaryResponseDto;
-import net.whgkswo.excuse_bundle.entities.posts.core.dto.VoteCommand;
-import net.whgkswo.excuse_bundle.entities.posts.core.dto.WeeklyTopPostResponseDto;
+import net.whgkswo.excuse_bundle.entities.posts.core.dto.*;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.posts.core.service.GetPostsCommand;
 import net.whgkswo.excuse_bundle.entities.posts.core.service.PostService;
@@ -28,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping(PostController.BASE_PATH)
@@ -38,6 +36,24 @@ public class PostController {
 
     public static final String BASE_PATH = "/api/v1/posts";
     public static final String BASE_PATH_ANY = "/api/*/posts";
+
+    // 메인화면용 게시물 조회
+    @GetMapping("/overview")
+    public ResponseEntity<?> handleGetPostsOverview(@Nullable Authentication authentication){
+
+        PageRequest pageRequest = PageRequest.of(0, 5);
+
+        // 최근 게시물 5개
+        Page<PostResponseDto> recentPosts = postService.getPosts(new GetPostsCommand(pageRequest, null, null));
+        // 주간 TOP 게시물 5개
+        Page<WeeklyTopPostResponseDto> weeklyTopPosts = postService.getWeeklyTopPosts(pageRequest, null);
+        // 명예의 전당 게시물 5개
+        Page<PostResponseDto> hallOfFamePosts = postService.getHallOfFamePosts(pageRequest, null);
+
+        return ResponseEntity.ok(
+                Response.of(new PostOverviewResponseDto(recentPosts, weeklyTopPosts, hallOfFamePosts))
+        );
+    }
 
     // 게시물 등록
     @PostMapping

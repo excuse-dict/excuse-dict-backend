@@ -21,6 +21,6 @@ public class DummyMemberGenerator {
         String email = "dummy_" + randomCode + "@gmail.com";
         String password = randomCodeGenerator.generateRandomCode(16);
 
-        return memberService.createMemberWithoutValidation(new MemberRegistrationDto(email, password, nickname));
+        return memberService.createMemberWithoutValidation(new MemberRegistrationDto(email, nickname, password));
     }
 }
