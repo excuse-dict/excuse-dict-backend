@@ -97,7 +97,11 @@ public class SecurityConfig {
                 "http://127.0.0.1:3000",      // 로컬 개발용
                 "http://218.146.27.34:3000",  // 집피 테스트용
                 "http://172.18.48.1:3000",    // 가상 어댑터 IP (혹시 몰라서)
-                "http://172.19.144.1:3000"    // WSL IP (혹시 몰라서)
+                "http://172.19.144.1:3000",    // WSL IP (혹시 몰라서)
+                "http://152.69.235.140:3000",   // 프로덕션 인스턴스
+                "https://152.69.235.140:3000",   // 프로덕션 인스턴스
+                "http://exdict.site:3000",  // 프로덕션 도메인
+                "https://exdict.site:3000"  // 프로덕션 도메인
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
