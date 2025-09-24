@@ -154,11 +154,17 @@ public class PostService {
 
         // post -> summary -> response -> weekly dto로 3단 변환
         List<WeeklyTopPostResponseDto> dtos = posts.stream()
-                .map(post -> postMapper.postTomultiPostSummaryResponseDto(post))
-                .map(summary -> mapSummaryToResponseDto(summary, memberId))
-                .map(dto -> {
-                    int hotScore = hotScoreMap.get(dto.getPostId());
-                    return postMapper.postResponseDtoToWeeklyTopPostResponseDto(dto, hotScore);
+                .map(post -> {
+                    // post -> summary
+                    PostSummaryResponseDto summary = postMapper.postTomultiPostSummaryResponseDto(post);
+                    // vote 유무 확인
+                    Optional<PostVote> optionalVote = voteService.getPostVoteFromCertainMember(post, memberId);
+                    // summary -> response
+                    PostResponseDto responseDto = postMapper.postSummaryResponseDtoToPostResponseDto(
+                            summary, optionalVote.map(voteMapper::postVoteToPostVoteDto));
+                    // response -> weekly
+                    int hotScore = hotScoreMap.get(post.getId());
+                    return postMapper.postResponseDtoToWeeklyTopPostResponseDto(responseDto, hotScore);
                 })
                 .toList();
 
@@ -178,7 +184,8 @@ public class PostService {
     // id 리스트 -> 객체 리스트 변환 (순서 유지하며)
     private List<Post> getPostsFromIdList(List<Long> postIdList){
         // 그냥 이걸로 조회하면 순서 보장 안 됨
-        List<Post> posts = postRepository.findAllById(postIdList);
+        // fetch조인으로 Votes까지 같이 조회
+        List<Post> posts = postRepository.findAllByIdWithVotes(postIdList);
 
         // id, post 맵 생성
         Map<Long, Post> postMap = posts.stream()
