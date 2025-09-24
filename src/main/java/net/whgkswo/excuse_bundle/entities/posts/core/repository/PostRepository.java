@@ -66,8 +66,11 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     )
     List<Post> findRandomPosts(@Param("amount") int amount, @Param("maxDaysAgo") int maxDaysAgo);
 
-    // 지연 로딩 해결하기 위해 vote fetch조인
-    @Query("SELECT DISTINCT p FROM Post p LEFT JOIN FETCH p.votes WHERE p.id IN :postIds")
+    // votes와 member까지 함께 조회
+    @Query("SELECT DISTINCT p FROM Post p " +
+            "LEFT JOIN FETCH p.votes v " +
+            "LEFT JOIN FETCH v.member " +
+            "WHERE p.id IN :postIds")
     List<Post> findAllByIdWithVotes(@Param("postIds") List<Long> postIds);
 
     // 게시물 상세 조회용
@@ -76,6 +79,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "JOIN FETCH m.memberRank " +
             "JOIN FETCH p.excuse e " +
             "LEFT JOIN FETCH e.tags " + // 태그가 없을 수 있음
+            "LEFT JOIN FETCH p.votes " +
             "WHERE p.id = :id")
     Optional<Post> findByIdForDetail(@Param("id") Long id);
 

@@ -19,6 +19,7 @@ import net.whgkswo.excuse_bundle.entities.posts.hotscore.PostIdWithHotScoreDto;
 import net.whgkswo.excuse_bundle.entities.posts.hotscore.HotScoreService;
 import net.whgkswo.excuse_bundle.entities.posts.hotscore.PostWithHotScoreDto;
 import net.whgkswo.excuse_bundle.entities.vote.mapper.VoteMapper;
+import net.whgkswo.excuse_bundle.entities.vote.repository.PostVoteRepository;
 import net.whgkswo.excuse_bundle.entities.vote.service.VoteService;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
@@ -32,10 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,6 +46,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final VoteMapper voteMapper;
+    private final PostVoteRepository postVoteRepository;
     private final RedisService redisService;
     private final PageHelper pageHelper;
     private final HotScoreService hotScoreService;
@@ -73,8 +72,27 @@ public class PostService {
 
         Page<Post> posts = postRepository.findAllForList(command.pageable(), Post.Status.ACTIVE);
 
-        return postMapper.postsToMultiPostResponseDtos(posts)
-                .map(summary -> mapSummaryToResponseDto(summary, command.memberId()));
+        List<Long> postIds = posts.getContent().stream()
+                .map(Post::getId)
+                .toList();
+
+        // 게시물 id로 Vote 조회(순서 보장 x)
+        List<PostVote> votes = postVoteRepository.findAllByPostIds(postIds);
+
+        // 게시물 id <-> Vote 맵핑
+        Map<Long, List<PostVote>> votesByPostId = votes.stream()
+                .collect(Collectors.groupingBy(vote -> vote.getPost().getId()));
+
+        return posts.map(post -> {
+            List<PostVote> postVotes = votesByPostId.getOrDefault(post.getId(), Collections.emptyList());
+            Optional<PostVote> myVote = postVotes.stream()
+                    .filter(vote -> command.memberId() != null && vote.getMember().getId().equals(command.memberId()))
+                    .findFirst();
+
+            PostSummaryResponseDto summary = postMapper.postTomultiPostSummaryResponseDto(post);
+            return postMapper.postSummaryResponseDtoToPostResponseDto(summary,
+                    myVote.map(voteMapper::postVoteToPostVoteDto));
+        });
     }
 
     private PostResponseDto mapSummaryToResponseDto(PostSummaryResponseDto summary, Long memberId){
@@ -124,7 +142,7 @@ public class PostService {
         // fetch조인으로 Votes까지 같이 조회
         List<Post> posts = postRepository.findAllByIdWithVotes(postIdList);
 
-        List<PostSummaryResponseDto> summaries = postMapper.postsToMultiPostResponseDtos(posts);
+        List<PostSummaryResponseDto> summaries = postMapper.postsToMultiPostSummaryResponseDtos(posts);
 
         List<PostResponseDto> dtos = summaries.stream()
                 .map(summary -> mapSummaryToResponseDto(summary, memberId))
@@ -138,11 +156,12 @@ public class PostService {
         // redis에서 id, hotscore 조회
         List<PostIdWithHotScoreDto> hotPostDtos = redisService.getAsList(RankingScheduler.WEEKLY_TOP_REDISKEY, PostIdWithHotScoreDto.class);
 
+        // 게시물 id 추출
         List<Long> postIdList = hotPostDtos.stream()
                 .map(dto -> dto.postId())
                 .toList();
 
-        // redis에서 추출한 ID를 바탕으로 게시글 조회
+        // 추출한 ID를 바탕으로 게시글 조회
         List<Post> posts = getPostsFromIdList(postIdList);
 
         // hotScore 매핑용 중간다리

@@ -27,11 +27,11 @@ public interface PostMapper {
     @Mapping(target = "commentCount", source = "comments", qualifiedByName = "commentsToCount") // 변환기 적용
     PostSummaryResponseDto postTomultiPostSummaryResponseDto(Post post);
 
-    default Page<PostSummaryResponseDto> postsToMultiPostResponseDtos(Page<Post> posts){
+    default Page<PostSummaryResponseDto> postsToMultiPostSummaryResponseDtos(Page<Post> posts){
         return posts.map(this::postTomultiPostSummaryResponseDto);
     }
 
-    default List<PostSummaryResponseDto> postsToMultiPostResponseDtos(List<Post> posts){
+    default List<PostSummaryResponseDto> postsToMultiPostSummaryResponseDtos(List<Post> posts){
         return posts.stream()
                 .map(this::postTomultiPostSummaryResponseDto)
                 .toList();
