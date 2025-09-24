@@ -23,7 +23,7 @@ spring:
     password: ${MYSQL_PASSWORD}
   sql:
     init:
-      mode: always # data.sql 자동 실행여부 제어 (always / embedded / never)
+      mode: never # data.sql 자동 실행여부 제어 (always / embedded / never)
   jpa:
     database: mysql
     hibernate:
