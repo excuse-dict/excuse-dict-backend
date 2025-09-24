@@ -35,12 +35,11 @@ public class RankingScheduler {
     @EventListener(ApplicationReadyEvent.class)
     @Transactional(readOnly = true)
     public void initialize(){
-        // TODO: 개발환경용 - 서버 시작시 바로 캐시 준비
         setHallOfFame();
         setWeeklyTop();
     }
 
-    @Scheduled(cron = "0 0 4 * * *")
+    @Scheduled(cron = "0 0 */6 * * *")
     @Transactional(readOnly = true)
     public void setHallOfFame(){
 
