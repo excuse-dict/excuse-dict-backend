@@ -36,7 +36,7 @@ out/
 ### VS Code ###
 .vscode/
 
-# 시크릿 TODO: github secrets으로 변경 검토
+# 시크릿 - 로컬용
 application-secret.yml
 
 .env

@@ -96,9 +96,8 @@ public class CommentService {
         Comment comment = getComment(command.targetId());
 
         // 자추 불가
-        // TODO: 주석 해제
-        /*if(comment.getMember().getId() == command.memberId())
-            throw new BusinessLogicException(ExceptionType.SELF_VOTE_NOT_ALLOWED);*/
+        if(comment.getMember().getId() == command.memberId())
+            throw new BusinessLogicException(ExceptionType.SELF_VOTE_NOT_ALLOWED);
 
         // 이미 추천/비추천했는지
         Optional<CommentVote> optionalVote = voteService.getCommentVoteFromCertainMember(comment, command.memberId());

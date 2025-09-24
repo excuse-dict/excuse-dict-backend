@@ -100,8 +100,7 @@ public class ReplyService {
         Reply reply = getReply(command.targetId());
 
         // 자추 불가
-        // TODO: 주석 해제
-        /*if(reply.getMember().getId() == command.memberId()) throw new BusinessLogicException(ExceptionType.SELF_VOTE_NOT_ALLOWED);*/
+        if(reply.getMember().getId() == command.memberId()) throw new BusinessLogicException(ExceptionType.SELF_VOTE_NOT_ALLOWED);
 
         // 이미 추천/비추천했는지
         Optional<ReplyVote> optionalVote = voteService.getReplyVoteFromCertainMember(reply, command.memberId());

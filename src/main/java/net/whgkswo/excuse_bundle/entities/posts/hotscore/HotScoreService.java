@@ -32,16 +32,17 @@ public class HotScoreService {
 
     private static final int ONE_DAY_IN_MINUTES = 60 * 24;
 
-    private static final int NEGATIVE_SCORE_PENALTY = 50;
-
     private static final double RECENT_WEIGHT = 1.5;
     private static final double RECENT_3DAY_WEIGHT = 1.0;
     private static final double REST_WEIGHT = 0.5;
 
+    // 이걸로 hot스코어 기본 배율 조정. 오디오 마스터 볼륨 같은 거
+    private static final double MASTER_SCALE_FACTOR = 0.1;
+
 
     // 게시물의 Hot 스코어 계산
     public int calculateHotScore(Post post){
-        int hotScore = 0;
+        double hotScore = 0.0;
 
         // 최근 작성글일 수록 가중치 up
         double timeWeight = calculateTimeWeight(post.getCreatedAt());
@@ -52,7 +53,7 @@ public class HotScoreService {
         // 최근 댓글 많으면 가중치 보너스
         hotScore += calculateCommentScore(post, timeWeight);
 
-        return hotScore;
+        return (int)(hotScore * MASTER_SCALE_FACTOR);
     }
 
     // 작성일시 가중치: 최근일수록 높음
@@ -66,7 +67,7 @@ public class HotScoreService {
     }
 
     // 댓글 점수: 최근 댓글이 많을수록 보너스
-    private int calculateCommentScore(Post post, double timeWeight) {
+    private double calculateCommentScore(Post post, double timeWeight) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime oneDayAgo = now.minusMinutes(ONE_DAY_IN_MINUTES);
         LocalDateTime threeDaysAgo = now.minusMinutes(ONE_DAY_IN_MINUTES * 3);
@@ -88,15 +89,15 @@ public class HotScoreService {
         int baseCommentCount = post.getComments().size() - recentCommentCount - recent3DaysCommentsCount;
 
         // 가중치 적용해 점수 합산
-        int recentScore = getCommentScore(recentCommentCount, timeWeight * RECENT_WEIGHT); // 최근 1일
-        int oneToThreeDaysScore = getCommentScore(recent3DaysCommentsCount, timeWeight * RECENT_3DAY_WEIGHT); // 1 ~ 3일
-        int baseScore = getCommentScore(baseCommentCount, timeWeight * REST_WEIGHT); // 3일 ~ 7일
+        double recentScore = getCommentScore(recentCommentCount, timeWeight * RECENT_WEIGHT); // 최근 1일
+        double oneToThreeDaysScore = getCommentScore(recent3DaysCommentsCount, timeWeight * RECENT_3DAY_WEIGHT); // 1 ~ 3일
+        double baseScore = getCommentScore(baseCommentCount, timeWeight * REST_WEIGHT); // 3일 ~ 7일
 
         return baseScore + oneToThreeDaysScore + recentScore;
     }
 
     // 좋아요 점수: 최근 좋아요가 많을수록 보너스
-    private int calculateVoteScore(Post post, double timeWeight) {
+    private double calculateVoteScore(Post post, double timeWeight) {
 
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime oneDayAgo = now.minusMinutes(ONE_DAY_IN_MINUTES);
@@ -121,26 +122,26 @@ public class HotScoreService {
         int baseVotesCount = netVotesCount - recentVotesCount - recent3DaysVotesCount;
 
         // 가중치 적용해 점수 합산
-        int recentScore = getVoteScore(recentVotesCount, timeWeight * RECENT_WEIGHT); // 최근 1일
-        int oneToThreeDaysScore = getVoteScore(recent3DaysVotesCount, timeWeight * RECENT_3DAY_WEIGHT); // 1 ~ 3일
-        int baseScore = getVoteScore(baseVotesCount, timeWeight * REST_WEIGHT); // 3일 ~ 7일
+        double recentScore = getVoteScore(recentVotesCount, timeWeight * RECENT_WEIGHT); // 최근 1일
+        double oneToThreeDaysScore = getVoteScore(recent3DaysVotesCount, timeWeight * RECENT_3DAY_WEIGHT); // 1 ~ 3일
+        double baseScore = getVoteScore(baseVotesCount, timeWeight * REST_WEIGHT); // 3일 ~ 7일
 
         return baseScore + oneToThreeDaysScore + recentScore;
     }
 
     // 댓글 갯수 구간별 가중치 적용해 점수 계산
-    private int getCommentScore(int commentCount, double scaleFactor) {
+    private double getCommentScore(int commentCount, double scaleFactor) {
         return getCumulativeScore(commentCount, scaleFactor, SCORE_VALUES_COMMENTS);
     }
 
     // 좋아요 갯수 구간별 가중치 적용해 점수 계산
-    private int getVoteScore(int votesCount, double scaleFactor) {
+    private double getVoteScore(int votesCount, double scaleFactor) {
 
         return getCumulativeScore(votesCount, scaleFactor, SCORE_VALUES_LIKES);
     }
 
-    private int getCumulativeScore(int votesCount, double scaleFactor, List<Integer> scores) {
-        int score = 0;
+    private double getCumulativeScore(int votesCount, double scaleFactor, List<Integer> scores) {
+        double score = 0.0;
         int remaining = votesCount;
         int prevThreshold = 0;
 
@@ -159,6 +160,6 @@ public class HotScoreService {
             prevThreshold = threshold;
         }
 
-        return (int) (score * scaleFactor);
+        return score * scaleFactor;
     }
 }
