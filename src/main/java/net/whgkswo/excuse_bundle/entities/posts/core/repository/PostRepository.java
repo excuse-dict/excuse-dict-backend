@@ -66,6 +66,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     )
     List<Post> findRandomPosts(@Param("amount") int amount, @Param("maxDaysAgo") int maxDaysAgo);
 
+    // 지연 로딩 해결하기 위해 vote fetch조인
+    @Query("SELECT DISTINCT p FROM Post p LEFT JOIN FETCH p.votes WHERE p.id IN :postIds")
+    List<Post> findAllByIdWithVotes(@Param("postIds") List<Long> postIds);
+
     // 게시물 상세 조회용
     @Query("SELECT p FROM Post p " +
             "JOIN FETCH p.member m " +

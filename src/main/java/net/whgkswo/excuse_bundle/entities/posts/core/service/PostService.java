@@ -121,7 +121,8 @@ public class PostService {
         List<Long> postIdList = redisService.getAsList(RankingScheduler.HALL_OF_FAME_REDISKEY, Long.class);
 
         // redis에서 추출한 ID를 바탕으로 게시글 조회
-        List<Post> posts = postRepository.findAllById(postIdList);
+        // fetch조인으로 Votes까지 같이 조회
+        List<Post> posts = postRepository.findAllByIdWithVotes(postIdList);
 
         List<PostSummaryResponseDto> summaries = postMapper.postsToMultiPostResponseDtos(posts);
 
