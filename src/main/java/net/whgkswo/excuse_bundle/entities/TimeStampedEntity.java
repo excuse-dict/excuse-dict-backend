@@ -7,11 +7,18 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@NoArgsConstructor
 @Getter
 @MappedSuperclass
 public class TimeStampedEntity extends BaseEntity {
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private final LocalDateTime createdAt;
+
     @Setter
-    private LocalDateTime modifiedAt = LocalDateTime.now();
+    private LocalDateTime modifiedAt;
+
+    public TimeStampedEntity() {
+        // 두 시간이 미세하게 차이나는 것 방지
+        LocalDateTime now = LocalDateTime.now();
+        this.createdAt = now;
+        this.modifiedAt = now;
+    }
 }
