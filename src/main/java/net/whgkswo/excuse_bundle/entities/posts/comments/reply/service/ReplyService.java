@@ -1,6 +1,8 @@
 package net.whgkswo.excuse_bundle.entities.posts.comments.reply.service;
 
 import lombok.RequiredArgsConstructor;
+import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
+import net.whgkswo.excuse_bundle.entities.members.core.service.MemberService;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CreateOrUpdateCommentCommand;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.GetRepliesCommand;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.ReplyResponseDto;
@@ -37,16 +39,20 @@ public class ReplyService {
     private final CommentService commentService;
     private final VoteMapper voteMapper;
     private final VoteService voteService;
+    private final MemberService memberService;
 
     // 대댓글 작성, 댓글의 현재 답글수를 리턴
     @Transactional
     public int createReply(CreateOrUpdateCommentCommand command){
         Comment comment = commentService.getComment(command.parentContentId());
 
+        // 답글 작성자
+        Member replyAuthor = memberService.findById(command.memberId());
+
         Reply reply = new Reply();
         reply.setContent(command.content());
         reply.setComment(comment);
-        reply.setMember(comment.getMember());
+        reply.setMember(replyAuthor);
 
         commentRepository.save(comment);
 
