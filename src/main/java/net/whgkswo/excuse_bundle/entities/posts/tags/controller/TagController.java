@@ -14,14 +14,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(TagController.BASE_PATH)
+@RequestMapping(TagController.BASE_URL)
 @RequiredArgsConstructor
 public class TagController {
 
     private final TagService tagService;
 
-    public static final String BASE_PATH = "/api/v1/posts/tags";
-    public static final String BASE_PATH_ANY = "/api/*/posts/tags";
+    public static final String BASE_URL = "/api/v1/posts/tags";
+    public static final String BASE_URL_ANY = "/api/*/posts/tags";
 
     // 쿼리 파라미터에 검색조건 배열을 담아 보내느냐, Rest를 포기하고 Post로 받느냐...
     @PostMapping

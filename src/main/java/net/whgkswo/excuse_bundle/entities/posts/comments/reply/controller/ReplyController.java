@@ -24,13 +24,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.net.URI;
 import java.util.Optional;
 
 @RestController
-@RequestMapping(PostController.BASE_PATH + "/comments")
+@RequestMapping(PostController.BASE_URL + "/comments")
 @RequiredArgsConstructor
 public class ReplyController {
 

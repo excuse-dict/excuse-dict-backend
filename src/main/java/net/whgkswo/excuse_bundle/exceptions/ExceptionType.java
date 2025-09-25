@@ -26,6 +26,7 @@ public record ExceptionType(int status, String code, String message){
     public static final ExceptionType AUTHENTICATION_FAILED = ExceptionType.of(401, "AUTHENTICATION_FAILED", "인증에 실패하였습니다.");
     public static final ExceptionType ACCESS_TOKEN_INVALID = ExceptionType.of(401, "ACCESS_TOKEN_INVALID", "액세스 토큰이 유효하지 않습니다.");
     public static final ExceptionType ACCESS_TOKEN_EXPIRED = ExceptionType.of(401, "ACCESS_TOKEN_EXPIRED", "액세스 토큰이 만료되었습니다. 다시 발급해주세요.");
+    public static final ExceptionType INVALID_GUEST_TOKEN = ExceptionType.of(401, "INVALID_GUEST_TOKEN", "비회원 토큰이 유효하지 않습니다.");
     public static final ExceptionType REFRESH_TOKEN_INVALID = ExceptionType.of(401, "REFRESH_TOKEN_INVALID", "리프레시 토큰이 유효하지 않습니다.");
     public static final ExceptionType REFRESH_TOKEN_EXPIRED = ExceptionType.of(401, "REFRESH_TOKEN_EXPIRED", "리프레시 토큰이 만료되었습니다. 다시 발급해주세요.");
     public static final ExceptionType DELETE_FORBIDDEN = ExceptionType.of(403, "DELETE_FORBIDDEN", "콘텐츠 작성자만 삭제할 수 있습니다.");

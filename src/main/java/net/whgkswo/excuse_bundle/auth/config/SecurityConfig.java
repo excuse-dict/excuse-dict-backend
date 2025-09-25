@@ -14,9 +14,9 @@ import net.whgkswo.excuse_bundle.entities.excuses.controller.ExcuseController;
 import net.whgkswo.excuse_bundle.entities.members.email.controller.EmailController;
 import net.whgkswo.excuse_bundle.entities.members.core.controller.MemberController;
 import net.whgkswo.excuse_bundle.entities.posts.core.controller.PostController;
+import net.whgkswo.excuse_bundle.guest.controller.GuestController;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
@@ -24,11 +24,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.task.DelegatingSecurityContextAsyncTaskExecutor;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -64,18 +59,19 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 프리플라이트는 모두 허용
                         .requestMatchers("/error").permitAll() // 에러 페이지 허용
-                        .requestMatchers(HttpMethod.POST, MemberController.BASE_PATH_ANY).permitAll() // 회원가입은 예외
-                        .requestMatchers(MemberController.BASE_PATH_ANY + "/emails/is-registered").permitAll() // 이메일 가입여부도 예외
-                        .requestMatchers(MemberController.BASE_PATH_ANY + "/nicknames/**").permitAll() // 닉네임 검증은 예외
-                        .requestMatchers(HttpMethod.PATCH,MemberController.BASE_PATH_ANY + "/passwords/reset").permitAll() // 비밀번호 변경도 허용
-                        .requestMatchers(EmailController.BASE_PATH_ANY + "/**").permitAll() // 이메일 관련 API는 예외
-                        .requestMatchers(AuthController.BASE_PATH_ANY + "/**").permitAll() // auth 전체 허용
+                        .requestMatchers(HttpMethod.POST, MemberController.BASE_URL_ANY).permitAll() // 회원가입은 예외
+                        .requestMatchers(MemberController.BASE_URL_ANY + "/emails/is-registered").permitAll() // 이메일 가입여부도 예외
+                        .requestMatchers(MemberController.BASE_URL_ANY + "/nicknames/**").permitAll() // 닉네임 검증은 예외
+                        .requestMatchers(HttpMethod.PATCH,MemberController.BASE_URL_ANY + "/passwords/reset").permitAll() // 비밀번호 변경도 허용
+                        .requestMatchers(EmailController.BASE_URL_ANY + "/**").permitAll() // 이메일 관련 API는 예외
+                        .requestMatchers(AuthController.BASE_URL_ANY + "/**").permitAll() // auth 전체 허용
                         .requestMatchers(HttpMethod.POST, ExcuseController.BASE_URL_ANY + "/generate/guests").permitAll() // 핑계 생성기(비회원용)
                         .requestMatchers("/h2/**").permitAll() // h2 볼때는 예외
                         // 회원/비회원 모두 호출할 수 있지만 permitAll()로 하면 아예 인증 절차 자체를 스킵 -> authentication이 null로 들어오는 문제가 있어서 hasAnyRole()로 바꿈
                         // 토큰 없이 요청 시 JwtVerificationFilter에서 ROLE_ANONYMOUS를 가진 익명 인증 객체 생성
                         // 이렇게 생성된 익명 인증정보가 실제로 핸들러까진 도달하지 못하지만(null 전달 - 이유 불명) 토큰의 유무를 판별하는 소기의 목적은 달성
-                        .requestMatchers(HttpMethod.GET, PostController.BASE_PATH + "/**").hasAnyRole("USER", "ADMIN", "ANONYMOUS") // 비회원도 조회는 허용
+                        .requestMatchers(HttpMethod.GET, PostController.BASE_URL + "/**").hasAnyRole("USER", "ADMIN", "ANONYMOUS") // 비회원도 조회는 허용
+                        .requestMatchers(GuestController.BASE_URL).permitAll() // 비회원용 컨트롤러
                         .anyRequest().authenticated() // 위에 명시하지 않은 요청은 전부 인증 필요
                 )
                 // 같은 도메인에서 iframe 허용 (h2가 iframe 사용)
@@ -128,7 +124,7 @@ public class SecurityConfig {
 
             JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(authenticationManager, jwtTokenService);
             // 로그인 요청 엔드포인트 설정
-            jwtAuthenticationFilter.setFilterProcessesUrl(AuthController.BASE_PATH + "/login");
+            jwtAuthenticationFilter.setFilterProcessesUrl(AuthController.BASE_URL + "/login");
             // 로그인 요청 후처리 로직 적용
             jwtAuthenticationFilter.setAuthenticationSuccessHandler(new MemberAuthenticationSuccessHandler());
             jwtAuthenticationFilter.setAuthenticationFailureHandler(new MemberAuthenticationFailureHandler());

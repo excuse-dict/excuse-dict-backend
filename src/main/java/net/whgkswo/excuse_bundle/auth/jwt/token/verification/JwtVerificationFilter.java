@@ -1,6 +1,5 @@
 package net.whgkswo.excuse_bundle.auth.jwt.token.verification;
 
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,7 +10,6 @@ import net.whgkswo.excuse_bundle.auth.jwt.principal.CustomPrincipal;
 import net.whgkswo.excuse_bundle.auth.jwt.token.tokenizer.JwtTokenizer;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import net.whgkswo.excuse_bundle.entities.posts.core.controller.PostController;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -62,7 +60,7 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
         String method = request.getMethod();
 
         // 특정 요청은 토큰 없으면 익명 인증 객체 생성
-        if(method.equals("GET") && path.startsWith(PostController.BASE_PATH)){
+        if(method.equals("GET") && path.startsWith(PostController.BASE_URL)){
             return false;
         }
 

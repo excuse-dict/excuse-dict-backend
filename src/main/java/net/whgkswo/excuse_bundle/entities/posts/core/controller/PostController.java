@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.service.AuthService;
 import net.whgkswo.excuse_bundle.entities.excuses.dto.ExcuseRequestDto;
-import net.whgkswo.excuse_bundle.entities.posts.comments.service.CommentService;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.*;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.posts.core.service.GetPostsCommand;
@@ -25,17 +24,16 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
 
 @RestController
-@RequestMapping(PostController.BASE_PATH)
+@RequestMapping(PostController.BASE_URL)
 @RequiredArgsConstructor
 public class PostController {
     private final AuthService authService;
     private final PostService postService;
 
-    public static final String BASE_PATH = "/api/v1/posts";
-    public static final String BASE_PATH_ANY = "/api/*/posts";
+    public static final String BASE_URL = "/api/v1/posts";
+    public static final String BASE_URL_ANY = "/api/*/posts";
 
     // 메인화면용 게시물 조회
     @GetMapping("/overview")

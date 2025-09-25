@@ -16,15 +16,15 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 
 @RestController
-@RequestMapping(MemberController.BASE_PATH)
+@RequestMapping(MemberController.BASE_URL)
 @RequiredArgsConstructor
 public class MemberController {
     private final MemberService memberService;
     private final NicknameService nicknameService;
     private final RecaptchaService recaptchaService;
 
-    public static final String BASE_PATH = "/api/v1/members";
-    public static final String BASE_PATH_ANY = "/api/*/members";
+    public static final String BASE_URL = "/api/v1/members";
+    public static final String BASE_URL_ANY = "/api/*/members";
 
     // 닉네임 중복 검사
     @GetMapping("/nicknames/check-availability")

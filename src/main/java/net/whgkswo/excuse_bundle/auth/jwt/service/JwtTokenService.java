@@ -34,7 +34,7 @@ public class JwtTokenService {
 
         String base64EncodedSecretKey = jwtTokenizer.encodeBase64SecretKey(jwtTokenizer.getSecretKey());
 
-        String accessToken = jwtTokenizer.generateAccessToken(claims, subject, expiration, base64EncodedSecretKey);
+        String accessToken = jwtTokenizer.generateToken(claims, subject, expiration, base64EncodedSecretKey);
 
         return prefix.getValue() + accessToken;
     }

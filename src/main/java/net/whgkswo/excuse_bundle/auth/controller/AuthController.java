@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 
 @RestController
-@RequestMapping(AuthController.BASE_PATH)
+@RequestMapping(AuthController.BASE_URL)
 @RequiredArgsConstructor
 public class AuthController {
     private final MemberService memberService;
@@ -29,8 +29,8 @@ public class AuthController {
     private final RecaptchaService recaptchaService;
     private final JwtTokenService jwtTokenService;
 
-    public static final String BASE_PATH = "/api/v1/auth";
-    public static final String BASE_PATH_ANY = "/api/*/auth";
+    public static final String BASE_URL = "/api/v1/auth";
+    public static final String BASE_URL_ANY = "/api/*/auth";
 
     @PostMapping("/verify/codes")
     public ResponseEntity<?> handleVerificationCodeRequest(@Valid @RequestBody EmailVerificationRequestDto dto){

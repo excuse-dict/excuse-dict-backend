@@ -34,20 +34,24 @@ public class JwtTokenizer {
         return Encoders.BASE64.encode(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
-    // 액세스 토큰 발급
-    public String generateAccessToken(Map<String, Object> claims,
-                                      String subject,
-                                      Date expiration,
-                                      String base64EncodedSecretKey) {
+    // 토큰 발급
+    public String generateToken(Map<String, Object> claims,
+                                String subject,
+                                Date expiration,
+                                String base64EncodedSecretKey) {
         Key key = getKeyFromBase64EncodedKey(base64EncodedSecretKey);
 
-        return Jwts.builder()
+        var builder = Jwts.builder()
                 .setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(Calendar.getInstance().getTime())
-                .setExpiration(expiration)
-                .signWith(key)
-                .compact();
+                .signWith(key);
+
+        if (expiration != null) {
+            builder.setExpiration(expiration);
+        }
+
+        return builder.compact();
     }
 
     // 리프레시 토큰 발급

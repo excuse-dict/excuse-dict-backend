@@ -29,7 +29,7 @@ import java.net.URI;
 import java.util.Optional;
 
 @RestController
-@RequestMapping(PostController.BASE_PATH)
+@RequestMapping(PostController.BASE_URL)
 @RequiredArgsConstructor
 public class CommentController {
 
