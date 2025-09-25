@@ -86,8 +86,8 @@ public class DummyScheduler {
         // Set으로 중복 제거
         Set<Post> posts = new HashSet<>();
 
-        // 최근 7일 간 게시물 중 랜덤 3개
-        posts.addAll(postService.getRandomPosts(3, 7));
+        // 최근 1일 간 게시물 중 랜덤 3개
+        posts.addAll(postService.getRandomPosts(3, 1));
 
         // 전체 중 랜덤 2개
         posts.addAll(postService.getRandomPosts(2));
@@ -108,8 +108,8 @@ public class DummyScheduler {
         // set으로 중복 제거
         Set<Post> posts = new HashSet<>();
 
-        // 최근 일주일간 게시글 2개
-        posts.addAll(postService.getRandomPosts(2, 7));
+        // 최근 1일간 게시글 2개
+        posts.addAll(postService.getRandomPosts(2, 1));
 
         // 전체 게시글 중 하나
         posts.addAll(postService.getRandomPosts(1));
@@ -131,11 +131,11 @@ public class DummyScheduler {
         // set으로 중복 제거
         Set<Comment> comments = new HashSet<>();
 
-        // 최근 일주일간 댓글 3개
-        comments.addAll(commentService.getRandomComments(3, 7));
+        // 최근 1일간 댓글 2개
+        comments.addAll(commentService.getRandomComments(2, 1));
 
-        // 전체 댓글 중 2개
-        comments.addAll(commentService.getRandomComments(2));
+        // 전체 댓글 중 1개
+        comments.addAll(commentService.getRandomComments(1));
 
         for(Comment comment : comments){
             // 랜덤 댓글 하나 가져오기
@@ -154,8 +154,8 @@ public class DummyScheduler {
         // Set으로 중복 제거
         Set<Comment> comments = new HashSet<>();
 
-        // 최근 일주일 간 랜덤 댓글 3개
-        comments.addAll(commentService.getRandomComments(3, 7));
+        // 최근 1일 간 랜덤 댓글 3개
+        comments.addAll(commentService.getRandomComments(3, 1));
 
         // 전체 댓글 중 2개
         comments.addAll(commentService.getRandomComments(2));
@@ -176,10 +176,10 @@ public class DummyScheduler {
         // Set으로 중복 제거
         Set<Reply> replies = new HashSet<>();
 
-        // 최근 일주일 간 랜덤 답글 3개
-        replies.addAll(replyService.getRandomReplies(3, 7));
+        // 최근 1일 간 랜덤 답글 2개
+        replies.addAll(replyService.getRandomReplies(3, 1));
 
-        // 전체 댓글 중 2개
+        // 전체 답글 중 1개
         replies.addAll(replyService.getRandomReplies(2));
 
         for(Reply reply : replies){
