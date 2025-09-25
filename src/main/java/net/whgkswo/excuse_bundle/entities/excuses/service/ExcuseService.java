@@ -1,6 +1,7 @@
 package net.whgkswo.excuse_bundle.entities.excuses.service;
 
 import lombok.RequiredArgsConstructor;
+import net.whgkswo.excuse_bundle.auth.recaptcha.RecaptchaService;
 import net.whgkswo.excuse_bundle.entities.excuses.Excuse;
 import net.whgkswo.excuse_bundle.entities.excuses.dto.GenerateExcuseDto;
 import net.whgkswo.excuse_bundle.entities.excuses.dto.UpdateExcuseCommand;
@@ -26,6 +27,7 @@ public class ExcuseService {
     private final TagService tagService;
     private final GeminiService geminiService;
     private final PromptBuilder promptBuilder;
+    private final RecaptchaService recaptchaService;
 
     // 핑계 등록
     public Excuse createExcuse(String situation, String excuseStr, Set<String> tagKeys){
@@ -58,7 +60,10 @@ public class ExcuseService {
     }
 
     // AI로 핑계 생성
-    public Mono<GenerateExcuseResponseDto> generateExcuse(String situation){
+    public Mono<GenerateExcuseResponseDto> generateExcuse(String situation, String recaptchaToken){
+        // 리캡챠 토큰 검증
+        recaptchaService.verifyRecaptcha(recaptchaToken);
+
         String prompt = promptBuilder.buildExcusePrompt(situation, 5);
 
         return geminiService.generateText(prompt, GenerateExcuseResponseDto.class)
@@ -69,7 +74,10 @@ public class ExcuseService {
     }
 
     // AI로 핑계 생성 (동기)
-    public GenerateExcuseResponseDto generateExcuseInSynchronous(String situation){
+    public GenerateExcuseResponseDto generateExcuseInSynchronous(String situation, String recaptchaToken){
+        // 리캡챠 토큰 검증
+        recaptchaService.verifyRecaptcha(recaptchaToken);
+
         String prompt = promptBuilder.buildExcusePrompt(situation, 5);
 
         GenerateExcuseResponseDto answer = geminiService.generateText(prompt, GenerateExcuseResponseDto.class).block(Duration.ofSeconds(30));

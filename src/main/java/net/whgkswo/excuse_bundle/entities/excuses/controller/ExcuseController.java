@@ -25,7 +25,7 @@ public class ExcuseController {
     @Cooldown(cooldownSeconds = 60)
     public Mono<GenerateExcuseResponseDto> generateExcuse(@RequestBody @Valid GenerateExcuseDto dto,
                                                           @CookieValue(value = "guestToken") String guestToken){
-        return excuseService.generateExcuse(dto.situation());
+        return excuseService.generateExcuse(dto.situation(), dto.recaptchaToken());
     }
 
     // 회원용
@@ -38,6 +38,6 @@ public class ExcuseController {
                                        Authentication authentication){
 
         // 비동기 요청시 스레드 간 Security Context가 유실되는 문제가 발생하여 동기로 전환
-        return excuseService.generateExcuseInSynchronous(dto.situation());
+        return excuseService.generateExcuseInSynchronous(dto.situation(), dto.recaptchaToken());
     }
 }
