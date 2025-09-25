@@ -18,8 +18,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "JOIN FETCH p.member m " +
             "JOIN FETCH m.memberRank " +
             "JOIN FETCH p.excuse e " +
-            "LEFT JOIN FETCH e.tags " + // 태그가 없을 수 있음
-            "WHERE p.status = :status")
+            "WHERE p.status = :status " +
+            "ORDER BY p.createdAt DESC"
+    )
     Page<Post> findAllForList(Pageable pageable, @Param("status") Post.Status status);
 
     // 순추천수 Top 게시물 조회
@@ -27,7 +28,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "JOIN FETCH p.member m " +
             "JOIN FETCH m.memberRank " +
             "JOIN FETCH p.excuse e " +
-            "LEFT JOIN FETCH e.tags " + // 태그가 없을 수 있음
             "WHERE p.status = :status " +
             "ORDER BY p.upvoteCount - p.downvoteCount DESC ",
             countQuery = "SELECT COUNT(p) FROM Post p WHERE p.status = :status"
@@ -39,7 +39,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "JOIN FETCH p.member m " +
             "JOIN FETCH m.memberRank " +
             "JOIN FETCH p.excuse e " +
-            "LEFT JOIN FETCH e.tags " + // 태그가 없을 수 있음
             "WHERE p.status = :status " +
             "AND p.createdAt >= :startDateTime"
     )
@@ -78,7 +77,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "JOIN FETCH p.member m " +
             "JOIN FETCH m.memberRank " +
             "JOIN FETCH p.excuse e " +
-            "LEFT JOIN FETCH e.tags " + // 태그가 없을 수 있음
             "LEFT JOIN FETCH p.votes " +
             "WHERE p.id = :id")
     Optional<Post> findByIdForDetail(@Param("id") Long id);
@@ -86,7 +84,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     // 댓글 조회
     @Query("SELECT c FROM Comment c " +
             "WHERE c.post.id = :targetId " +
-            "AND c.status = 'ACTIVE' " +
-            "ORDER BY c.createdAt DESC")
+            "AND c.status = 'ACTIVE'")
     Page<Comment> findCommentsByPostId(@Param("targetId") long postId, Pageable pageable);
 }
