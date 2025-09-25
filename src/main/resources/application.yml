@@ -29,6 +29,10 @@ spring:
     hibernate:
       ddl-auto: update # create: 앱 시작할 때마다 리셋, update: 변경사항만 반영, validate: 스키마 검증만
     show-sql: true
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: Asia/Seoul
     defer-datasource-initialization: true # datasource 초기화를 Hibernate의 테이블 생성 후로 연기 -> data.sql 실행 연기
   jackson:
     time-zone: Asia/Seoul
