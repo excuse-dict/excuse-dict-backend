@@ -7,15 +7,21 @@ import net.whgkswo.excuse_bundle.auth.redis.RedisService;
 import net.whgkswo.excuse_bundle.auth.service.AuthService;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
+import net.whgkswo.excuse_bundle.guest.service.GuestService;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 
 @Aspect
 @Component
@@ -24,9 +30,10 @@ public class CooldownAspect {
 
     private final RedisService redisService;
     private final AuthService authService;
+    private final GuestService guestService;
 
-    @Before("@annotation(annotation)")
-    public void checkCooldown(Cooldown annotation){
+    @Before("@annotation(cooldown)")
+    public void checkCooldown(JoinPoint joinPoint, Cooldown cooldown){
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -37,7 +44,8 @@ public class CooldownAspect {
             return;
         }
 
-        String identifier = getIdentifier(authentication);
+        // 레디스에 넣을 키
+        String identifier = getIdentifier(authentication, joinPoint);
 
         RedisKey redisKey = new RedisKey(RedisKey.Prefix.GENERATOR_COOLDOWN, identifier);
 
@@ -49,21 +57,26 @@ public class CooldownAspect {
             throw new BusinessLogicException(ExceptionType.tooManyGenerate(remainingTime));
         }
 
-        int cooldown = annotation.cooldownSeconds();
+        int cooldownSeconds = cooldown.cooldownSeconds();
 
         // redis에 요청 기록
-        redisService.put(redisKey, true, cooldown);
+        redisService.put(redisKey, true, cooldownSeconds);
     }
 
     // 레디스 키로 쓰일 id 정하기
-    private String getIdentifier(Authentication authentication){
+    private String getIdentifier(Authentication authentication, JoinPoint joinPoint){
         HttpServletRequest request = getCurrentRequest();
 
         boolean isValidUser = authService.isValidUser(authentication);
 
-        return isValidUser ?
-                authService.getMemberIdFromAuthentication(authentication) + "" // 회원이면 회원 id
-                : getClientIp(request); // 비회원일 경우 ip
+        if(isValidUser){
+            // 회원이면 회원 id
+            return authService.getMemberIdFromAuthentication(authentication) + "";
+        }else{
+            // 비회원일 경우 uuid
+            String guestToken = getGuestTokenFromArgs(joinPoint);
+            return guestService.getUuidFromGuestToken(guestToken);
+        }
     }
 
     private HttpServletRequest getCurrentRequest() {
@@ -71,31 +84,25 @@ public class CooldownAspect {
         return ((ServletRequestAttributes) requestAttributes).getRequest();
     }
 
-    private String getClientIp(HttpServletRequest request) {
-        // 여러 가지 헤더명으로 시도해보며 IP 추출
-        String ip = request.getHeader("X-Forwarded-For");
+    private String getGuestTokenFromArgs(JoinPoint joinPoint) {
+        Object[] args = joinPoint.getArgs();
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        Method method = signature.getMethod();
+        Parameter[] parameters = method.getParameters();
 
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("Proxy-Client-IP");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("WL-Proxy-Client-IP");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("HTTP_CLIENT_IP");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("HTTP_X_FORWARDED_FOR");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getRemoteAddr();
+        for (int i = 0; i < parameters.length; i++) {
+            Parameter param = parameters[i];
+            CookieValue cookieValue = param.getAnnotation(CookieValue.class);
+
+            // 쿠키에 "guestToken" 값이 있으면 반환
+            if (cookieValue != null && "guestToken".equals(cookieValue.value())) {
+                String guestToken = (String) args[i];
+                if(guestToken == null || guestToken.isBlank()) throw new BusinessLogicException(ExceptionType.GUEST_TOKEN_REQUIRED);
+                return guestToken;
+            }
         }
 
-        // 여러 IP가 있는 경우 첫 번째 IP 사용
-        if (ip != null && ip.contains(",")) {
-            ip = ip.split(",")[0].trim();
-        }
-
-        return ip;
+        // 없으면 안 됨
+        throw new BusinessLogicException(ExceptionType.GUEST_TOKEN_REQUIRED);
     }
 }

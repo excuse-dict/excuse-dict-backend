@@ -23,8 +23,8 @@ public class ExcuseController {
     // 비회원용 (회원도 가능 - 회원용과 쿨타임을 공유)
     @PostMapping("/generate/guests")
     @Cooldown(cooldownSeconds = 60)
-    public Mono<GenerateExcuseResponseDto> generateExcuse(@RequestBody @Valid GenerateExcuseDto dto){
-
+    public Mono<GenerateExcuseResponseDto> generateExcuse(@RequestBody @Valid GenerateExcuseDto dto,
+                                                          @CookieValue(value = "guestToken") String guestToken){
         return excuseService.generateExcuse(dto.situation());
     }
 

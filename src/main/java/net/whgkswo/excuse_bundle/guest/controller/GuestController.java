@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class GuestController {
 
-    private GuestService guestService;
+    private final GuestService guestService;
 
     public static final String BASE_URL = "/api/v1/guests";
     public static final String BASE_URL_ANY = "/api/*/guests";

@@ -1,14 +1,11 @@
 package net.whgkswo.excuse_bundle.guest.service;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.jwt.token.tokenizer.JwtTokenizer;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
-import net.whgkswo.excuse_bundle.general.responses.Response;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -46,7 +43,7 @@ public class GuestService {
 
             return claims.get("uuid", String.class);
         } catch (JwtException e) {
-            throw new BusinessLogicException(ExceptionType.INVALID_GUEST_TOKEN);
+            throw new BusinessLogicException(ExceptionType.GUEST_TOKEN_INVALID);
         }
     }
 }
