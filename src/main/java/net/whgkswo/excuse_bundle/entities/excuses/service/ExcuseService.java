@@ -13,6 +13,7 @@ import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
 import net.whgkswo.excuse_bundle.gemini.dto.GenerateExcuseResponseDto;
 import net.whgkswo.excuse_bundle.gemini.prompt.PromptBuilder;
 import net.whgkswo.excuse_bundle.gemini.service.GeminiService;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 

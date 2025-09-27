@@ -35,11 +35,16 @@ public class GuestController {
         Cookie cookie = new Cookie("guestToken", guestToken);
         cookie.setHttpOnly(true);
         cookie.setPath("/");
-        cookie.setMaxAge(-1);
+        cookie.setMaxAge(-1); // 만료 없음
         response.addCookie(cookie);
 
-        return ResponseEntity.ok(
-                Response.simpleString(guestToken)
-        );
+        // 클라이언트가 쿠키를 사용할 수 있는 환경인지 검증하기 위한 값
+        Cookie testCookie = new Cookie("cookieTest", "ok");
+        testCookie.setHttpOnly(false); // 클라이언트에서 접근할 수 있게
+        testCookie.setPath("/");
+        testCookie.setMaxAge(30); // 30초 후 만료
+        response.addCookie(testCookie);
+
+        return ResponseEntity.noContent().build();
     }
 }
