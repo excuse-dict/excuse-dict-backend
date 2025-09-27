@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.general.responses.Response;
 import net.whgkswo.excuse_bundle.guest.service.GuestService;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,24 +33,28 @@ public class GuestController {
         String guestToken = guestService.generateGuestToken(existingToken);
 
         // 쿠키에 저장
-        Cookie cookie = new Cookie("guestToken", guestToken);
-        cookie.setDomain(".exdict.site");
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(-1); // 만료 없음
-        cookie.setAttribute("SameSite", "None");
-        cookie.setSecure(true);
-        response.addCookie(cookie);
+        ResponseCookie guestCookie = ResponseCookie.from("guestToken", guestToken)
+                .domain(".exdict.site")
+                .httpOnly(true)
+                .path("/")
+                .maxAge(-1)
+                .sameSite("None")
+                .secure(true)
+                .build();
+
+        response.addHeader("Set-Cookie", guestCookie.toString());
 
         // 클라이언트가 쿠키를 사용할 수 있는 환경인지 검증하기 위한 값
-        Cookie testCookie = new Cookie("cookieTest", "ok");
-        testCookie.setDomain(".exdict.site");
-        testCookie.setHttpOnly(false); // 클라이언트에서 접근할 수 있게
-        testCookie.setPath("/");
-        testCookie.setMaxAge(30); // 30초 후 만료
-        testCookie.setAttribute("SameSite", "None");
-        testCookie.setSecure(true);
-        response.addCookie(testCookie);
+        ResponseCookie testCookie = ResponseCookie.from("cookieTest", "ok")
+                .domain(".exdict.site")
+                .httpOnly(false) // 클라이언트에서 접근 가능하게
+                .path("/")
+                .maxAge(30) // 30초 후 만료
+                .sameSite("None")
+                .secure(true)
+                .build();
+
+        response.addHeader("Set-Cookie", testCookie.toString());
 
         return ResponseEntity.noContent().build();
     }
