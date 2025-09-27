@@ -36,6 +36,8 @@ public class GuestController {
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         cookie.setMaxAge(-1); // 만료 없음
+        cookie.setAttribute("SameSite", "None");
+        cookie.setSecure(true);
         response.addCookie(cookie);
 
         // 클라이언트가 쿠키를 사용할 수 있는 환경인지 검증하기 위한 값
@@ -43,6 +45,8 @@ public class GuestController {
         testCookie.setHttpOnly(false); // 클라이언트에서 접근할 수 있게
         testCookie.setPath("/");
         testCookie.setMaxAge(30); // 30초 후 만료
+        testCookie.setAttribute("SameSite", "None");
+        testCookie.setSecure(true);
         response.addCookie(testCookie);
 
         return ResponseEntity.noContent().build();
