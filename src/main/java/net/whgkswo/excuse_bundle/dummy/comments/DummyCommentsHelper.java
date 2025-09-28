@@ -22,7 +22,12 @@ public class DummyCommentsHelper {
     @PostConstruct
     public void loadComments() throws IOException {
         ClassPathResource resource = new ClassPathResource("dummy/comments.txt");
-        comments = Files.readAllLines(Paths.get(resource.getURI()));
+        comments = Files.readAllLines(Paths.get(resource.getURI())).stream()
+                .map(String::trim)
+                .filter(line -> line.isBlank())
+                .filter(line -> line.startsWith("//") || line.startsWith("--"))
+                .toList()
+        ;
     }
 
     public String getRandomComment() {
