@@ -27,7 +27,7 @@ spring:
   jpa:
     database: mysql
     hibernate:
-      ddl-auto: create # create: 앱 시작할 때마다 리셋, update: 변경사항만 반영, validate: 스키마 검증만
+      ddl-auto: create # create: 앱 시작할 때마다 리셋(데이터 날림), update: 변경사항만 반영(스키마 수정), validate: 스키마 구조 검증만
     show-sql: true
     properties:
       hibernate:

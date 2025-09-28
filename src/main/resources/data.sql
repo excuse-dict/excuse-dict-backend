@@ -4,6 +4,8 @@ ALTER TABLE tag MODIFY COLUMN category ENUM(
     'STUDY','SUPERNATURAL','TRANSPORT','WEATHER'
 );
 
+ALTER TABLE tag ADD UNIQUE KEY unique_value (value);
+
 INSERT INTO tag (value, category, tag_keywords) VALUES
 -- 사고 관련
 ('감전', 'ACCIDENT', '["전기", "전류", "전원", "전력", "전압", "찌릿", "볼트"]'),
