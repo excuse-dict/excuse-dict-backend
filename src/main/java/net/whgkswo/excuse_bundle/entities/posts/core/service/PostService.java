@@ -75,7 +75,7 @@ public class PostService {
     public Page<PostResponseDto> getPosts(GetPostsCommand command){
 
         // TODO: 추후 성능 개선 방안 고민
-        List<Post> posts = postRepository.findAllForList(command.pageable(), Post.Status.ACTIVE);
+        List<Post> posts = postRepository.findAllForList(Post.Status.ACTIVE);
 
         if(command.searchInput() != null && !command.searchInput().isBlank()){
             // 검색어 필터
