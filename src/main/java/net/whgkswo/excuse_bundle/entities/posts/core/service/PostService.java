@@ -27,6 +27,7 @@ import net.whgkswo.excuse_bundle.general.dto.DeleteCommand;
 import net.whgkswo.excuse_bundle.pager.PageHelper;
 import net.whgkswo.excuse_bundle.ranking.scheduler.RankingScheduler;
 import net.whgkswo.excuse_bundle.ranking.service.RankingService;
+import net.whgkswo.excuse_bundle.words.WordService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,9 @@ public class PostService {
     private final RedisService redisService;
     private final PageHelper pageHelper;
     private final HotScoreService hotScoreService;
+    private final WordService wordService;
+
+    private static final double MIN_SIMILARITY = 0.5;
 
     // 게시글 등록
     @Transactional
@@ -70,11 +74,18 @@ public class PostService {
     @Transactional(readOnly = true)
     public Page<PostResponseDto> getPosts(GetPostsCommand command){
 
+        // TODO: 추후 성능 개선 방안 고민
         List<Post> posts = postRepository.findAllForList(command.pageable(), Post.Status.ACTIVE);
 
         if(command.searchInput() != null && !command.searchInput().isBlank()){
             // 검색어 필터
-
+            posts = posts.stream()
+                    .map(post -> Map.entry(post,
+                            wordService.calculateTextSimilarity(post.getExcuse().getSituation(), command.searchInput())))
+                    .filter(entry -> entry.getValue() > MIN_SIMILARITY)
+                    .sorted((a, b) -> Double.compare(b.getValue(), a.getValue())) // 유사도순 정렬
+                    .map(Map.Entry::getKey)
+                    .toList();
         }
 
         List<Long> postIds = posts.stream()

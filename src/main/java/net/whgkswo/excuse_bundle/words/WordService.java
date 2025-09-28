@@ -152,21 +152,32 @@ public class WordService {
         }
 
         double totalSimilarity = 0.0;
+        int matchedCount = 0;
 
         for(String morphemeA : morphemesA){
 
             double maxSimilarity = 0.0; // 형태소 A가 리스트 B를 순회하며 얻을 수 있는 최대 점수
+            double referenceThreshold = 1.0; // 그 때의 매칭 유사도 임계값
+
             for(String morphemeB : morphemesB){
-                // 단어 한 쌍 유사도 계산
-                double similarity = calculateWordSimilarity(morphemeA, morphemeB);
-                maxSimilarity = Math.max(maxSimilarity, similarity);
+
+                double similarity = calculateWordSimilarity(morphemeA, morphemeB); // 단어 한 쌍 유사도 계산
+                double threshold = getMinSimilarityThreshold(morphemeA, morphemeB); // 단어 한 쌍의 임계값 기준
+                // 자신의 임계값 기준을 넘은 경우에, 최대 유사도와 그 임계값 기준 갱신
+                if(similarity > maxSimilarity && similarity >= threshold){
+                    maxSimilarity = similarity;
+                    referenceThreshold = threshold;
+                }
             }
-            // 최대 점수를 더하기
-            totalSimilarity += maxSimilarity;
+            // 자신의 임계값 기준을 넘은 최대 점수를 누적시키기
+            if(maxSimilarity >= referenceThreshold){
+                totalSimilarity += maxSimilarity;
+                matchedCount++;
+            }
         }
 
-        // 최대 점수의 평균 반환
-        return totalSimilarity / morphemesA.size();
+        // 자신의 임계값 기준을 넘은 최대 점수의 평균 반환
+        return totalSimilarity / matchedCount;
     }
 
     // 글자 수에 따라 통과하기 위한 유사도 임계값 설정

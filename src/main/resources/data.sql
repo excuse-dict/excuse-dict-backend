@@ -4,7 +4,7 @@ ALTER TABLE tag MODIFY COLUMN category ENUM(
     'STUDY','SUPERNATURAL','TRANSPORT','WEATHER'
 );
 
-ALTER TABLE tag ADD UNIQUE KEY unique_value (value);
+ALTER TABLE tag MODIFY COLUMN value VARCHAR(255) NOT NULL UNIQUE;
 
 INSERT INTO tag (value, category, tag_keywords) VALUES
 -- 사고 관련
