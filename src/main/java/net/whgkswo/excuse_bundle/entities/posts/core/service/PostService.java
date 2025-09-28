@@ -70,9 +70,14 @@ public class PostService {
     @Transactional(readOnly = true)
     public Page<PostResponseDto> getPosts(GetPostsCommand command){
 
-        Page<Post> posts = postRepository.findAllForList(command.pageable(), Post.Status.ACTIVE);
+        List<Post> posts = postRepository.findAllForList(command.pageable(), Post.Status.ACTIVE);
 
-        List<Long> postIds = posts.getContent().stream()
+        if(command.searchInput() != null && !command.searchInput().isBlank()){
+            // 검색어 필터
+
+        }
+
+        List<Long> postIds = posts.stream()
                 .map(Post::getId)
                 .toList();
 
@@ -83,16 +88,21 @@ public class PostService {
         Map<Long, List<PostVote>> votesByPostId = votes.stream()
                 .collect(Collectors.groupingBy(vote -> vote.getPost().getId()));
 
-        return posts.map(post -> {
+        List<PostResponseDto> responses = posts.stream().map(post -> {
+            // 좋아요 / 싫어요 가져오기
             List<PostVote> postVotes = votesByPostId.getOrDefault(post.getId(), Collections.emptyList());
+            // 요청한 회원이 누른 거 있나 보기
             Optional<PostVote> myVote = postVotes.stream()
                     .filter(vote -> command.memberId() != null && vote.getMember().getId().equals(command.memberId()))
                     .findFirst();
-
+            // post -> summary
             PostSummaryResponseDto summary = postMapper.postTomultiPostSummaryResponseDto(post);
+            // summary -> response
             return postMapper.postSummaryResponseDtoToPostResponseDto(summary,
                     myVote.map(voteMapper::postVoteToPostVoteDto));
-        });
+        }).toList();
+
+        return pageHelper.paginate(responses, command.pageable());
     }
 
     private PostResponseDto mapSummaryToResponseDto(PostSummaryResponseDto summary, Long memberId){

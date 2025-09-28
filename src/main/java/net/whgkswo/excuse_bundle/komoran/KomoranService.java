@@ -5,6 +5,7 @@ import kr.co.shineware.nlp.komoran.core.Komoran;
 import kr.co.shineware.nlp.komoran.model.KomoranResult;
 import kr.co.shineware.nlp.komoran.model.Token;
 import lombok.RequiredArgsConstructor;
+import net.whgkswo.excuse_bundle.words.WordService;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class KomoranService {
+
     private final Komoran komoran = new Komoran(DEFAULT_MODEL.LIGHT);
 
     // 불용어 목록 (의미없는 단어들)

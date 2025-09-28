@@ -5,6 +5,7 @@ import kr.co.shineware.nlp.komoran.model.KomoranResult;
 import kr.co.shineware.nlp.komoran.model.Token;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.whgkswo.excuse_bundle.komoran.KomoranService;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -18,11 +19,12 @@ import java.util.stream.Collectors;
 @Slf4j
 public class WordService {
 
-    private final Komoran komoran;
+    private final KomoranService komoranService;
 
     private static final double SIMILARITY_EXACTLY_SAME = 1.0;
 
-    private static final double MIN_SIMILARITY_THRESHOLD = 0.7; // 최소 유사도
+    private static final double MIN_SIMILARITY_THRESHOLD_DEFAULT = 0.8; // 두 글자 기준 최소 유사도 (오타 허용 기준치)
+    private static final double MIN_SIMILARITY_THRESHOLD_MIN = 0.4; // 글자가 길어져도 최소 이것보단 유사해야 함
 
     // 형태소 입력으로 키워드와의 유사도 계산
     public double calculateKeywordMatchScore(List<String> morphemes, Set<String> keywords){
@@ -36,9 +38,7 @@ public class WordService {
         for (String morpheme : morphemes) {
             for (String keyword : keywords) {
                 double similarity = calculateWordSimilarity(morpheme, keyword);
-                if (similarity > MIN_SIMILARITY_THRESHOLD) {  // 70% 이상 유사하면 매칭
-                    maxScore = Math.max(maxScore, similarity);
-                }
+                maxScore = Math.max(maxScore, similarity);
             }
         }
 
@@ -46,7 +46,7 @@ public class WordService {
     }
 
     // 두 단어 간 유사도 계산
-    public double calculateWordSimilarity(String wordA, String wordB) {
+    private double calculateWordSimilarity(String wordA, String wordB) {
         if (wordA.equals(wordB)) return 1.0;
 
         // 자모 분해 (정확한 거리 계산을 위해)
@@ -56,7 +56,11 @@ public class WordService {
         // 레벤슈타인 거리 계산
         int distance = getLevenshteinDistance(decomposedA, decomposedB);
         int maxLength = Math.max(decomposedA.size(), decomposedB.size());
-        return maxLength == 0 ? 1.0 : 1.0 - (double) distance / maxLength;
+
+        double similarity = maxLength == 0 ? 1.0 : 1.0 - (double) distance / maxLength;
+
+        // 임계값 넘으면 반환
+        return similarity >= getMinSimilarityThreshold(wordA, wordB) ? similarity : 0.0;
     }
 
     // 레벤슈타인 거리 계산
@@ -112,25 +116,6 @@ public class WordService {
             "하다", "되다", "있다", "없다", "같다", "이다"
     );
 
-    // 사용자 입력을 분석해 의미있는 형태소 추출
-    public List<String> getMeaningfulMorphemes(String userInput) {
-        try {
-            KomoranResult result = komoran.analyze(userInput);
-
-            return result.getTokenList().stream()
-                    .map(Token::getMorph) // 형태소 추출
-                    .filter(term -> !term.isEmpty()) // 빈 문자열 제거
-                    .distinct() // 중복 제거
-                    .collect(Collectors.toList());
-
-        } catch (Exception e) {
-            // 분석 실패 시 띄어쓰기 방식으로 대체
-            return Arrays.stream(userInput.toLowerCase().split("\\s+"))
-                    .filter(word -> word.length() >= 2)
-                    .collect(Collectors.toList());
-        }
-    }
-
     // 형태소 -> 문자열 유사도 계산
     public double calculateMatchScore(List<String> morphemes, String targetString) {
         double maxScore = 0.0;
@@ -143,11 +128,52 @@ public class WordService {
 
             // 오타 허용한 유사도 계산
             double similarity = calculateWordSimilarity(morpheme, targetString);
-            if (similarity >= MIN_SIMILARITY_THRESHOLD) {
-                maxScore = Math.max(maxScore, similarity);
-            }
+            maxScore = Math.max(maxScore, similarity);
         }
 
         return maxScore;
+    }
+
+    // 두 텍스트 간 유사도 계산
+    public double calculateTextSimilarity(String strA, String strB){
+        if(strA == null || strA.isEmpty() || strB == null || strB.isEmpty()){ return 0.0; }
+
+        // 형태소 단위로 분해
+        List<String> morphemesA = komoranService.getMeaningfulMorphemes(strA);
+        List<String> morphemesB = komoranService.getMeaningfulMorphemes(strB);
+
+        return calculateMorphemesSimilarity(morphemesA, morphemesB);
+    }
+
+    // 형태소 리스트끼리 유사도 계산
+    private double calculateMorphemesSimilarity(List<String> morphemesA, List<String> morphemesB){
+        if(morphemesA.isEmpty() || morphemesB.isEmpty()){
+            return 0.0;
+        }
+
+        double totalSimilarity = 0.0;
+
+        for(String morphemeA : morphemesA){
+
+            double maxSimilarity = 0.0; // 형태소 A가 리스트 B를 순회하며 얻을 수 있는 최대 점수
+            for(String morphemeB : morphemesB){
+                // 단어 한 쌍 유사도 계산
+                double similarity = calculateWordSimilarity(morphemeA, morphemeB);
+                maxSimilarity = Math.max(maxSimilarity, similarity);
+            }
+            // 최대 점수를 더하기
+            totalSimilarity += maxSimilarity;
+        }
+
+        // 최대 점수의 평균 반환
+        return totalSimilarity / morphemesA.size();
+    }
+
+    // 글자 수에 따라 통과하기 위한 유사도 임계값 설정
+    private double getMinSimilarityThreshold(String strA, String strB){
+        // 두 단어 중 짧은 게 기준
+        int minLength = Math.min(strA.length(), strB.length());
+        // 단어가 길어질 수록 점점 관대해짐
+        return Math.max(MIN_SIMILARITY_THRESHOLD_DEFAULT - (minLength - 2) * 0.1, MIN_SIMILARITY_THRESHOLD_MIN);
     }
 }

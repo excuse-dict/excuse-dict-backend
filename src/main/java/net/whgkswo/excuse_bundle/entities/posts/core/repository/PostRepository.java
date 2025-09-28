@@ -21,7 +21,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "WHERE p.status = :status " +
             "ORDER BY p.createdAt DESC"
     )
-    Page<Post> findAllForList(Pageable pageable, @Param("status") Post.Status status);
+    List<Post> findAllForList(Pageable pageable, @Param("status") Post.Status status);
 
     // 순추천수 Top 게시물 조회
     @Query(value = "SELECT p FROM Post p " +

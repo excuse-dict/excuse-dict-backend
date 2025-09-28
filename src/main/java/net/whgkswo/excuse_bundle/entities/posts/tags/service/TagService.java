@@ -31,8 +31,7 @@ public class TagService {
     private static final double TAG_KEYWORD_WEIGHT = 0.7;   // 태그 키워드 매치
     private static final double CATEGORY_KEYWORD_WEIGHT = 0.4; // 카테고리 키워드 매치
 
-
-    private static final double MIN_SIMILARITY_THRESHOLD = 0.7; // 최소 유사도
+    private static final double MIN_SIMILARITY_THRESHOLD = 0.4; // 최소 유사도
 
     public Tag tagKeyToTag(String key){
         String[] splitKeys = key.split(":", 2);
@@ -81,21 +80,18 @@ public class TagService {
     }
 
     public List<TagSearchResult> searchTagBySimilarity(String userInput, List<Tag.Category> categories) {
-        // 사용자 입력 형태소 분해
-        List<String> morphemes = komoranService.getMeaningfulMorphemes(userInput.trim());
 
-        if (morphemes.isEmpty()) {
-            return Collections.emptyList();
-        }
+        if(userInput == null || userInput.isBlank()) return Collections.emptyList();
 
         // 타깃 태그에 대해 유사도 계산
         List<Tag> targetTags = getFilteredTags(categories);
         List<TagSearchResult> matchResults = new ArrayList<>();
 
+        // 태그 순회하며 유사도 계산
         for (Tag tag : targetTags) {
-            double totalScore = calculateTotalMatchScore(morphemes, tag);
+            double totalScore = calculateTotalMatchScore(userInput, tag);
 
-            if (totalScore > 0) {
+            if (totalScore >= MIN_SIMILARITY_THRESHOLD) {
                 matchResults.add(new TagSearchResult(tag, totalScore));
             }
         }
@@ -107,11 +103,13 @@ public class TagService {
     }
 
     // 형태소 -> 태그 유사도 계산
-    private double calculateTotalMatchScore(List<String> morphemes, Tag tag) {
+    private double calculateTotalMatchScore(String userInput, Tag tag) {
         double maxScore = 0.0;
 
+        List<String> morphemes = komoranService.getMeaningfulMorphemes(userInput);
+
         // 태그명과 직접 매치 (최고 가중치)
-        double tagNameScore = calculateTagNameMatchScore(morphemes, tag.getValue());
+        double tagNameScore = wordService.calculateTextSimilarity(userInput, tag.getValue());
         maxScore = Math.max(maxScore, tagNameScore * TAG_NAME_WEIGHT);
 
         // 태그 키워드와 매치
@@ -127,26 +125,6 @@ public class TagService {
                     tag.getCategory().getCategoryKeywords()
             );
             maxScore = Math.max(maxScore, categoryKeywordScore * CATEGORY_KEYWORD_WEIGHT);
-        }
-
-        return maxScore;
-    }
-
-    // 형태소 -> 태그명 유사도 계산
-    private double calculateTagNameMatchScore(List<String> morphemes, String tagValue) {
-        double maxScore = 0.0;
-
-        // 형태소 중에 태그명과 정확히 일치하는 것이 있는지 확인
-        for (String morpheme : morphemes) {
-            if (morpheme.equals(tagValue)) {
-                return TAG_NAME_WEIGHT; // 완전 일치
-            }
-
-            // 오타 허용한 유사도 계산
-            double similarity = wordService.calculateWordSimilarity(morpheme, tagValue);
-            if (similarity >= MIN_SIMILARITY_THRESHOLD) {
-                maxScore = Math.max(maxScore, similarity);
-            }
         }
 
         return maxScore;
