@@ -23,11 +23,11 @@ spring:
     password: ${MYSQL_PASSWORD}
   sql:
     init:
-      mode: never # sql파일 자동 실행여부 제어 (always / embedded / never)
+      mode: always # sql파일 자동 실행여부 제어 (always / embedded / never)
   jpa:
     database: mysql
     hibernate:
-      ddl-auto: update # create: 앱 시작할 때마다 리셋, update: 변경사항만 반영, validate: 스키마 검증만
+      ddl-auto: create # create: 앱 시작할 때마다 리셋, update: 변경사항만 반영, validate: 스키마 검증만
     show-sql: true
     properties:
       hibernate:
