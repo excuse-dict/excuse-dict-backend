@@ -33,7 +33,7 @@ public class KomoranService {
             return result.getTokenList().stream()
                     .filter(token -> MeaningfulPosTag.isMeaningful(token.getPos()))  // 유용한 품사만
                     .map(Token::getMorph)  // 형태소만 추출
-                    .filter(morph -> morph.length() >= 2)  // 2글자 이상 (조사 등 제외)
+                    .filter(morph -> !morph.isEmpty())  // 2글자 이상 이었는데 '먹' 같은 게 제외돼서 포함
                     .filter(morph -> !isStopWord(morph))   // 불용어 제거
                     .distinct()  // 중복 제거
                     .collect(Collectors.toList());

@@ -7,10 +7,7 @@ import net.whgkswo.excuse_bundle.entities.excuses.dto.UpdateExcuseCommand;
 import net.whgkswo.excuse_bundle.entities.excuses.service.ExcuseService;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import net.whgkswo.excuse_bundle.entities.members.core.service.MemberService;
-import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostResponseDto;
-import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostSummaryResponseDto;
-import net.whgkswo.excuse_bundle.entities.posts.core.dto.VoteCommand;
-import net.whgkswo.excuse_bundle.entities.posts.core.dto.WeeklyTopPostResponseDto;
+import net.whgkswo.excuse_bundle.entities.posts.core.dto.*;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.posts.core.mapper.PostMapper;
 import net.whgkswo.excuse_bundle.entities.posts.core.repository.PostRepository;
@@ -51,7 +48,7 @@ public class PostService {
     private final PostMapper postMapper;
     private final VoteMapper voteMapper;
     private final PostVoteRepository postVoteRepository;
-    private final PostDtoFactory postDtoFactory;
+    private final PostDtoConverter postDtoConverter;
     private final RedisService redisService;
     private final PageHelper pageHelper;
     private final HotScoreService hotScoreService;
@@ -91,7 +88,7 @@ public class PostService {
     private Page<PostResponseDto> getPostsWithoutSearch(GetPostsCommand command) {
         Page<Post> postPage = postRepository.findPostForPage(command.pageable(), Post.Status.ACTIVE);
 
-        return postDtoFactory.convertPostsToResponseDtos(
+        return postDtoConverter.convertPostsToResponseDtos(
                 postPage,
                 command.memberId(),
                 null  // 매칭된 키워드 없음
@@ -100,30 +97,32 @@ public class PostService {
 
     // 검색어 있을 때: 검색어로 필터 후 자체 페이징
     private Page<PostResponseDto> getPostsWithSearch(GetPostsCommand command) {
-        // TODO: 추후 성능 개선 방안 고민
-        List<Post> posts = postRepository.findAllForList(Post.Status.ACTIVE);
+
+        // 검색용 dto 가볍게 조회
+        List<PostSearchDto> searchDtos = postRepository.findAllSearchDtoByStatus(Post.Status.ACTIVE);
 
         // 검색어로 필터링
-        List<SearchResult<Post>> searchedPosts = searchPosts(
+        List<SearchResult<PostSearchDto>> searchedPosts = searchPosts(
                 command.searchInput(),
                 SearchType.SITUATION,
-                posts
+                searchDtos
         );
 
         // 게시물 별 매칭된 키워드
         Map<Long, List<String>> matchedWordsMap = searchedPosts.stream()
                 .collect(Collectors.toMap(
-                        result -> result.searchedContent().getId(),
+                        result -> result.searchedContent().id(),
                         SearchResult::matchedWords
                 ));
 
-        // Post 리스트 추출
-        List<Post> postList = searchedPosts.stream()
-                .map(SearchResult::searchedContent)
+        // 검색된 게시물 실제 객체 가져오기
+        List<Long> postIdList = searchedPosts.stream()
+                .map(result -> result.searchedContent().id())
                 .toList();
+        List<Post> postList = getOrderedPostsFromIdList(postIdList);
 
         // 응답 dto로 리패키징
-        List<PostResponseDto> responses = postDtoFactory.convertPostsToResponseDtos(
+        List<PostResponseDto> responses = postDtoConverter.convertPostsToResponseDtos(
                 postList,
                 command.memberId(),
                 matchedWordsMap
@@ -343,20 +342,29 @@ public class PostService {
     }
 
     // 게시물 검색
-    List<SearchResult<Post>> searchPosts(String searchInput, SearchType searchType, List<Post> posts){
+    List<SearchResult<PostSearchDto>> searchPosts(String searchInput, SearchType searchType, List<PostSearchDto> dtos){
 
-        return posts.stream()
+        return dtos.stream()
                 .map(post -> { // 유사도 계산 후 유사도 포함 랩핑
-                    String targetString = post.getExcuse().getSituation();
-                    Similarity similarity = wordService.calculateTextSimilarity(targetString, searchInput);
+                    Similarity similarity = getPostSimilarity(post, searchInput, searchType);
                     return Map.entry(post, similarity);
                 })
                 .filter(entry -> entry.getValue().similarityScore() > MIN_SIMILARITY)
                 .sorted((a, b) -> Double.compare(b.getValue().similarityScore(), a.getValue().similarityScore())) // 유사도순 정렬
-                .map(entry -> { // 다시 유사도 빼고 랩핑
-                    Post post = entry.getKey();
-                    return new SearchResult<>(post, entry.getValue().matchedWords());
-                })
+                .map(entry -> new SearchResult<>(entry.getKey(), entry.getValue().matchedWords())) // 다시 유사도 빼고 랩핑
                 .toList();
+    }
+
+    private Similarity getPostSimilarity(PostSearchDto dto, String searchInput, SearchType searchType){
+        return switch (searchType) {
+            case SITUATION -> wordService.calculateTextSimilarity(dto.situation(), searchInput);
+            case EXCUSE -> wordService.calculateTextSimilarity(dto.excuse(), searchInput);
+            case SITUATION_AND_EXCUSE -> {
+                Similarity sitSim = wordService.calculateTextSimilarity(dto.situation(), searchInput);
+                Similarity excSim = wordService.calculateTextSimilarity(dto.excuse(), searchInput);
+                yield sitSim.similarityScore() > excSim.similarityScore() ? sitSim : excSim;
+            }
+            case AUTHOR -> wordService.calculateTextSimilarity(dto.authorName(), searchInput);
+        };
     }
 }

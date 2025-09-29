@@ -1,6 +1,7 @@
 package net.whgkswo.excuse_bundle.entities.posts.core.repository;
 
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
+import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostSearchDto;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +15,14 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
+
+    // 경량화된 검색용 DTO 조회
+    @Query("SELECT new " + PostSearchDto.PACKAGE_PATH +
+            "(p.id, p.excuse.situation, p.excuse.excuse, p.member.nickname, p.createdAt) FROM Post p " +
+            "JOIN p.excuse JOIN p.member " +
+            "WHERE p.status = :status"
+    )
+    List<PostSearchDto> findAllSearchDtoByStatus(@Param("status") Post.Status status);
 
     // 게시물 목록용 (리스트)
     @Query("SELECT p FROM Post p " +
