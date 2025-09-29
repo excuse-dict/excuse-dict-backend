@@ -77,46 +77,108 @@ public class PostService {
     @Transactional(readOnly = true)
     public Page<PostResponseDto> getPosts(GetPostsCommand command){
 
-        // TODO: 추후 성능 개선 방안 고민
-        List<Post> posts = postRepository.findAllForList(Post.Status.ACTIVE);
-        List<SearchResult<Post>> searchedPosts = new ArrayList<>();
-
-        if(command.searchInput() != null && !command.searchInput().isBlank()){
-            // 검색어 필터
-            searchedPosts = searchPosts(command.searchInput(), SearchType.SITUATION, posts);
-        }else{
-            // 검색어 없으면 그대로
-            searchedPosts = posts.stream()
-                    .map(post -> new SearchResult<>(post, null))
-                    .toList();
+        // 검색어 없으면 DB에서 바로 페이징
+        if(command.searchInput() == null || command.searchInput().isBlank()){
+            return getPostsWithoutSearch(command);
         }
 
-        List<Long> postIds = searchedPosts.stream()
-                .map(post -> post.searchedContent().getId())
+        // 검색어 있으면 메모리에 다 올리고 필터링
+        return getPostsWithSearch(command);
+    }
+
+    // 검색어 없을 때: DB 페이징
+    private Page<PostResponseDto> getPostsWithoutSearch(GetPostsCommand command) {
+        Page<Post> postPage = postRepository.findAllForPage(command.pageable(), Post.Status.ACTIVE);
+
+        List<PostResponseDto> responses = convertPostsToResponseDtos(
+                postPage.getContent(),
+                command.memberId(),
+                null  // 매칭된 키워드 없음
+        );
+
+        return pageHelper.paginate(responses, command.pageable());
+    }
+
+    // 검색어 있을 때: 검색어로 필터 후 자체 페이징
+    private Page<PostResponseDto> getPostsWithSearch(GetPostsCommand command) {
+        // TODO: 추후 성능 개선 방안 고민
+        List<Post> posts = postRepository.findAllForList(Post.Status.ACTIVE);
+
+        // 검색어로 필터링
+        List<SearchResult<Post>> searchedPosts = searchPosts(
+                command.searchInput(),
+                SearchType.SITUATION,
+                posts
+        );
+
+        // 게시물 별 매칭된 키워드
+        Map<Long, List<String>> matchedWordsMap = searchedPosts.stream()
+                .collect(Collectors.toMap(
+                        result -> result.searchedContent().getId(),
+                        SearchResult::matchedWords
+                ));
+
+        // Post 리스트 추출
+        List<Post> postList = searchedPosts.stream()
+                .map(SearchResult::searchedContent)
                 .toList();
 
-        // 게시물 id로 Vote 조회(순서 보장 x)
+        // 응답 dto로 리패키징
+        List<PostResponseDto> responses = convertPostsToResponseDtos(
+                postList,
+                command.memberId(),
+                matchedWordsMap
+        );
+
+        return pageHelper.paginate(responses, command.pageable());
+    }
+
+    // Post -> PostResponseDto 리스트 변환
+    private List<PostResponseDto> convertPostsToResponseDtos(
+            List<Post> posts,
+            Long memberId,
+            Map<Long, List<String>> matchedWordsMap
+    ) {
+        if (posts.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // Post ID 추출
+        List<Long> postIds = posts.stream()
+                .map(Post::getId)
+                .toList();
+
+        // 게시물 id로 Vote 조회
         List<PostVote> votes = postVoteRepository.findAllByPostIds(postIds);
 
         // 게시물 id <-> Vote 맵핑
         Map<Long, List<PostVote>> votesByPostId = votes.stream()
                 .collect(Collectors.groupingBy(vote -> vote.getPost().getId()));
 
-        List<PostResponseDto> responses = searchedPosts.stream().map(post -> {
+        return posts.stream().map(post -> {
             // 좋아요 / 싫어요 가져오기
-            List<PostVote> postVotes = votesByPostId.getOrDefault(post.searchedContent().getId(), Collections.emptyList());
+            List<PostVote> postVotes = votesByPostId.getOrDefault(post.getId(), Collections.emptyList());
+
             // 요청한 회원이 누른 거 있나 보기
             Optional<PostVote> myVote = postVotes.stream()
-                    .filter(vote -> command.memberId() != null && vote.getMember().getId().equals(command.memberId()))
+                    .filter(vote -> memberId != null && vote.getMember().getId().equals(memberId))
                     .findFirst();
-            // post -> summary
-            PostSummaryResponseDto summary = postMapper.postTomultiPostSummaryResponseDto(post.searchedContent());
-            // summary -> response
-            return postMapper.postSummaryResponseDtoToPostResponseDto(summary,
-                    myVote.map(voteMapper::postVoteToPostVoteDto).orElse(null), post.matchedWords());
-        }).toList();
 
-        return pageHelper.paginate(responses, command.pageable());
+            // post -> summary
+            PostSummaryResponseDto summary = postMapper.postTomultiPostSummaryResponseDto(post);
+
+            // matchedWords 가져오기 (없으면 null)
+            List<String> matchedWords = matchedWordsMap != null
+                    ? matchedWordsMap.get(post.getId())
+                    : null;
+
+            // summary -> response
+            return postMapper.postSummaryResponseDtoToPostResponseDto(
+                    summary,
+                    myVote.map(voteMapper::postVoteToPostVoteDto).orElse(null),
+                    matchedWords
+            );
+        }).toList();
     }
 
     private PostResponseDto mapSummaryToResponseDto(PostSummaryResponseDto summary, Long memberId){

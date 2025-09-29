@@ -23,6 +23,16 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     )
     List<Post> findAllForList(@Param("status") Post.Status status);
 
+    // 게시물 목록용
+    @Query("SELECT p FROM Post p " +
+            "JOIN FETCH p.member m " +
+            "JOIN FETCH m.memberRank " +
+            "JOIN FETCH p.excuse e " +
+            "WHERE p.status = :status " +
+            "ORDER BY p.createdAt DESC"
+    )
+    Page<Post> findAllForPage(Pageable pageable, @Param("status") Post.Status status);
+
     // 순추천수 Top 게시물 조회
     @Query(value = "SELECT p FROM Post p " +
             "JOIN FETCH p.member m " +
