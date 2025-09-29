@@ -1,5 +1,6 @@
 package net.whgkswo.excuse_bundle.entities.posts.core.mapper;
 
+import jakarta.annotation.Nullable;
 import net.whgkswo.excuse_bundle.entities.excuses.mapper.ExcuseMapper;
 import net.whgkswo.excuse_bundle.entities.members.core.mapper.MemberMapper;
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.AbstractComment;
@@ -47,7 +48,7 @@ public interface PostMapper {
                 .count();
     }
 
-    default PostResponseDto postSummaryResponseDtoToPostResponseDto(PostSummaryResponseDto summary, Optional<PostVoteDto> optionalVote){
+    default PostResponseDto postSummaryResponseDtoToPostResponseDto(PostSummaryResponseDto summary, @Nullable PostVoteDto vote, List<String> matchedWords){
 
         return new PostResponseDto(
                 summary.getPostId(),
@@ -58,7 +59,8 @@ public interface PostMapper {
                 summary.getCommentCount(),
                 summary.getCreatedAt(),
                 summary.getModifiedAt(),
-                optionalVote.orElse(null)
+                vote,
+                matchedWords
                 );
     }
 

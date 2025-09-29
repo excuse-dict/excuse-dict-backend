@@ -91,7 +91,8 @@ public class ReplyService {
 
     // 랜덤 답글 n개 조회 (최근 m일간)
     public List<Reply> getRandomReplies(int amount, int maxDaysAgo){
-        return replyRepository.findRandomReplies(amount, maxDaysAgo);
+        LocalDateTime startDateTime = LocalDateTime.now().minusDays(maxDaysAgo);
+        return replyRepository.findRandomReplies(amount, startDateTime);
     }
 
     // 대댓글 추천/비추천

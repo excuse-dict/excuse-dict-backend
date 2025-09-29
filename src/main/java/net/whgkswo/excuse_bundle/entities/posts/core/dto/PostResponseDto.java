@@ -10,6 +10,7 @@ import net.whgkswo.excuse_bundle.entities.vote.dto.PostVoteDto;
 import net.whgkswo.excuse_bundle.general.responses.dtos.Dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 @Setter
 public class PostResponseDto extends PostSummaryResponseDto implements Dto {
     private PostVoteDto myVote;
+    private List<String> matchedWords;
 
     public PostResponseDto(long postId,
                            MemberResponseDto author,
@@ -26,8 +28,12 @@ public class PostResponseDto extends PostSummaryResponseDto implements Dto {
                            int commentCount,
                            LocalDateTime createdAt,
                            LocalDateTime modifiedAt,
-                           PostVoteDto myVote){
+                           PostVoteDto myVote,
+                           List<String> matchedWords){
+
         super(postId, author, excuse, upvoteCount, downvoteCount, commentCount, createdAt, modifiedAt);
+
         this.myVote = myVote;
+        this.matchedWords = matchedWords;
     }
 }

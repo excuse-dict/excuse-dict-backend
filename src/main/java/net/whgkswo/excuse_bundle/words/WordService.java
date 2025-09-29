@@ -1,18 +1,13 @@
 package net.whgkswo.excuse_bundle.words;
 
-import kr.co.shineware.nlp.komoran.core.Komoran;
-import kr.co.shineware.nlp.komoran.model.KomoranResult;
-import kr.co.shineware.nlp.komoran.model.Token;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.whgkswo.excuse_bundle.komoran.KomoranService;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -135,8 +130,8 @@ public class WordService {
     }
 
     // 두 텍스트 간 유사도 계산
-    public double calculateTextSimilarity(String strA, String strB){
-        if(strA == null || strA.isEmpty() || strB == null || strB.isEmpty()){ return 0.0; }
+    public Similarity calculateTextSimilarity(String strA, String strB){
+        if(strA == null || strA.isEmpty() || strB == null || strB.isEmpty()){ return Similarity.NO_MATCH; }
 
         // 형태소 단위로 분해
         List<String> morphemesA = komoranService.getMeaningfulMorphemes(strA);
@@ -146,13 +141,12 @@ public class WordService {
     }
 
     // 형태소 리스트끼리 유사도 계산
-    private double calculateMorphemesSimilarity(List<String> morphemesA, List<String> morphemesB){
-        if(morphemesA.isEmpty() || morphemesB.isEmpty()){
-            return 0.0;
-        }
+    private Similarity calculateMorphemesSimilarity(List<String> morphemesA, List<String> morphemesB){
+
+        if(morphemesA.isEmpty() || morphemesB.isEmpty()) return Similarity.NO_MATCH;
 
         double totalSimilarity = 0.0;
-        int matchedCount = 0;
+        List<String> matchedWords = new ArrayList<>();
 
         for(String morphemeA : morphemesA){
 
@@ -172,12 +166,16 @@ public class WordService {
             // 자신의 임계값 기준을 넘은 최대 점수를 누적시키기
             if(maxSimilarity >= referenceThreshold){
                 totalSimilarity += maxSimilarity;
-                matchedCount++;
+                matchedWords.add(morphemeA);
             }
         }
 
-        // 자신의 임계값 기준을 넘은 최대 점수의 평균 반환
-        return totalSimilarity / matchedCount;
+        if(matchedWords.isEmpty()) return Similarity.NO_MATCH;
+
+        // 자신의 임계값 기준을 넘은 최대 점수의 평균이 유사도
+        double similarityScore = totalSimilarity / matchedWords.size();
+
+        return Similarity.of(matchedWords, similarityScore);
     }
 
     // 글자 수에 따라 통과하기 위한 유사도 임계값 설정

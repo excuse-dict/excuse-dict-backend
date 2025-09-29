@@ -15,6 +15,8 @@ import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.posts.core.mapper.PostMapper;
 import net.whgkswo.excuse_bundle.entities.posts.core.repository.PostRepository;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.PostVote;
+import net.whgkswo.excuse_bundle.entities.posts.core.search.SearchResult;
+import net.whgkswo.excuse_bundle.entities.posts.core.search.SearchType;
 import net.whgkswo.excuse_bundle.entities.posts.hotscore.PostIdWithHotScoreDto;
 import net.whgkswo.excuse_bundle.entities.posts.hotscore.HotScoreService;
 import net.whgkswo.excuse_bundle.entities.posts.hotscore.PostWithHotScoreDto;
@@ -27,6 +29,7 @@ import net.whgkswo.excuse_bundle.general.dto.DeleteCommand;
 import net.whgkswo.excuse_bundle.pager.PageHelper;
 import net.whgkswo.excuse_bundle.ranking.scheduler.RankingScheduler;
 import net.whgkswo.excuse_bundle.ranking.service.RankingService;
+import net.whgkswo.excuse_bundle.words.Similarity;
 import net.whgkswo.excuse_bundle.words.WordService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -76,20 +79,20 @@ public class PostService {
 
         // TODO: 추후 성능 개선 방안 고민
         List<Post> posts = postRepository.findAllForList(Post.Status.ACTIVE);
+        List<SearchResult<Post>> searchedPosts = new ArrayList<>();
 
         if(command.searchInput() != null && !command.searchInput().isBlank()){
             // 검색어 필터
-            posts = posts.stream()
-                    .map(post -> Map.entry(post,
-                            wordService.calculateTextSimilarity(post.getExcuse().getSituation(), command.searchInput())))
-                    .filter(entry -> entry.getValue() > MIN_SIMILARITY)
-                    .sorted((a, b) -> Double.compare(b.getValue(), a.getValue())) // 유사도순 정렬
-                    .map(Map.Entry::getKey)
+            searchedPosts = searchPosts(command.searchInput(), SearchType.SITUATION, posts);
+        }else{
+            // 검색어 없으면 그대로
+            searchedPosts = posts.stream()
+                    .map(post -> new SearchResult<>(post, null))
                     .toList();
         }
 
-        List<Long> postIds = posts.stream()
-                .map(Post::getId)
+        List<Long> postIds = searchedPosts.stream()
+                .map(post -> post.searchedContent().getId())
                 .toList();
 
         // 게시물 id로 Vote 조회(순서 보장 x)
@@ -99,18 +102,18 @@ public class PostService {
         Map<Long, List<PostVote>> votesByPostId = votes.stream()
                 .collect(Collectors.groupingBy(vote -> vote.getPost().getId()));
 
-        List<PostResponseDto> responses = posts.stream().map(post -> {
+        List<PostResponseDto> responses = searchedPosts.stream().map(post -> {
             // 좋아요 / 싫어요 가져오기
-            List<PostVote> postVotes = votesByPostId.getOrDefault(post.getId(), Collections.emptyList());
+            List<PostVote> postVotes = votesByPostId.getOrDefault(post.searchedContent().getId(), Collections.emptyList());
             // 요청한 회원이 누른 거 있나 보기
             Optional<PostVote> myVote = postVotes.stream()
                     .filter(vote -> command.memberId() != null && vote.getMember().getId().equals(command.memberId()))
                     .findFirst();
             // post -> summary
-            PostSummaryResponseDto summary = postMapper.postTomultiPostSummaryResponseDto(post);
+            PostSummaryResponseDto summary = postMapper.postTomultiPostSummaryResponseDto(post.searchedContent());
             // summary -> response
             return postMapper.postSummaryResponseDtoToPostResponseDto(summary,
-                    myVote.map(voteMapper::postVoteToPostVoteDto));
+                    myVote.map(voteMapper::postVoteToPostVoteDto).orElse(null), post.matchedWords());
         }).toList();
 
         return pageHelper.paginate(responses, command.pageable());
@@ -120,7 +123,7 @@ public class PostService {
         Post post = getPost(summary.getPostId());
         Optional<PostVote> optionalVote = voteService.getPostVoteFromCertainMember(post, memberId);
 
-        return postMapper.postSummaryResponseDtoToPostResponseDto(summary, optionalVote.map(voteMapper::postVoteToPostVoteDto));
+        return postMapper.postSummaryResponseDtoToPostResponseDto(summary, optionalVote.map(voteMapper::postVoteToPostVoteDto).orElse(null), null);
     }
 
     private Optional<Post> findPost(long postId){
@@ -201,7 +204,7 @@ public class PostService {
                     Optional<PostVote> optionalVote = voteService.getPostVoteFromCertainMember(post, memberId);
                     // summary -> response
                     PostResponseDto responseDto = postMapper.postSummaryResponseDtoToPostResponseDto(
-                            summary, optionalVote.map(voteMapper::postVoteToPostVoteDto));
+                            summary, optionalVote.map(voteMapper::postVoteToPostVoteDto).orElse(null), null);
                     // response -> weekly
                     int hotScore = hotScoreMap.get(post.getId());
                     return postMapper.postResponseDtoToWeeklyTopPostResponseDto(responseDto, hotScore);
@@ -218,7 +221,8 @@ public class PostService {
 
     // 랜덤 게시글 n개 조회(최근 m일간)
     public List<Post> getRandomPosts(int amount, int maxDaysAgo){
-        return postRepository.findRandomPosts(amount, maxDaysAgo);
+        LocalDateTime startDateTime = LocalDateTime.now().minusDays(maxDaysAgo);
+        return postRepository.findRandomPosts(amount, startDateTime);
     }
 
     // id 리스트 -> 객체 리스트 변환 (순서 유지하며)
@@ -295,5 +299,23 @@ public class PostService {
         post.setStatus(Post.Status.DELETED);
 
         postRepository.save(post);
+    }
+
+    // 게시물 검색
+    List<SearchResult<Post>> searchPosts(String searchInput, SearchType searchType, List<Post> posts){
+
+        return posts.stream()
+                .map(post -> { // 유사도 계산 후 유사도 포함 랩핑
+                    String targetString = post.getExcuse().getSituation();
+                    Similarity similarity = wordService.calculateTextSimilarity(targetString, searchInput);
+                    return Map.entry(post, similarity);
+                })
+                .filter(entry -> entry.getValue().similarityScore() > MIN_SIMILARITY)
+                .sorted((a, b) -> Double.compare(b.getValue().similarityScore(), a.getValue().similarityScore())) // 유사도순 정렬
+                .map(entry -> { // 다시 유사도 빼고 랩핑
+                    Post post = entry.getKey();
+                    return new SearchResult<>(post, entry.getValue().matchedWords());
+                })
+                .toList();
     }
 }

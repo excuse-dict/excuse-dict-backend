@@ -87,7 +87,8 @@ public class CommentService {
 
     // 랜덤 댓글 n개 조회(최근 m일간)
     public List<Comment> getRandomComments(int amount, int maxDaysAgo){
-        return commentRepository.findRandomComments(amount, maxDaysAgo);
+        LocalDateTime startDateTime = LocalDateTime.now().minusDays(maxDaysAgo);
+        return commentRepository.findRandomComments(amount, startDateTime);
     }
 
     // 댓글 추천

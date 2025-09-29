@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,10 +34,10 @@ public interface ReplyRepository extends JpaRepository<Reply, Long> {
     // 랜덤 답글 n개 조회 (최근 m일간)
     @Query(value = "SELECT * FROM reply " +
             "WHERE status = 'ACTIVE' " +
-            "AND created_at >= CURRENT_DATE - :maxDaysAgo " +
+            "AND created_at >= :startDateTime " +
             "ORDER BY RAND() " +
             "LIMIT :amount",
             nativeQuery = true
     )
-    List<Reply> findRandomReplies(@Param("amount") int amount, @Param("maxDaysAgo") int maxDaysAgo);
+    List<Reply> findRandomReplies(@Param("amount") int amount, @Param("startDateTime") LocalDateTime startDateTime);
 }

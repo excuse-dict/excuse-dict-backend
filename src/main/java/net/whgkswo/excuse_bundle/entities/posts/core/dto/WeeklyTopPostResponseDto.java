@@ -10,6 +10,7 @@ import net.whgkswo.excuse_bundle.entities.vote.dto.PostVoteDto;
 import net.whgkswo.excuse_bundle.general.responses.dtos.Dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -29,8 +30,11 @@ public class WeeklyTopPostResponseDto extends PostResponseDto implements Dto {
             LocalDateTime createdAt,
             LocalDateTime modifiedAt,
             PostVoteDto myVote,
-            int hotScore) {
-        super(postId, author, excuse, upvoteCount, downvoteCount, commentCount, createdAt, modifiedAt, myVote);
+            int hotScore,
+            List<String> matchedWords) {
+
+        super(postId, author, excuse, upvoteCount, downvoteCount, commentCount, createdAt, modifiedAt, myVote, matchedWords);
+
         this.hotScore = hotScore;
     }
 }

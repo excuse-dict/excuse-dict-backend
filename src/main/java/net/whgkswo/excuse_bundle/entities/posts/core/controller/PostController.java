@@ -76,6 +76,7 @@ public class PostController {
     public ResponseEntity<?> handleGetPosts(@RequestParam(defaultValue = "0") int page,
                                             @RequestParam(defaultValue = "10") int size,
                                             @RequestParam(required = false) String searchInput,
+                                            @RequestParam(required = false) String searchType,
                                             @Nullable Authentication authentication){
 
         Long memberId = null;

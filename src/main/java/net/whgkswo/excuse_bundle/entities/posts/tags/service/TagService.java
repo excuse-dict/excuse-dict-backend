@@ -9,6 +9,7 @@ import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
 import net.whgkswo.excuse_bundle.komoran.KomoranService;
 import net.whgkswo.excuse_bundle.general.responses.page.PageUtil;
+import net.whgkswo.excuse_bundle.words.Similarity;
 import net.whgkswo.excuse_bundle.words.WordService;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -109,8 +110,8 @@ public class TagService {
         List<String> morphemes = komoranService.getMeaningfulMorphemes(userInput);
 
         // 태그명과 직접 매치 (최고 가중치)
-        double tagNameScore = wordService.calculateTextSimilarity(userInput, tag.getValue());
-        maxScore = Math.max(maxScore, tagNameScore * TAG_NAME_WEIGHT);
+        Similarity tagNameSimilarity = wordService.calculateTextSimilarity(userInput, tag.getValue());
+        maxScore = Math.max(maxScore, tagNameSimilarity.similarityScore() * TAG_NAME_WEIGHT);
 
         // 태그 키워드와 매치
         if (tag.getTagKeywords() != null && !tag.getTagKeywords().isEmpty()) {
