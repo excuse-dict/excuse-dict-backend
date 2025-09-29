@@ -80,15 +80,15 @@ public class CommentService {
         });
     }
 
-    // 랜덤 댓글 n개 조회
-    public List<Comment> getRandomComments(int amount){
-        return commentRepository.findRandomComments(amount);
+    // 랜덤 댓글 id n개 조회
+    public List<Long> getRandomCommentIds(int amount){
+        return commentRepository.findRandomCommentIds(amount);
     }
 
-    // 랜덤 댓글 n개 조회(최근 m일간)
-    public List<Comment> getRandomComments(int amount, int maxDaysAgo){
+    // 랜덤 댓글 id n개 조회(최근 m일간)
+    public List<Long> getRandomCommentIds(int amount, int maxDaysAgo){
         LocalDateTime startDateTime = LocalDateTime.now().minusDays(maxDaysAgo);
-        return commentRepository.findRandomComments(amount, startDateTime);
+        return commentRepository.findRandomCommentIds(amount, startDateTime);
     }
 
     // 댓글 추천

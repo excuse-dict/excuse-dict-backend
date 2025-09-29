@@ -7,18 +7,11 @@ import net.whgkswo.excuse_bundle.dummy.dto.CreateDummyExcuseDto;
 import net.whgkswo.excuse_bundle.dummy.member.DummyMemberGenerator;
 import net.whgkswo.excuse_bundle.entities.excuses.dto.ExcuseRequestDto;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
-import net.whgkswo.excuse_bundle.entities.members.core.repositoriy.MemberRepository;
-import net.whgkswo.excuse_bundle.entities.members.email.config.AdminEmailConfig;
 import net.whgkswo.excuse_bundle.entities.posts.comments.dto.CreateOrUpdateCommentCommand;
-import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
 import net.whgkswo.excuse_bundle.entities.posts.comments.reply.entity.Reply;
-import net.whgkswo.excuse_bundle.entities.posts.comments.reply.repository.ReplyRepository;
 import net.whgkswo.excuse_bundle.entities.posts.comments.reply.service.ReplyService;
-import net.whgkswo.excuse_bundle.entities.posts.comments.repository.CommentRepository;
 import net.whgkswo.excuse_bundle.entities.posts.comments.service.CommentService;
 import net.whgkswo.excuse_bundle.entities.posts.core.dto.VoteCommand;
-import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
-import net.whgkswo.excuse_bundle.entities.posts.core.repository.PostRepository;
 import net.whgkswo.excuse_bundle.entities.posts.core.service.PostService;
 import net.whgkswo.excuse_bundle.entities.posts.tags.entity.Tag;
 import net.whgkswo.excuse_bundle.entities.posts.tags.service.TagService;
@@ -84,17 +77,17 @@ public class DummyScheduler {
         Member dummyMember = dummyMemberGenerator.createDummyMember();
 
         // Set으로 중복 제거
-        Set<Post> posts = new HashSet<>();
+        Set<Long> posts = new HashSet<>();
 
         // 최근 1일 간 게시물 중 랜덤 3개
-        posts.addAll(postService.getRandomPosts(3, 1));
+        posts.addAll(postService.getRandomPostIds(3, 1));
 
         // 전체 중 랜덤 2개
-        posts.addAll(postService.getRandomPosts(2));
+        posts.addAll(postService.getRandomPostIds(2));
 
-        for(Post post : posts){
+        for(Long postId : posts){
             // 일정 확률로 추천/비추천
-            VoteCommand command = createDummyVoteCommand(post.getId(), dummyMember.getId());
+            VoteCommand command = createDummyVoteCommand(postId, dummyMember.getId());
             postService.voteToPost(command);
         }
     }
@@ -106,19 +99,19 @@ public class DummyScheduler {
         Member dummyMember = dummyMemberGenerator.createDummyMember();
 
         // set으로 중복 제거
-        Set<Post> posts = new HashSet<>();
+        Set<Long> posts = new HashSet<>();
 
         // 최근 1일간 게시글 2개
-        posts.addAll(postService.getRandomPosts(2, 1));
+        posts.addAll(postService.getRandomPostIds(2, 1));
 
         // 전체 게시글 중 하나
-        posts.addAll(postService.getRandomPosts(1));
+        posts.addAll(postService.getRandomPostIds(1));
 
-        for(Post post : posts){
+        for(Long postId : posts){
             // 랜덤 댓글 하나 가져오기
             String dummyComment = dummyCommentsHelper.getRandomComment();
             // 댓글 작성
-            commentService.createComment(new CreateOrUpdateCommentCommand(post.getId(), dummyMember.getId(), dummyComment));
+            commentService.createComment(new CreateOrUpdateCommentCommand(postId, dummyMember.getId(), dummyComment));
         }
     }
 
@@ -129,19 +122,19 @@ public class DummyScheduler {
         Member dummyMember = dummyMemberGenerator.createDummyMember();
 
         // set으로 중복 제거
-        Set<Comment> comments = new HashSet<>();
+        Set<Long> comments = new HashSet<>();
 
         // 최근 1일간 댓글 2개
-        comments.addAll(commentService.getRandomComments(2, 1));
+        comments.addAll(commentService.getRandomCommentIds(2, 1));
 
         // 전체 댓글 중 1개
-        comments.addAll(commentService.getRandomComments(1));
+        comments.addAll(commentService.getRandomCommentIds(1));
 
-        for(Comment comment : comments){
+        for(Long commentId : comments){
             // 랜덤 댓글 하나 가져오기
             String dummyComment = dummyCommentsHelper.getRandomComment();
             // 댓글 작성
-            replyService.createReply(new CreateOrUpdateCommentCommand(comment.getId(), dummyMember.getId(), dummyComment));
+            replyService.createReply(new CreateOrUpdateCommentCommand(commentId, dummyMember.getId(), dummyComment));
         }
     }
 
@@ -152,18 +145,18 @@ public class DummyScheduler {
         Member dummyMember = dummyMemberGenerator.createDummyMember();
 
         // Set으로 중복 제거
-        Set<Comment> comments = new HashSet<>();
+        Set<Long> comments = new HashSet<>();
 
         // 최근 1일 간 랜덤 댓글 3개
-        comments.addAll(commentService.getRandomComments(3, 1));
+        comments.addAll(commentService.getRandomCommentIds(3, 1));
 
         // 전체 댓글 중 2개
-        comments.addAll(commentService.getRandomComments(2));
+        comments.addAll(commentService.getRandomCommentIds(2));
 
-        for(Comment comment : comments){
+        for(Long commentId : comments){
             VoteType voteType = random.nextDouble() < UPVOTE_CHANCE ? VoteType.UPVOTE : VoteType.DOWNVOTE;
 
-            commentService.voteToComment(new VoteCommand(comment.getId(), dummyMember.getId(), voteType));
+            commentService.voteToComment(new VoteCommand(commentId, dummyMember.getId(), voteType));
         }
     }
 
@@ -174,18 +167,18 @@ public class DummyScheduler {
         Member dummyMember = dummyMemberGenerator.createDummyMember();
 
         // Set으로 중복 제거
-        Set<Reply> replies = new HashSet<>();
+        Set<Long> replies = new HashSet<>();
 
         // 최근 1일 간 랜덤 답글 2개
-        replies.addAll(replyService.getRandomReplies(3, 1));
+        replies.addAll(replyService.getRandomRepliyIds(3, 1));
 
         // 전체 답글 중 1개
-        replies.addAll(replyService.getRandomReplies(2));
+        replies.addAll(replyService.getRandomRepliyIds(2));
 
-        for(Reply reply : replies){
+        for(Long replyId : replies){
             VoteType voteType = random.nextDouble() < UPVOTE_CHANCE ? VoteType.UPVOTE : VoteType.DOWNVOTE;
 
-            replyService.voteToReplies(new VoteCommand(reply.getId(), dummyMember.getId(), voteType));
+            replyService.voteToReplies(new VoteCommand(replyId, dummyMember.getId(), voteType));
         }
     }
 

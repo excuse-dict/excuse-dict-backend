@@ -54,23 +54,23 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     );
 
     // 랜덤 게시물 n개 조회
-    @Query(value = "SELECT * FROM post " +
+    @Query(value = "SELECT id FROM post " +
             "WHERE status = 'ACTIVE' " +
             "ORDER BY RAND() " +
             "LIMIT :amount",
             nativeQuery = true
     )
-    List<Post> findRandomPosts(@Param("amount") int amount);
+    List<Long> findRandomPostsId(@Param("amount") int amount);
 
     // 랜덤 게시물 n개 조회 (최근 m일간)
-    @Query(value = "SELECT * FROM post " +
+    @Query(value = "SELECT id FROM post " +
             "WHERE status = 'ACTIVE' " +
             "AND created_at >= :startDateTime " +
             "ORDER BY RAND() " +
             "LIMIT :amount",
             nativeQuery = true
     )
-    List<Post> findRandomPosts(@Param("amount") int amount, @Param("startDateTime") LocalDateTime startDateTime);
+    List<Long> findRandomPostsId(@Param("amount") int amount, @Param("startDateTime") LocalDateTime startDateTime);
 
     // votes와 member까지 함께 조회
     @Query("SELECT DISTINCT p FROM Post p " +

@@ -292,15 +292,15 @@ public class PostService {
         return pageHelper.paginate(dtos, pageable);
     }
 
-    // 랜덤 게시글 n개 조회
-    public List<Post> getRandomPosts(int amount){
-        return postRepository.findRandomPosts(amount);
+    // 랜덤 게시글 id n개 조회
+    public List<Long> getRandomPostIds(int amount){
+        return postRepository.findRandomPostsId(amount);
     }
 
-    // 랜덤 게시글 n개 조회(최근 m일간)
-    public List<Post> getRandomPosts(int amount, int maxDaysAgo){
+    // 랜덤 게시글 id n개 조회(최근 m일간)
+    public List<Long> getRandomPostIds(int amount, int maxDaysAgo){
         LocalDateTime startDateTime = LocalDateTime.now().minusDays(maxDaysAgo);
-        return postRepository.findRandomPosts(amount, startDateTime);
+        return postRepository.findRandomPostsId(amount, startDateTime);
     }
 
     // id 리스트 -> 객체 리스트 변환 (순서 유지하며)

@@ -84,15 +84,15 @@ public class ReplyService {
         });
     }
 
-    // 랜덤 답글 n개 조회
-    public List<Reply> getRandomReplies(int amount){
-        return replyRepository.findRandomReplies(amount);
+    // 랜덤 답글 id n개 조회
+    public List<Long> getRandomRepliyIds(int amount){
+        return replyRepository.findRandomReplyIds(amount);
     }
 
-    // 랜덤 답글 n개 조회 (최근 m일간)
-    public List<Reply> getRandomReplies(int amount, int maxDaysAgo){
+    // 랜덤 답글 id n개 조회 (최근 m일간)
+    public List<Long> getRandomRepliyIds(int amount, int maxDaysAgo){
         LocalDateTime startDateTime = LocalDateTime.now().minusDays(maxDaysAgo);
-        return replyRepository.findRandomReplies(amount, startDateTime);
+        return replyRepository.findRandomReplyIds(amount, startDateTime);
     }
 
     // 대댓글 추천/비추천

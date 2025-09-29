@@ -23,21 +23,21 @@ public interface ReplyRepository extends JpaRepository<Reply, Long> {
     Optional<Reply> findByReplyId(@Param("replyId") long replyId);
 
     // 랜덤 답글 n개 조회
-    @Query(value = "SELECT * FROM reply r " +
+    @Query(value = "SELECT id FROM reply r " +
             "WHERE r.status = 'ACTIVE' " +
             "ORDER BY RAND() " +
             "LIMIT :amount",
             nativeQuery = true
     )
-    List<Reply> findRandomReplies(@Param("amount") int amount);
+    List<Long> findRandomReplyIds(@Param("amount") int amount);
 
     // 랜덤 답글 n개 조회 (최근 m일간)
-    @Query(value = "SELECT * FROM reply " +
+    @Query(value = "SELECT id FROM reply " +
             "WHERE status = 'ACTIVE' " +
             "AND created_at >= :startDateTime " +
             "ORDER BY RAND() " +
             "LIMIT :amount",
             nativeQuery = true
     )
-    List<Reply> findRandomReplies(@Param("amount") int amount, @Param("startDateTime") LocalDateTime startDateTime);
+    List<Long> findRandomReplyIds(@Param("amount") int amount, @Param("startDateTime") LocalDateTime startDateTime);
 }

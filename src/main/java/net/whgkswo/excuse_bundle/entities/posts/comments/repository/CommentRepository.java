@@ -17,22 +17,22 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             "WHERE c.id = :commentId")
     Optional<Comment> findByCommentId(@Param("commentId") long commentId);
 
-    // 랜덤 댓글 n개 조회
-    @Query(value = "SELECT * FROM comment c " +
+    // 랜덤 댓글 id n개 조회
+    @Query(value = "SELECT id FROM comment c " +
             "WHERE c.status = 'ACTIVE' " +
             "ORDER BY RAND() " +
             "LIMIT :amount",
             nativeQuery = true
     )
-    List<Comment> findRandomComments(@Param("amount") int amount);
+    List<Long> findRandomCommentIds(@Param("amount") int amount);
 
-    // 랜덤 댓글 n개 조회 (최근 m일간)
-    @Query(value = "SELECT * FROM comment " +
+    // 랜덤 댓글 id n개 조회 (최근 m일간)
+    @Query(value = "SELECT id FROM comment " +
             "WHERE status = 'ACTIVE' " +
             "AND created_at >= :startDateTime " +
             "ORDER BY RAND() " +
             "LIMIT :amount",
             nativeQuery = true
     )
-    List<Comment> findRandomComments(@Param("amount") int amount, @Param("startDateTime") LocalDateTime startDateTime);
+    List<Long> findRandomCommentIds(@Param("amount") int amount, @Param("startDateTime") LocalDateTime startDateTime);
 }

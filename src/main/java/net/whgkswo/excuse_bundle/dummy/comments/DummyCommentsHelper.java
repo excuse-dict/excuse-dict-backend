@@ -24,8 +24,8 @@ public class DummyCommentsHelper {
         ClassPathResource resource = new ClassPathResource("dummy/comments.txt");
         comments = Files.readAllLines(Paths.get(resource.getURI())).stream()
                 .map(String::trim)
-                .filter(line -> line.isBlank())
-                .filter(line -> line.startsWith("//") || line.startsWith("--"))
+                .filter(line -> !line.isBlank())
+                .filter(line -> !line.startsWith("//") && !line.startsWith("--"))
                 .toList()
         ;
     }
