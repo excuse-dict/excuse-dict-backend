@@ -9,8 +9,9 @@ import java.util.List;
 
 public interface PostVoteRepository extends JpaRepository<PostVote, Long> {
 
-    // 게시글에 달린 추천 / 비추천 중 특정 회원이 누른 거
+    // 게시글들에 달린 추천 / 비추천 중 특정 회원이 누른 거
     @Query("SELECT pv FROM PostVote pv " +
+            "JOIN FETCH pv.post " +
             "WHERE pv.post.id IN :postIds " +
             "AND pv.member.id = :memberId"
     )

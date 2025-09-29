@@ -73,12 +73,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     )
     List<Long> findRandomPostsId(@Param("amount") int amount, @Param("startDateTime") LocalDateTime startDateTime);
 
-    // votes와 member까지 함께 조회
-    @Query("SELECT DISTINCT p FROM Post p " +
-            "LEFT JOIN FETCH p.votes v " +
-            "LEFT JOIN FETCH v.member " +
-            "WHERE p.id IN :postIds")
-    List<Post> findAllByIdWithVotes(@Param("postIds") List<Long> postIds);
+    @Query("SELECT p FROM Post p WHERE p.id IN :postIds")
+    List<Post> findAllByIdList(@Param("postIds") List<Long> postIds);
 
     // 게시물 상세 조회용
     @Query("SELECT p FROM Post p " +

@@ -19,7 +19,7 @@ import net.whgkswo.excuse_bundle.entities.posts.core.search.SearchResult;
 import net.whgkswo.excuse_bundle.entities.posts.core.search.SearchType;
 import net.whgkswo.excuse_bundle.entities.posts.hotscore.PostIdWithHotScoreDto;
 import net.whgkswo.excuse_bundle.entities.posts.hotscore.HotScoreService;
-import net.whgkswo.excuse_bundle.entities.posts.hotscore.PostWithHotScoreDto;
+import net.whgkswo.excuse_bundle.entities.vote.dto.PostVoteDto;
 import net.whgkswo.excuse_bundle.entities.vote.mapper.VoteMapper;
 import net.whgkswo.excuse_bundle.entities.vote.repository.PostVoteRepository;
 import net.whgkswo.excuse_bundle.entities.vote.service.VoteService;
@@ -32,7 +32,6 @@ import net.whgkswo.excuse_bundle.ranking.service.RankingService;
 import net.whgkswo.excuse_bundle.words.Similarity;
 import net.whgkswo.excuse_bundle.words.WordService;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +51,7 @@ public class PostService {
     private final PostMapper postMapper;
     private final VoteMapper voteMapper;
     private final PostVoteRepository postVoteRepository;
+    private final PostDtoFactory postDtoFactory;
     private final RedisService redisService;
     private final PageHelper pageHelper;
     private final HotScoreService hotScoreService;
@@ -91,7 +91,7 @@ public class PostService {
     private Page<PostResponseDto> getPostsWithoutSearch(GetPostsCommand command) {
         Page<Post> postPage = postRepository.findPostForPage(command.pageable(), Post.Status.ACTIVE);
 
-        return convertPostsToResponseDtos(
+        return postDtoFactory.convertPostsToResponseDtos(
                 postPage,
                 command.memberId(),
                 null  // 매칭된 키워드 없음
@@ -123,83 +123,13 @@ public class PostService {
                 .toList();
 
         // 응답 dto로 리패키징
-        List<PostResponseDto> responses = convertPostsToResponseDtos(
+        List<PostResponseDto> responses = postDtoFactory.convertPostsToResponseDtos(
                 postList,
                 command.memberId(),
                 matchedWordsMap
         );
 
         return pageHelper.paginate(responses, command.pageable());
-    }
-
-    // Post -> PostResponseDto 변환 (Page -> Page)
-    private Page<PostResponseDto> convertPostsToResponseDtos(Page<Post> posts, Long memberId, Map<Long, List<String>> matchedWordsMap){
-        if(posts.isEmpty()) return new PageImpl<>(Collections.emptyList());
-
-        List<PostResponseDto> responses = convertPostsToResponseDtos(
-                posts.getContent(),
-                memberId,
-                matchedWordsMap
-        );
-
-        return new PageImpl<>(
-                responses,
-                posts.getPageable(),
-                posts.getTotalElements()
-        );
-    }
-
-    // Post -> PostResponseDto 변환 (List -> List)
-    private List<PostResponseDto> convertPostsToResponseDtos(
-            List<Post> posts,
-            Long memberId,
-            Map<Long, List<String>> matchedWordsMap
-    ) {
-        if (posts.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        // 요청한 사용자가 누른 Post별 추천/비추천
-        Map<Long, PostVote> myVotesByPostId = Collections.emptyMap();
-
-        if (memberId != null) { // memberId 있을 때만 조회
-            List<Long> postIds = posts.stream().map(Post::getId).toList();
-            List<PostVote> myVotes = postVoteRepository.findAllByPostIdsAndMemberId(postIds, memberId);
-
-            // Post ID 별로 맵에다 넣기
-            myVotesByPostId = myVotes.stream()
-                    .collect(Collectors.toMap(
-                            vote -> vote.getPost().getId(),
-                            vote -> vote
-                    ));
-        }
-
-        Map<Long, PostVote> finalMyVotesByPostId = myVotesByPostId; // 재선언으로 effective final 만들기
-
-        return posts.stream().map(post -> {
-            // 게시물에 해당하는 Vote
-            PostVote myVote = finalMyVotesByPostId.get(post.getId());
-
-            // post -> summary
-            PostSummaryResponseDto summary = postMapper.postTomultiPostSummaryResponseDto(post);
-
-            List<String> matchedWords = matchedWordsMap != null
-                    ? matchedWordsMap.get(post.getId())
-                    : null;
-            // summary -> response
-            return postMapper.postSummaryResponseDtoToPostResponseDto(
-                    summary,
-                    myVote != null ? voteMapper.postVoteToPostVoteDto(myVote) : null,
-                    matchedWords
-            );
-        }).toList();
-    }
-
-    private PostResponseDto mapSummaryToResponseDto(PostSummaryResponseDto summary, Long memberId){
-        Post post = getPost(summary.getPostId());
-        Optional<PostVote> optionalVote = voteService.getPostVoteFromCertainMember(post, memberId);
-
-        return postMapper.postSummaryResponseDtoToPostResponseDto(summary, optionalVote.map(voteMapper::postVoteToPostVoteDto).orElse(null), null);
     }
 
     private Optional<Post> findPost(long postId){
@@ -224,28 +154,37 @@ public class PostService {
         List<Post> posts = postRepository.findRecentPosts(Post.Status.ACTIVE, startDateTime);
 
         // 가중치 적용하여 재정렬
-        List<PostIdWithHotScoreDto> sortedPosts = posts.stream()
-                .map(post -> new PostWithHotScoreDto(post, hotScoreService.calculateHotScore(post)))
+        return posts.stream()
+                .map(post -> new PostIdWithHotScoreDto(
+                        post.getId(),
+                        hotScoreService.calculateHotScore(post)
+                ))
                 .sorted((a, b) -> Double.compare(b.hotScore(), a.hotScore()))
                 .limit(RankingScheduler.WEEKLY_TOP_SIZE)
-                .map(dto -> new PostIdWithHotScoreDto(dto.post().getId(), dto.hotScore()))
                 .toList();
-        
-        return sortedPosts;
     }
 
     // 명예의 전당 게시글 조회
     public Page<PostResponseDto> getHallOfFamePosts(Pageable pageable, Long memberId){
+
+        // 레디스에서 명예의 전당 게시물 id 가져오기
         List<Long> postIdList = redisService.getAsList(RankingScheduler.HALL_OF_FAME_REDISKEY, Long.class);
 
-        // redis에서 추출한 ID를 바탕으로 게시글 조회
-        // fetch조인으로 Votes까지 같이 조회
-        List<Post> posts = postRepository.findAllByIdWithVotes(postIdList);
+        // 가져온 id로 Post 조회 (순서 보장 o)
+        List<Post> posts = getOrderedPostsFromIdList(postIdList);
 
+        // 요청한 회원이 누른 추천 / 비추천 조회
+        Map<Long, PostVote> voteMap = getVoteMapByMemberId(postIdList, memberId);
+
+        // post -> summary
         List<PostSummaryResponseDto> summaries = postMapper.postsToMultiPostSummaryResponseDtos(posts);
 
         List<PostResponseDto> dtos = summaries.stream()
-                .map(summary -> mapSummaryToResponseDto(summary, memberId))
+                .map(summary -> {
+                    PostVote vote = voteMap.get(summary.getPostId());
+                    PostVoteDto voteDto = vote == null ? null : voteMapper.postVoteToPostVoteDto(vote);
+                    return postMapper.postSummaryResponseDtoToPostResponseDto(summary, voteDto, null);
+                })
                 .toList();
 
         return pageHelper.paginate(dtos, pageable);
@@ -261,33 +200,58 @@ public class PostService {
                 .map(dto -> dto.postId())
                 .toList();
 
-        // 추출한 ID를 바탕으로 게시글 조회
-        List<Post> posts = getPostsFromIdList(postIdList);
+        // 추출한 ID를 바탕으로 게시글 조회 (순서 보장 o)
+        List<Post> posts = getOrderedPostsFromIdList(postIdList);
 
-        // hotScore 매핑용 중간다리
+        // hot score 맵핑용
         Map<Long, Integer> hotScoreMap = hotPostDtos.stream()
                 .collect(Collectors.toMap(
                         PostIdWithHotScoreDto::postId,
                         PostIdWithHotScoreDto::hotScore
                 ));
 
-        // post -> summary -> response -> weekly dto로 3단 변환
-        List<WeeklyTopPostResponseDto> dtos = posts.stream()
-                .map(post -> {
-                    // post -> summary
-                    PostSummaryResponseDto summary = postMapper.postTomultiPostSummaryResponseDto(post);
-                    // vote 유무 확인
-                    Optional<PostVote> optionalVote = voteService.getPostVoteFromCertainMember(post, memberId);
+        // 요청한 회원이 누른 게시물별 추천 / 비추천
+        Map<Long, PostVote> voteMap = getVoteMapByMemberId(postIdList, memberId);
+
+        // post -> summary
+        List<PostSummaryResponseDto> summaries = postMapper.postsToMultiPostSummaryResponseDtos(posts);
+
+        // summary -> response -> weekly dto
+        List<WeeklyTopPostResponseDto> dtos = summaries.stream()
+                .map(summary -> {
+                    long postId = summary.getPostId();
+
+                    // myVote 유무 확인
+                    PostVoteDto voteDto = Optional.ofNullable(voteMap.get(postId))
+                            .map(voteMapper::postVoteToPostVoteDto)
+                            .orElse(null);
+
                     // summary -> response
                     PostResponseDto responseDto = postMapper.postSummaryResponseDtoToPostResponseDto(
-                            summary, optionalVote.map(voteMapper::postVoteToPostVoteDto).orElse(null), null);
+                            summary, voteDto, null);
+
                     // response -> weekly
-                    int hotScore = hotScoreMap.get(post.getId());
+                    int hotScore = hotScoreMap.get(postId);
                     return postMapper.postResponseDtoToWeeklyTopPostResponseDto(responseDto, hotScore);
                 })
                 .toList();
 
         return pageHelper.paginate(dtos, pageable);
+    }
+
+    // 게시물 리스트로부터 특정 회원이 누른 추천/비추천을 게시물별로 반환
+    private Map<Long, PostVote> getVoteMapByMemberId(List<Long> postIdList, Long memberId) {
+        if (memberId == null) {
+            return Collections.emptyMap();
+        }
+
+        List<PostVote> votes = postVoteRepository.findAllByPostIdsAndMemberId(postIdList, memberId);
+
+        return votes.stream()
+                .collect(Collectors.toMap(
+                        vote -> vote.getPost().getId(),
+                        vote -> vote
+                ));
     }
 
     // 랜덤 게시글 id n개 조회
@@ -301,18 +265,19 @@ public class PostService {
         return postRepository.findRandomPostsId(amount, startDateTime);
     }
 
-    // id 리스트 -> 객체 리스트 변환 (순서 유지하며)
-    private List<Post> getPostsFromIdList(List<Long> postIdList){
+    // id 리스트 제공받아 순서 보장하며 Post 반환
+    private List<Post> getOrderedPostsFromIdList(List<Long> postIdList){
         // 그냥 이걸로 조회하면 순서 보장 안 됨
-        // fetch조인으로 Votes까지 같이 조회
-        List<Post> posts = postRepository.findAllByIdWithVotes(postIdList);
+        List<Post> posts = postRepository.findAllByIdList(postIdList);
 
         // id, post 맵 생성
         Map<Long, Post> postMap = posts.stream()
                 .collect(Collectors.toMap(Post::getId, post -> post));
+
         // 원래의 순서를 유지하며 리스트 반환
         return postIdList.stream()
                 .map(postMap::get)
+                .filter(Objects::nonNull)
                 .toList();
     }
 
