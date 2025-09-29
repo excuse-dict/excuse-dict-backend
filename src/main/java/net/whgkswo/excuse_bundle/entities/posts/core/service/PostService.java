@@ -12,8 +12,8 @@ import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.posts.core.mapper.PostMapper;
 import net.whgkswo.excuse_bundle.entities.posts.core.repository.PostRepository;
 import net.whgkswo.excuse_bundle.entities.posts.core.entity.PostVote;
-import net.whgkswo.excuse_bundle.entities.posts.core.search.SearchResult;
-import net.whgkswo.excuse_bundle.entities.posts.core.search.SearchType;
+import net.whgkswo.excuse_bundle.search.SearchResult;
+import net.whgkswo.excuse_bundle.search.SearchType;
 import net.whgkswo.excuse_bundle.entities.posts.hotscore.PostIdWithHotScoreDto;
 import net.whgkswo.excuse_bundle.entities.posts.hotscore.HotScoreService;
 import net.whgkswo.excuse_bundle.entities.vote.dto.PostVoteDto;
@@ -26,8 +26,10 @@ import net.whgkswo.excuse_bundle.general.dto.DeleteCommand;
 import net.whgkswo.excuse_bundle.pager.PageHelper;
 import net.whgkswo.excuse_bundle.ranking.scheduler.RankingScheduler;
 import net.whgkswo.excuse_bundle.ranking.service.RankingService;
-import net.whgkswo.excuse_bundle.words.Similarity;
-import net.whgkswo.excuse_bundle.words.WordService;
+import net.whgkswo.excuse_bundle.search.words.similarity.ContainsSimilarityCalculator;
+import net.whgkswo.excuse_bundle.search.words.similarity.MorphemeBasedSimilarityCalculator;
+import net.whgkswo.excuse_bundle.search.words.similarity.Similarity;
+import net.whgkswo.excuse_bundle.search.words.WordService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -54,7 +56,10 @@ public class PostService {
     private final HotScoreService hotScoreService;
     private final WordService wordService;
 
-    private static final double MIN_SIMILARITY = 0.5;
+    private final MorphemeBasedSimilarityCalculator morphemeBasedSimilarityCalculator;
+    private final ContainsSimilarityCalculator containsSimilarityCalculator;
+
+    public static final double MIN_SIMILARITY = 0.5;
 
     // 게시글 등록
     @Transactional
@@ -76,7 +81,7 @@ public class PostService {
     public Page<PostResponseDto> getPosts(GetPostsCommand command){
 
         // 검색어 없으면 DB에서 바로 페이징
-        if(command.searchInput() == null || command.searchInput().isBlank()){
+        if(command.searchInput() == null || command.searchInput().isBlank() || command.searchType() == null){
             return getPostsWithoutSearch(command);
         }
 
@@ -104,7 +109,7 @@ public class PostService {
         // 검색어로 필터링
         List<SearchResult<PostSearchDto>> searchedPosts = searchPosts(
                 command.searchInput(),
-                SearchType.SITUATION,
+                command.searchType(),
                 searchDtos
         );
 
@@ -357,14 +362,14 @@ public class PostService {
 
     private Similarity getPostSimilarity(PostSearchDto dto, String searchInput, SearchType searchType){
         return switch (searchType) {
-            case SITUATION -> wordService.calculateTextSimilarity(dto.situation(), searchInput);
-            case EXCUSE -> wordService.calculateTextSimilarity(dto.excuse(), searchInput);
+            case SITUATION -> morphemeBasedSimilarityCalculator.calculateSimilarity(dto.situation(), searchInput);
+            case EXCUSE -> morphemeBasedSimilarityCalculator.calculateSimilarity(dto.excuse(), searchInput);
             case SITUATION_AND_EXCUSE -> {
-                Similarity sitSim = wordService.calculateTextSimilarity(dto.situation(), searchInput);
-                Similarity excSim = wordService.calculateTextSimilarity(dto.excuse(), searchInput);
+                Similarity sitSim = morphemeBasedSimilarityCalculator.calculateSimilarity(dto.situation(), searchInput);
+                Similarity excSim = morphemeBasedSimilarityCalculator.calculateSimilarity(dto.excuse(), searchInput);
                 yield sitSim.similarityScore() > excSim.similarityScore() ? sitSim : excSim;
             }
-            case AUTHOR -> wordService.calculateTextSimilarity(dto.authorName(), searchInput);
+            case AUTHOR -> containsSimilarityCalculator.calculateSimilarity(dto.authorName(), searchInput, MIN_SIMILARITY);
         };
     }
 }

@@ -1,6 +1,4 @@
-package net.whgkswo.excuse_bundle.words;
-
-import jakarta.persistence.Access;
+package net.whgkswo.excuse_bundle.search.words.similarity;
 
 import java.util.Collections;
 import java.util.List;

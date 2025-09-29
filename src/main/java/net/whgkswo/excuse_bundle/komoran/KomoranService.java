@@ -5,7 +5,6 @@ import kr.co.shineware.nlp.komoran.core.Komoran;
 import kr.co.shineware.nlp.komoran.model.KomoranResult;
 import kr.co.shineware.nlp.komoran.model.Token;
 import lombok.RequiredArgsConstructor;
-import net.whgkswo.excuse_bundle.words.WordService;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;

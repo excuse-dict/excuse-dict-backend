@@ -9,8 +9,8 @@ import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
 import net.whgkswo.excuse_bundle.komoran.KomoranService;
 import net.whgkswo.excuse_bundle.general.responses.page.PageUtil;
-import net.whgkswo.excuse_bundle.words.Similarity;
-import net.whgkswo.excuse_bundle.words.WordService;
+import net.whgkswo.excuse_bundle.search.words.similarity.Similarity;
+import net.whgkswo.excuse_bundle.search.words.WordService;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 

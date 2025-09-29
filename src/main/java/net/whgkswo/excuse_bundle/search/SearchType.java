@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_bundle.entities.posts.core.search;
+package net.whgkswo.excuse_bundle.search;
 
 public enum SearchType {
     SITUATION,

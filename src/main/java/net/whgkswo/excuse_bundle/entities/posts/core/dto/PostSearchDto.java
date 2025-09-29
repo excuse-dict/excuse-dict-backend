@@ -1,6 +1,6 @@
 package net.whgkswo.excuse_bundle.entities.posts.core.dto;
 
-import net.whgkswo.excuse_bundle.entities.posts.core.search.Searchable;
+import net.whgkswo.excuse_bundle.search.Searchable;
 
 import java.time.LocalDateTime;
 

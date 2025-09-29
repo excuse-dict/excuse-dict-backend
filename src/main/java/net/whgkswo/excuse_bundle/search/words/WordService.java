@@ -1,8 +1,9 @@
-package net.whgkswo.excuse_bundle.words;
+package net.whgkswo.excuse_bundle.search.words;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.whgkswo.excuse_bundle.komoran.KomoranService;
+import net.whgkswo.excuse_bundle.search.words.similarity.Similarity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -104,38 +105,13 @@ public class WordService {
         return result;
     }
 
-    // 불용어 목록 (의미없는 단어들)
-    private static final Set<String> STOP_WORDS = Set.of(
-            "것", "수", "때", "곳", "데", "등", "점", "경우", "때문",
-            "정도", "생각", "마음", "기분", "느낌", "상태", "상황",
-            "하다", "되다", "있다", "없다", "같다", "이다"
-    );
-
-    // 형태소 -> 문자열 유사도 계산
-    public double calculateMatchScore(List<String> morphemes, String targetString) {
-        double maxScore = 0.0;
-
-        // 형태소 중에 태그명과 정확히 일치하는 것이 있는지 확인
-        for (String morpheme : morphemes) {
-            if (morpheme.equals(targetString)) {
-                return SIMILARITY_EXACTLY_SAME; // 완전 일치
-            }
-
-            // 오타 허용한 유사도 계산
-            double similarity = calculateWordSimilarity(morpheme, targetString);
-            maxScore = Math.max(maxScore, similarity);
-        }
-
-        return maxScore;
-    }
-
     // 두 텍스트 간 유사도 계산
     public Similarity calculateTextSimilarity(String strA, String strB){
         if(strA == null || strA.isEmpty() || strB == null || strB.isEmpty()){ return Similarity.NO_MATCH; }
 
         // 형태소 단위로 분해
-        List<String> morphemesA = komoranService.getMeaningfulMorphemes(strA);
-        List<String> morphemesB = komoranService.getMeaningfulMorphemes(strB);
+        List<String> morphemesA = komoranService.getMeaningfulMorphemes(strA.toLowerCase());
+        List<String> morphemesB = komoranService.getMeaningfulMorphemes(strB.toLowerCase());
 
         return calculateMorphemesSimilarity(morphemesA, morphemesB);
     }
