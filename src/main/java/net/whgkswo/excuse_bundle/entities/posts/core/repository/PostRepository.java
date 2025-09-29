@@ -14,7 +14,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
-    // 게시물 목록용
+
+    // 게시물 목록용 (리스트)
     @Query("SELECT p FROM Post p " +
             "JOIN FETCH p.member m " +
             "JOIN FETCH m.memberRank " +
@@ -24,7 +25,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     )
     List<Post> findAllForList(@Param("status") Post.Status status);
 
-    // 게시물 목록용
+    // 게시물 목록용 (페이지)
     @EntityGraph(attributePaths = {"member", "member.memberRank", "excuse"})
     @Query("SELECT p FROM Post p " +
             "WHERE p.status = :status " +

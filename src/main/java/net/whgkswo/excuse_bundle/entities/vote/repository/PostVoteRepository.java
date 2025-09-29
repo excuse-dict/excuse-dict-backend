@@ -9,6 +9,10 @@ import java.util.List;
 
 public interface PostVoteRepository extends JpaRepository<PostVote, Long> {
 
-    @Query("SELECT pv FROM PostVote pv WHERE pv.post.id IN :postIds")
-    List<PostVote> findAllByPostIds(@Param("postIds") List<Long> postIds);
+    // 게시글에 달린 추천 / 비추천 중 특정 회원이 누른 거
+    @Query("SELECT pv FROM PostVote pv " +
+            "WHERE pv.post.id IN :postIds " +
+            "AND pv.member.id = :memberId"
+    )
+    List<PostVote> findAllByPostIdsAndMemberId(@Param("postIds") List<Long> postIds, @Param("memberId") Long memberId);
 }
