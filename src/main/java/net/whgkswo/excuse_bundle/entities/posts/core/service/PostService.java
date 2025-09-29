@@ -32,6 +32,7 @@ import net.whgkswo.excuse_bundle.ranking.service.RankingService;
 import net.whgkswo.excuse_bundle.words.Similarity;
 import net.whgkswo.excuse_bundle.words.WordService;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -88,15 +89,13 @@ public class PostService {
 
     // 검색어 없을 때: DB 페이징
     private Page<PostResponseDto> getPostsWithoutSearch(GetPostsCommand command) {
-        Page<Post> postPage = postRepository.findAllForPage(command.pageable(), Post.Status.ACTIVE);
+        Page<Post> postPage = postRepository.findPostForPage(command.pageable(), Post.Status.ACTIVE);
 
-        List<PostResponseDto> responses = convertPostsToResponseDtos(
-                postPage.getContent(),
+        return convertPostsToResponseDtos(
+                postPage,
                 command.memberId(),
                 null  // 매칭된 키워드 없음
         );
-
-        return pageHelper.paginate(responses, command.pageable());
     }
 
     // 검색어 있을 때: 검색어로 필터 후 자체 페이징
@@ -133,7 +132,24 @@ public class PostService {
         return pageHelper.paginate(responses, command.pageable());
     }
 
-    // Post -> PostResponseDto 리스트 변환
+    // Post -> PostResponseDto 변환 (Page -> Page)
+    private Page<PostResponseDto> convertPostsToResponseDtos(Page<Post> posts, Long memberId, Map<Long, List<String>> matchedWordsMap){
+        if(posts.isEmpty()) return new PageImpl<>(Collections.emptyList());
+
+        List<PostResponseDto> responses = convertPostsToResponseDtos(
+                posts.getContent(),
+                memberId,
+                matchedWordsMap
+        );
+
+        return new PageImpl<>(
+                responses,
+                posts.getPageable(),
+                posts.getTotalElements()
+        );
+    }
+
+    // Post -> PostResponseDto 변환 (List -> List)
     private List<PostResponseDto> convertPostsToResponseDtos(
             List<Post> posts,
             Long memberId,
