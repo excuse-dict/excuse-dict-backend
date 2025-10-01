@@ -11,7 +11,7 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 
 import java.io.IOException;
 
-// 로그인 인증 실패 시 추가 로직 실행 가능
+// 로그인 시도 실패 시 호출 (아이디 / 비밀번호 틀림)
 public class MemberAuthenticationFailureHandler implements AuthenticationFailureHandler {
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {

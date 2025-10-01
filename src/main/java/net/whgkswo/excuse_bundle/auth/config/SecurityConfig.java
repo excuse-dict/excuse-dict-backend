@@ -14,6 +14,7 @@ import net.whgkswo.excuse_bundle.entities.excuses.controller.ExcuseController;
 import net.whgkswo.excuse_bundle.entities.members.email.controller.EmailController;
 import net.whgkswo.excuse_bundle.entities.members.core.controller.MemberController;
 import net.whgkswo.excuse_bundle.entities.posts.core.controller.PostController;
+import net.whgkswo.excuse_bundle.entities.posts.tags.controller.TagController;
 import net.whgkswo.excuse_bundle.guest.controller.GuestController;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -70,8 +71,9 @@ public class SecurityConfig {
                         // 회원/비회원 모두 호출할 수 있지만 permitAll()로 하면 아예 인증 절차 자체를 스킵 -> authentication이 null로 들어오는 문제가 있어서 hasAnyRole()로 바꿈
                         // 토큰 없이 요청 시 JwtVerificationFilter에서 ROLE_ANONYMOUS를 가진 익명 인증 객체 생성
                         // 이렇게 생성된 익명 인증정보가 실제로 핸들러까진 도달하지 못하지만(null 전달 - 이유 불명) 토큰의 유무를 판별하는 소기의 목적은 달성
-                        .requestMatchers(HttpMethod.GET, PostController.BASE_URL + "/**").hasAnyRole("USER", "ADMIN", "ANONYMOUS") // 비회원도 조회는 허용
-                        .requestMatchers(GuestController.BASE_URL + "/**").permitAll() // 비회원용 컨트롤러
+                        .requestMatchers(HttpMethod.GET, PostController.BASE_URL_ANY + "/**").hasAnyRole("USER", "ADMIN", "ANONYMOUS") // 비회원도 조회는 허용
+                        .requestMatchers(GuestController.BASE_URL_ANY + "/**").permitAll() // 비회원용 컨트롤러
+                        .requestMatchers(HttpMethod.POST, TagController.BASE_URL_ANY).permitAll() // 태그 조회는 누구나 가능, GET이 아니고 POST인 이유는 검색 조건이 복잡해서...
                         .anyRequest().authenticated() // 위에 명시하지 않은 요청은 전부 인증 필요
                 )
                 // 같은 도메인에서 iframe 허용 (h2가 iframe 사용)

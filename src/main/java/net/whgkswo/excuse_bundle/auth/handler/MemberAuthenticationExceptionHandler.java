@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.security.SignatureException;
 
+// JWT 검증 실패 시 호출(필터 체인 단계)
 // 인증 과정에서 Authentication 조회에 실패 (AuthenticationException 발생) 시 케이스 처리
 // 요청 필터 단계에서 처리하기 때문에 DispatcherServlet <-> Controller 사이에서 동작하는 GlobalExceptionHandler와는 별개의 영역
 // EntryPoint 이름만 보면 인증 요청 진입점 같지만 그냥 에러 핸들러
