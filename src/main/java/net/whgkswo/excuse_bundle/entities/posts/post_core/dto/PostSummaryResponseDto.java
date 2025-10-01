@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_bundle.entities.posts.core.dto;
+package net.whgkswo.excuse_bundle.entities.posts.post_core.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

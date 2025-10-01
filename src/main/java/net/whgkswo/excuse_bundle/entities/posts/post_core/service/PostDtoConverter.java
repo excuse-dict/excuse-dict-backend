@@ -1,11 +1,11 @@
-package net.whgkswo.excuse_bundle.entities.posts.core.service;
+package net.whgkswo.excuse_bundle.entities.posts.post_core.service;
 
 import lombok.RequiredArgsConstructor;
-import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostResponseDto;
-import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostSummaryResponseDto;
-import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
-import net.whgkswo.excuse_bundle.entities.posts.core.entity.PostVote;
-import net.whgkswo.excuse_bundle.entities.posts.core.mapper.PostMapper;
+import net.whgkswo.excuse_bundle.entities.posts.post_core.dto.PostResponseDto;
+import net.whgkswo.excuse_bundle.entities.posts.post_core.dto.PostSummaryResponseDto;
+import net.whgkswo.excuse_bundle.entities.posts.post_core.entity.Post;
+import net.whgkswo.excuse_bundle.entities.posts.post_core.entity.PostVote;
+import net.whgkswo.excuse_bundle.entities.posts.post_core.mapper.PostMapper;
 import net.whgkswo.excuse_bundle.entities.vote.mapper.VoteMapper;
 import net.whgkswo.excuse_bundle.entities.vote.repository.PostVoteRepository;
 import org.springframework.data.domain.Page;
@@ -26,13 +26,19 @@ public class PostDtoConverter {
     private final VoteMapper voteMapper;
 
     // Post -> PostResponseDto 변환 (Page -> Page)
-    public Page<PostResponseDto> convertPostsToResponseDtos(Page<Post> posts, Long memberId, Map<Long, List<String>> matchedWordsMap){
+    public Page<PostResponseDto> convertPostsToResponseDtos(
+            Page<Post> posts,
+            Long memberId,
+            Map<Long, List<String>> matchedWordsMap,
+            Map<Long, List<String>> matchedTagsMap
+    ){
         if(posts.isEmpty()) return new PageImpl<>(Collections.emptyList());
 
         List<PostResponseDto> responses = convertPostsToResponseDtos(
                 posts.getContent(),
                 memberId,
-                matchedWordsMap
+                matchedWordsMap,
+                matchedTagsMap
         );
 
         return new PageImpl<>(
@@ -46,7 +52,8 @@ public class PostDtoConverter {
     public List<PostResponseDto> convertPostsToResponseDtos(
             List<Post> posts,
             Long memberId,
-            Map<Long, List<String>> matchedWordsMap
+            Map<Long, List<String>> matchedWordsMap,
+            Map<Long, List<String>> matchedTagsMap
     ) {
         if (posts.isEmpty()) {
             return Collections.emptyList();
@@ -79,11 +86,17 @@ public class PostDtoConverter {
             List<String> matchedWords = matchedWordsMap != null
                     ? matchedWordsMap.get(post.getId())
                     : null;
+
+            List<String> matchedTags = matchedTagsMap != null
+                    ? matchedTagsMap.get(post.getId())
+                    : null;
+
             // summary -> response
             return postMapper.postSummaryResponseDtoToPostResponseDto(
                     summary,
                     myVote != null ? voteMapper.postVoteToPostVoteDto(myVote) : null,
-                    matchedWords
+                    matchedWords,
+                    matchedTags
             );
         }).toList();
     }

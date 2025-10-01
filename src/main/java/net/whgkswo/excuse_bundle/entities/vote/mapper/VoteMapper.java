@@ -4,7 +4,7 @@ import net.whgkswo.excuse_bundle.entities.posts.comments.entity.CommentVote;
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.CommentVoteDto;
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.ReplyVoteDto;
 import net.whgkswo.excuse_bundle.entities.posts.comments.reply.entity.ReplyVote;
-import net.whgkswo.excuse_bundle.entities.posts.core.entity.PostVote;
+import net.whgkswo.excuse_bundle.entities.posts.post_core.entity.PostVote;
 import net.whgkswo.excuse_bundle.entities.vote.dto.PostVoteDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

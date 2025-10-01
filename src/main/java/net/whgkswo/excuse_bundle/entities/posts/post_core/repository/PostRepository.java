@@ -1,8 +1,8 @@
-package net.whgkswo.excuse_bundle.entities.posts.core.repository;
+package net.whgkswo.excuse_bundle.entities.posts.post_core.repository;
 
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
-import net.whgkswo.excuse_bundle.entities.posts.core.dto.PostSearchDto;
-import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
+import net.whgkswo.excuse_bundle.entities.posts.post_core.dto.PostSearchDto;
+import net.whgkswo.excuse_bundle.entities.posts.post_core.entity.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -99,4 +99,21 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "WHERE c.post.id = :targetId " +
             "AND c.status = 'ACTIVE'")
     Page<Comment> findCommentsByPostId(@Param("targetId") long postId, Pageable pageable);
+
+    // 태그 필터링용 - Post id와 태그만 조회 (Tags 후처리 필요) - 태그 있는 것만
+    @Query("SELECT p.id, CONCAT(t.category, ':', t.value) FROM Post p " +
+            "JOIN p.excuse e " +
+            "JOIN e.tags t " +  // 태그 없는 건 포함 x
+            "WHERE p.id IN :postIds AND p.status = :status")
+    List<Object[]> findPostIdAndTagsInnerJoin(@Param("postIds") List<Long> postIds,
+                                              @Param("status") Post.Status status);
+
+    // 태그 필터링용 - Post id와 태그만 조회 (Tags 후처리 필요) - 태그 없는 것도
+    @Query("SELECT p.id, CASE WHEN t.category IS NULL THEN NULL ELSE CONCAT(t.category, ':', t.value) END " +
+            "FROM Post p " +
+            "JOIN p.excuse e " +
+            "LEFT JOIN e.tags t " +  // 태그 없는 것도 포함
+            "WHERE p.id IN :postIds AND p.status = :status")
+    List<Object[]> findPostIdAndTagsLeftJoin(@Param("postIds") List<Long> postIds,
+                                             @Param("status") Post.Status status);
 }

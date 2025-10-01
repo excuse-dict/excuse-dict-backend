@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_bundle.entities.posts.core.dto;
+package net.whgkswo.excuse_bundle.entities.posts.post_core.dto;
 
 import net.whgkswo.excuse_bundle.search.Searchable;
 
@@ -13,5 +13,5 @@ public record PostSearchDto(
 ) implements Searchable {
 
     public static final String PACKAGE_PATH =
-            "net.whgkswo.excuse_bundle.entities.posts.core.dto.PostSearchDto";
+            "net.whgkswo.excuse_bundle.entities.posts.post_core.dto.PostSearchDto";
 }

@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import net.whgkswo.excuse_bundle.entities.BaseEntity;
-import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
+import net.whgkswo.excuse_bundle.entities.posts.post_core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.posts.tags.entity.Tag;
 import org.hibernate.annotations.BatchSize;
 

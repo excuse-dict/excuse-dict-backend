@@ -2,8 +2,8 @@ package net.whgkswo.excuse_bundle.entities.posts.hotscore;
 
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
-import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
-import net.whgkswo.excuse_bundle.entities.posts.core.entity.PostVote;
+import net.whgkswo.excuse_bundle.entities.posts.post_core.entity.Post;
+import net.whgkswo.excuse_bundle.entities.posts.post_core.entity.PostVote;
 import net.whgkswo.excuse_bundle.entities.vote.entity.VoteType;
 import net.whgkswo.excuse_bundle.lib.time.TimeHelper;
 import org.springframework.stereotype.Component;

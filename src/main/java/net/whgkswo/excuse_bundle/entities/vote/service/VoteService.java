@@ -9,9 +9,9 @@ import net.whgkswo.excuse_bundle.entities.posts.comments.reply.entity.Reply;
 import net.whgkswo.excuse_bundle.entities.posts.comments.reply.entity.ReplyVote;
 import net.whgkswo.excuse_bundle.entities.posts.comments.reply.repository.ReplyRepository;
 import net.whgkswo.excuse_bundle.entities.posts.comments.repository.CommentRepository;
-import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
-import net.whgkswo.excuse_bundle.entities.posts.core.entity.PostVote;
-import net.whgkswo.excuse_bundle.entities.posts.core.repository.PostRepository;
+import net.whgkswo.excuse_bundle.entities.posts.post_core.entity.Post;
+import net.whgkswo.excuse_bundle.entities.posts.post_core.entity.PostVote;
+import net.whgkswo.excuse_bundle.entities.posts.post_core.repository.PostRepository;
 import net.whgkswo.excuse_bundle.entities.vote.entity.VoteType;
 import org.springframework.stereotype.Service;
 

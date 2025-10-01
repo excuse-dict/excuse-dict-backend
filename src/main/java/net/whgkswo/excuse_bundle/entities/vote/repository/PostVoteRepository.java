@@ -1,6 +1,6 @@
 package net.whgkswo.excuse_bundle.entities.vote.repository;
 
-import net.whgkswo.excuse_bundle.entities.posts.core.entity.PostVote;
+import net.whgkswo.excuse_bundle.entities.posts.post_core.entity.PostVote;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_bundle.entities.posts.core.dto;
+package net.whgkswo.excuse_bundle.entities.posts.post_core.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,6 +19,7 @@ import java.util.List;
 public class PostResponseDto extends PostSummaryResponseDto implements Dto {
     private PostVoteDto myVote;
     private List<String> matchedWords;
+    private List<String> matchedTags;
 
     public PostResponseDto(long postId,
                            MemberResponseDto author,
@@ -29,11 +30,13 @@ public class PostResponseDto extends PostSummaryResponseDto implements Dto {
                            LocalDateTime createdAt,
                            LocalDateTime modifiedAt,
                            PostVoteDto myVote,
-                           List<String> matchedWords){
+                           List<String> matchedWords,
+                           List<String> matchedTags){
 
         super(postId, author, excuse, upvoteCount, downvoteCount, commentCount, createdAt, modifiedAt);
 
         this.myVote = myVote;
         this.matchedWords = matchedWords;
+        this.matchedTags = matchedTags;
     }
 }

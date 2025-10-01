@@ -1,14 +1,13 @@
-package net.whgkswo.excuse_bundle.entities.posts.core.controller;
+package net.whgkswo.excuse_bundle.entities.posts.post_core.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.service.AuthService;
 import net.whgkswo.excuse_bundle.entities.excuses.dto.ExcuseRequestDto;
-import net.whgkswo.excuse_bundle.entities.posts.core.dto.*;
-import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
-import net.whgkswo.excuse_bundle.search.SearchType;
-import net.whgkswo.excuse_bundle.entities.posts.core.service.GetPostsCommand;
-import net.whgkswo.excuse_bundle.entities.posts.core.service.PostService;
+import net.whgkswo.excuse_bundle.entities.posts.post_core.dto.*;
+import net.whgkswo.excuse_bundle.entities.posts.post_core.entity.Post;
+import net.whgkswo.excuse_bundle.entities.posts.post_core.service.GetPostsCommand;
+import net.whgkswo.excuse_bundle.entities.posts.post_core.service.PostService;
 import net.whgkswo.excuse_bundle.entities.vote.dto.VoteRequestDto;
 import net.whgkswo.excuse_bundle.general.dto.DeleteCommand;
 import net.whgkswo.excuse_bundle.general.responses.Response;
@@ -25,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Collections;
 
 @RestController
 @RequestMapping(PostController.BASE_URL)
@@ -43,7 +43,7 @@ public class PostController {
         PageRequest pageRequest = PageRequest.of(0, 5);
 
         // 최근 게시물 5개
-        Page<PostResponseDto> recentPosts = postService.getPosts(new GetPostsCommand(pageRequest, null, null, null));
+        Page<PostResponseDto> recentPosts = postService.getPosts(new GetPostsCommand(pageRequest, null, null, null, Collections.emptyList(), Collections.emptyList()));
         // 주간 TOP 게시물 5개
         Page<WeeklyTopPostResponseDto> weeklyTopPosts = postService.getWeeklyTopPosts(pageRequest, null);
         // 명예의 전당 게시물 5개
@@ -73,18 +73,23 @@ public class PostController {
     }
 
     // 게시물 조회 (다수)
-    @GetMapping
-    public ResponseEntity<?> handleGetPosts(@RequestParam(defaultValue = "0") int page,
-                                            @RequestParam(defaultValue = "10") int size,
-                                            @RequestParam(required = false) String searchInput,
-                                            @RequestParam(required = false) SearchType searchType,
+    @PostMapping("/search") // 검색조건 복잡해서...
+    public ResponseEntity<?> handleGetPosts(@RequestBody PostSearchRequestDto dto,
                                             @Nullable Authentication authentication){
 
         Long memberId = null;
         if(authService.isValidUser(authentication)) memberId = authService.getMemberIdFromAuthentication(authentication);
 
-        Pageable pageable = PageRequest.of(page, size);
-        Page<PostResponseDto> posts = postService.getPosts(new GetPostsCommand(pageable, searchInput, memberId, searchType));
+        Pageable pageable = PageRequest.of(dto.pageOrDefault(), dto.sizeOrDefault());
+        Page<PostResponseDto> posts = postService.getPosts(
+                new GetPostsCommand(
+                    pageable,
+                    dto.searchInput(),
+                    memberId,
+                    dto.searchType(),
+                    dto.includedTagsOrEmpty(),
+                    dto.excludedTagsOrEmpty()
+                ));
         PageInfo pageInfo = PageInfo.from(posts);
 
         return ResponseEntity.ok(

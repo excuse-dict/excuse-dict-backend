@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_bundle.entities.posts.core.service;
+package net.whgkswo.excuse_bundle.entities.posts.post_core.service;
 
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.redis.RedisService;
@@ -7,11 +7,11 @@ import net.whgkswo.excuse_bundle.entities.excuses.dto.UpdateExcuseCommand;
 import net.whgkswo.excuse_bundle.entities.excuses.service.ExcuseService;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import net.whgkswo.excuse_bundle.entities.members.core.service.MemberService;
-import net.whgkswo.excuse_bundle.entities.posts.core.dto.*;
-import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
-import net.whgkswo.excuse_bundle.entities.posts.core.mapper.PostMapper;
-import net.whgkswo.excuse_bundle.entities.posts.core.repository.PostRepository;
-import net.whgkswo.excuse_bundle.entities.posts.core.entity.PostVote;
+import net.whgkswo.excuse_bundle.entities.posts.post_core.dto.*;
+import net.whgkswo.excuse_bundle.entities.posts.post_core.entity.Post;
+import net.whgkswo.excuse_bundle.entities.posts.post_core.mapper.PostMapper;
+import net.whgkswo.excuse_bundle.entities.posts.post_core.repository.PostRepository;
+import net.whgkswo.excuse_bundle.entities.posts.post_core.entity.PostVote;
 import net.whgkswo.excuse_bundle.search.SearchResult;
 import net.whgkswo.excuse_bundle.search.SearchType;
 import net.whgkswo.excuse_bundle.entities.posts.hotscore.PostIdWithHotScoreDto;
@@ -80,28 +80,71 @@ public class PostService {
     @Transactional(readOnly = true)
     public Page<PostResponseDto> getPosts(GetPostsCommand command){
 
-        // 검색어 없으면 DB에서 바로 페이징
-        if(command.searchInput() == null || command.searchInput().isBlank() || command.searchType() == null){
-            return getPostsWithoutSearch(command);
+        // 검색어와 태그 필터링 조건 있는지 확인
+        boolean hasTagFilter = !command.excludedTags().isEmpty() || !command.includedTags().isEmpty();
+        boolean hasSearchFilter = command.searchInput() != null && !command.searchInput().isBlank() && command.searchType() != null;
+
+        // 둘 다 없으면 DB에서 다이렉트 페이징
+        if(!hasTagFilter && !hasSearchFilter){
+            return getPostsWithoutFiltering(command);
         }
 
-        // 검색어 있으면 메모리에 다 올리고 필터링
-        return getPostsWithSearch(command);
+        // 있으면 메모리에 올려놓고 서비스에서 필터링
+        return getPostsWithFiltering(command);
     }
 
-    // 검색어 없을 때: DB 페이징
-    private Page<PostResponseDto> getPostsWithoutSearch(GetPostsCommand command) {
+    // 태그로 필터링
+    private List<SearchResult<PostTagSearchDto>> filterByTags(List<PostTagSearchDto> posts, List<String> includedTags, List<String> excludedTags){
+
+        if(includedTags.isEmpty() && excludedTags.isEmpty()) {
+            return posts.stream()
+                    .map(post -> new SearchResult<>(post, Collections.emptyList()))
+                    .toList();
+        }
+
+        return posts.stream()
+                .map(dto -> {
+                    // 게시물에 붙은 태그 확인
+                    Set<String> postTags = dto.tags();
+
+                    // 제외 태그 - 하나라도 있으면 제외
+                    if(!excludedTags.isEmpty() && postTags.stream().anyMatch(excludedTags::contains)) {
+                        return null;
+                    }
+
+                    // 포함 태그 - 하나라도 있으면 포함
+                    List<String> matchedTags = Collections.emptyList();
+                    if(!includedTags.isEmpty()) {
+                        matchedTags = postTags.stream()
+                                .filter(includedTags::contains)
+                                .toList();
+
+                        // 매칭 안 됨
+                        if(matchedTags.isEmpty()) return null;
+
+                        return new SearchResult<>(dto, matchedTags);
+                    }
+
+                    return new SearchResult<>(dto, matchedTags);
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    // 검색어나 태그 필터링 없을 때: DB 다이렉트 페이징
+    private Page<PostResponseDto> getPostsWithoutFiltering(GetPostsCommand command) {
         Page<Post> postPage = postRepository.findPostForPage(command.pageable(), Post.Status.ACTIVE);
 
         return postDtoConverter.convertPostsToResponseDtos(
                 postPage,
                 command.memberId(),
-                null  // 매칭된 키워드 없음
+                null,  // 매칭된 키워드 없음
+                null // 매칭된 태그 없음
         );
     }
 
-    // 검색어 있을 때: 검색어로 필터 후 자체 페이징
-    private Page<PostResponseDto> getPostsWithSearch(GetPostsCommand command) {
+    // 검색어나 태그 필터링 있을 때: 메모리로 가져와서 필터링 후 직접 페이징
+    private Page<PostResponseDto> getPostsWithFiltering(GetPostsCommand command) {
 
         // 검색용 dto 가볍게 조회
         List<PostSearchDto> searchDtos = postRepository.findAllSearchDtoByStatus(Post.Status.ACTIVE);
@@ -113,15 +156,28 @@ public class PostService {
                 searchDtos
         );
 
-        // 게시물 별 매칭된 키워드
-        Map<Long, List<String>> matchedWordsMap = searchedPosts.stream()
-                .collect(Collectors.toMap(
-                        result -> result.searchedContent().id(),
-                        SearchResult::matchedWords
-                ));
+        // 검색으로 필터링된 ID
+        List<Long> searchedPostIds = searchedPosts.stream()
+                .map(result -> result.searchedContent().id())
+                .toList();
 
-        // 검색된 게시물 실제 객체 가져오기
-        List<Long> postIdList = searchedPosts.stream()
+        // 게시물 별 매칭된 키워드
+        Map<Long, List<String>> matchedWordsMap = SearchResult.mapByMatchedWords(searchedPosts);
+
+        // 검색 결과에 태그로 추가 필터링 (하기 위한 dto 조회)
+        List<PostTagSearchDto> tagSearchDtos = getTagSearchDtos(searchedPostIds, !command.includedTags().isEmpty());
+        // 태그 필터링 실행
+        List<SearchResult<PostTagSearchDto>> tagFilteredResults = filterByTags(
+                tagSearchDtos,
+                command.includedTags(),
+                command.excludedTags()
+        );
+
+        // 게시물 별 매칭된 태그
+        Map<Long, List<String>> matchedTagsMap = SearchResult.mapByMatchedWords(tagFilteredResults);
+
+        // 검색 + 필터링된 게시물 실제 객체 가져오기
+        List<Long> postIdList = tagFilteredResults.stream()
                 .map(result -> result.searchedContent().id())
                 .toList();
         List<Post> postList = getOrderedPostsFromIdList(postIdList);
@@ -130,10 +186,37 @@ public class PostService {
         List<PostResponseDto> responses = postDtoConverter.convertPostsToResponseDtos(
                 postList,
                 command.memberId(),
-                matchedWordsMap
+                matchedWordsMap,
+                matchedTagsMap
         );
 
         return pageHelper.paginate(responses, command.pageable());
+    }
+
+    // 게시물 태그 필터링용 경량화 태그 조회
+    private List<PostTagSearchDto> getTagSearchDtos(List<Long> postIds, boolean hasIncludedTags) {
+
+        // '포함 태그' 조건이 비어 있다면 태그 없는 게시물도 가져와야 하지만, '포함 태그' 조건이 있을 경우 태그 없는 게시물은 자동으로 제외되기에
+        // 메모리에 굳이 모든 게시물을 다 올릴 필요가 없음. DB 조건부 호출로 최적화 가능
+        // Post Id와 tags 조회
+        List<Object[]> results = hasIncludedTags
+                ? postRepository.findPostIdAndTagsInnerJoin(postIds, Post.Status.ACTIVE)  // 포함 태그 있으면 INNER JOIN
+                : postRepository.findPostIdAndTagsLeftJoin(postIds, Post.Status.ACTIVE);  // 포함 태그 없으면 LEFT JOIN
+
+        // postId 별 태그 정보 그룹핑
+        Map<Long, Set<String>> tagsByPostId = new HashMap<>();
+
+        for (Object[] row : results) {
+            Long postId = ((Number) row[0]).longValue();
+            String tagValue = (String) row[1];
+
+            tagsByPostId.computeIfAbsent(postId, k -> new HashSet<>()).add(tagValue);
+        }
+
+        // DTO 생성
+        return tagsByPostId.entrySet().stream()
+                .map(entry -> new PostTagSearchDto(entry.getKey(), entry.getValue()))
+                .toList();
     }
 
     private Optional<Post> findPost(long postId){
@@ -187,7 +270,7 @@ public class PostService {
                 .map(summary -> {
                     PostVote vote = voteMap.get(summary.getPostId());
                     PostVoteDto voteDto = vote == null ? null : voteMapper.postVoteToPostVoteDto(vote);
-                    return postMapper.postSummaryResponseDtoToPostResponseDto(summary, voteDto, null);
+                    return postMapper.postSummaryResponseDtoToPostResponseDto(summary, voteDto, null, null);
                 })
                 .toList();
 
@@ -232,7 +315,7 @@ public class PostService {
 
                     // summary -> response
                     PostResponseDto responseDto = postMapper.postSummaryResponseDtoToPostResponseDto(
-                            summary, voteDto, null);
+                            summary, voteDto, null, null);
 
                     // response -> weekly
                     int hotScore = hotScoreMap.get(postId);
@@ -348,6 +431,12 @@ public class PostService {
 
     // 게시물 검색
     List<SearchResult<PostSearchDto>> searchPosts(String searchInput, SearchType searchType, List<PostSearchDto> dtos){
+
+        // 검색어 없으면 전체 반환
+        if(searchInput == null || searchInput.isBlank() || searchType == null)
+            return dtos.stream()
+                    .map(dto -> new SearchResult<>(dto, Collections.emptyList()))
+                    .toList();
 
         return dtos.stream()
                 .map(post -> { // 유사도 계산 후 유사도 포함 랩핑

@@ -1,14 +1,12 @@
 package net.whgkswo.excuse_bundle.entities.members.core.entitiy;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.whgkswo.excuse_bundle.entities.TimeStampedEntity;
 import net.whgkswo.excuse_bundle.entities.members.rank.MemberRank;
-import net.whgkswo.excuse_bundle.entities.posts.core.entity.Post;
-import org.hibernate.annotations.BatchSize;
+import net.whgkswo.excuse_bundle.entities.posts.post_core.entity.Post;
 
 import java.util.ArrayList;
 import java.util.List;

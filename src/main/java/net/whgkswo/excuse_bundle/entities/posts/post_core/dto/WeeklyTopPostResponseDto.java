@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_bundle.entities.posts.core.dto;
+package net.whgkswo.excuse_bundle.entities.posts.post_core.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -31,9 +31,10 @@ public class WeeklyTopPostResponseDto extends PostResponseDto implements Dto {
             LocalDateTime modifiedAt,
             PostVoteDto myVote,
             int hotScore,
-            List<String> matchedWords) {
+            List<String> matchedWords,
+            List<String> matchedTags) {
 
-        super(postId, author, excuse, upvoteCount, downvoteCount, commentCount, createdAt, modifiedAt, myVote, matchedWords);
+        super(postId, author, excuse, upvoteCount, downvoteCount, commentCount, createdAt, modifiedAt, myVote, matchedWords, matchedTags);
 
         this.hotScore = hotScore;
     }

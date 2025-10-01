@@ -9,7 +9,7 @@ import net.whgkswo.excuse_bundle.auth.CustomAuthorityUtils;
 import net.whgkswo.excuse_bundle.auth.jwt.principal.CustomPrincipal;
 import net.whgkswo.excuse_bundle.auth.jwt.token.tokenizer.JwtTokenizer;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
-import net.whgkswo.excuse_bundle.entities.posts.core.controller.PostController;
+import net.whgkswo.excuse_bundle.entities.posts.post_core.controller.PostController;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;

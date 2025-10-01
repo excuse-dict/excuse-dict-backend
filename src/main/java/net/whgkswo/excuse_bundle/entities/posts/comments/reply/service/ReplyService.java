@@ -15,7 +15,7 @@ import net.whgkswo.excuse_bundle.entities.posts.comments.reply.mapper.ReplyMappe
 import net.whgkswo.excuse_bundle.entities.posts.comments.reply.repository.ReplyRepository;
 import net.whgkswo.excuse_bundle.entities.posts.comments.repository.CommentRepository;
 import net.whgkswo.excuse_bundle.entities.posts.comments.service.CommentService;
-import net.whgkswo.excuse_bundle.entities.posts.core.dto.VoteCommand;
+import net.whgkswo.excuse_bundle.entities.posts.post_core.dto.VoteCommand;
 import net.whgkswo.excuse_bundle.entities.vote.mapper.VoteMapper;
 import net.whgkswo.excuse_bundle.entities.vote.service.VoteService;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
