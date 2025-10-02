@@ -3,6 +3,7 @@ package net.whgkswo.excuse_bundle.entities.posts.post_core.repository;
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
 import net.whgkswo.excuse_bundle.entities.posts.post_core.dto.PostSearchDto;
 import net.whgkswo.excuse_bundle.entities.posts.post_core.entity.Post;
+import net.whgkswo.excuse_bundle.ranking.dto.TopNetLikesPostDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -17,22 +18,12 @@ import java.util.Optional;
 public interface PostRepository extends JpaRepository<Post, Long> {
 
     // 경량화된 검색용 DTO 조회
-    @Query("SELECT new " + PostSearchDto.PACKAGE_PATH +
+    @Query("SELECT new " + PostSearchDto.PACKAGE_NAME +
             "(p.id, p.excuse.situation, p.excuse.excuse, p.member.nickname, p.createdAt) FROM Post p " +
             "JOIN p.excuse JOIN p.member " +
             "WHERE p.status = :status"
     )
     List<PostSearchDto> findAllSearchDtoByStatus(@Param("status") Post.Status status);
-
-    // 게시물 목록용 (리스트)
-    @Query("SELECT p FROM Post p " +
-            "JOIN FETCH p.member m " +
-            "JOIN FETCH m.memberRank " +
-            "JOIN FETCH p.excuse e " +
-            "WHERE p.status = :status " +
-            "ORDER BY p.createdAt DESC"
-    )
-    List<Post> findAllForList(@Param("status") Post.Status status);
 
     // 게시물 목록용 (페이지)
     @EntityGraph(attributePaths = {"member", "member.memberRank", "excuse"})
@@ -42,14 +33,14 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     )
     Page<Post> findPostForPage(Pageable pageable, @Param("status") Post.Status status);
 
-    // 순추천수 Top 게시물 조회
-    @EntityGraph(attributePaths = {"member", "member.memberRank", "excuse"})
-    @Query(value = "SELECT p FROM Post p " +
-            "WHERE p.status = :status " +
-            "ORDER BY p.upvoteCount - p.downvoteCount DESC ",
-            countQuery = "SELECT COUNT(p) FROM Post p WHERE p.status = :status"
-    )
-    Page<Post> findTopNetLikes(Pageable pageable, @Param("status") Post.Status status);
+    // 순수천수 Top 게시물 조회 (DTO 데이터)
+    @Query(value = "SELECT p.id, (p.upvote_count - p.downvote_count) AS net_likes " +
+            "FROM post p " +
+            "WHERE p.status = 'ACTIVE' " +
+            "ORDER BY net_likes DESC " +
+            "LIMIT :amount",
+            nativeQuery = true)
+    List<Object[]> findTopNetLikes(@Param("amount") int amount);
 
     // 최근 n일간 게시글 조회
     @Query(value = "SELECT p FROM Post p " +

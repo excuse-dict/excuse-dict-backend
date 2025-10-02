@@ -12,6 +12,6 @@ public record PostSearchDto(
         LocalDateTime createdAt
 ) implements Searchable {
 
-    public static final String PACKAGE_PATH =
+    public static final String PACKAGE_NAME =
             "net.whgkswo.excuse_bundle.entities.posts.post_core.dto.PostSearchDto";
 }

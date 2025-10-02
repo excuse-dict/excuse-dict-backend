@@ -12,6 +12,7 @@ import net.whgkswo.excuse_bundle.entities.posts.post_core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.posts.post_core.mapper.PostMapper;
 import net.whgkswo.excuse_bundle.entities.posts.post_core.repository.PostRepository;
 import net.whgkswo.excuse_bundle.entities.posts.post_core.entity.PostVote;
+import net.whgkswo.excuse_bundle.ranking.dto.TopNetLikesPostDto;
 import net.whgkswo.excuse_bundle.search.SearchResult;
 import net.whgkswo.excuse_bundle.search.SearchType;
 import net.whgkswo.excuse_bundle.entities.posts.hotscore.PostIdWithHotScoreDto;
@@ -166,6 +167,7 @@ public class PostService {
 
         // 검색 결과에 태그로 추가 필터링 (하기 위한 dto 조회)
         List<PostTagSearchDto> tagSearchDtos = getTagSearchDtos(searchedPostIds, !command.includedTags().isEmpty());
+
         // 태그 필터링 실행
         List<SearchResult<PostTagSearchDto>> tagFilteredResults = filterByTags(
                 tagSearchDtos,
@@ -229,8 +231,12 @@ public class PostService {
     }
 
     // 올타임 순추천수 Top 게시글 조회
-    public Page<Post> getTopNetLikes(Pageable pageable){
-        return postRepository.findTopNetLikes(pageable, Post.Status.ACTIVE);
+    public List<TopNetLikesPostDto> getTopNetLikes(int amount){
+        List<Object[]> topPosts = postRepository.findTopNetLikes(amount);
+
+        return topPosts.stream()
+                .map(row -> new TopNetLikesPostDto((Long) row[0], ((Number) row[1]).intValue()))
+                .toList();
     }
 
     // 최근 n일 순추천수 Top 게시글 조회

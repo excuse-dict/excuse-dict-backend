@@ -6,6 +6,7 @@ import net.whgkswo.excuse_bundle.auth.redis.RedisService;
 import net.whgkswo.excuse_bundle.entities.posts.post_core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.posts.post_core.service.PostService;
 import net.whgkswo.excuse_bundle.entities.posts.hotscore.PostIdWithHotScoreDto;
+import net.whgkswo.excuse_bundle.ranking.dto.TopNetLikesPostDto;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.PageRequest;
@@ -40,12 +41,11 @@ public class RankingScheduler {
     @Transactional(readOnly = true)
     public void setHallOfFame(){
 
-        Pageable pageable = PageRequest.of(0, HALL_OF_FAME_SIZE);
-        List<Post> posts = postService.getTopNetLikes(pageable).stream().toList();
+        List<TopNetLikesPostDto> posts = postService.getTopNetLikes(HALL_OF_FAME_SIZE);
 
         // 레디스에는 ID만 저장
         List<Long> postIdList = posts.stream()
-                        .map(post -> post.getId())
+                        .map(post -> post.id())
                         .toList();
 
         redisService.put(HALL_OF_FAME_REDISKEY, postIdList);
