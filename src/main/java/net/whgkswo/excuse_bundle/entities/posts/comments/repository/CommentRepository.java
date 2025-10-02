@@ -35,4 +35,9 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             nativeQuery = true
     )
     List<Long> findRandomCommentIds(@Param("amount") int amount, @Param("startDateTime") LocalDateTime startDateTime);
+
+    // Post id 리스트 -> Comment 리스트 조회
+    @Query("SELECT c FROM Comment c " +
+            "WHERE c.post.id IN :postIds")
+    List<Comment> findCommentsByPostIds(@Param("postIds") List<Long> postIds);
 }

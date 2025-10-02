@@ -7,11 +7,14 @@ import net.whgkswo.excuse_bundle.entities.excuses.dto.UpdateExcuseCommand;
 import net.whgkswo.excuse_bundle.entities.excuses.service.ExcuseService;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import net.whgkswo.excuse_bundle.entities.members.core.service.MemberService;
+import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
+import net.whgkswo.excuse_bundle.entities.posts.comments.repository.CommentRepository;
 import net.whgkswo.excuse_bundle.entities.posts.post_core.dto.*;
 import net.whgkswo.excuse_bundle.entities.posts.post_core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.posts.post_core.mapper.PostMapper;
 import net.whgkswo.excuse_bundle.entities.posts.post_core.repository.PostRepository;
 import net.whgkswo.excuse_bundle.entities.posts.post_core.entity.PostVote;
+import net.whgkswo.excuse_bundle.ranking.dto.RecentHotPostDto;
 import net.whgkswo.excuse_bundle.ranking.dto.TopNetLikesPostDto;
 import net.whgkswo.excuse_bundle.search.SearchResult;
 import net.whgkswo.excuse_bundle.search.SearchType;
@@ -55,7 +58,7 @@ public class PostService {
     private final RedisService redisService;
     private final PageHelper pageHelper;
     private final HotScoreService hotScoreService;
-    private final WordService wordService;
+    private final CommentRepository commentRepository;
 
     private final MorphemeBasedSimilarityCalculator morphemeBasedSimilarityCalculator;
     private final ContainsSimilarityCalculator containsSimilarityCalculator;
@@ -242,18 +245,53 @@ public class PostService {
     // 최근 n일 순추천수 Top 게시글 조회
     public List<PostIdWithHotScoreDto> getRecentTopNetLikes(int days){
 
-        LocalDateTime startDateTime = LocalDateTime.now().minusDays(days);
-
-        List<Post> posts = postRepository.findRecentPosts(Post.Status.ACTIVE, startDateTime);
+        // 최근 작성글 dto로 조회
+        List<RecentHotPostDto> posts = getRecentHotPosts(days);
 
         // 가중치 적용하여 재정렬
         return posts.stream()
                 .map(post -> new PostIdWithHotScoreDto(
-                        post.getId(),
+                        post.id(),
                         hotScoreService.calculateHotScore(post)
                 ))
                 .sorted((a, b) -> Double.compare(b.hotScore(), a.hotScore()))
                 .limit(RankingScheduler.WEEKLY_TOP_SIZE)
+                .toList();
+    }
+
+    // 최근 n일 게시물 조회 (hot 스코어 계산에 필요한 정보만)
+    public List<RecentHotPostDto> getRecentHotPosts(int days) {
+        LocalDateTime startDatetime = LocalDateTime.now().minusDays(days);
+
+        // 최근 게시물 Post id, 좋아요/싫어요 수, 작성일시 조회
+        List<Object[]> postData = postRepository.findRecentPostIds(Post.Status.ACTIVE, startDatetime);
+
+        // id만 추출
+        List<Long> postIds = postData.stream()
+                .map(row -> (Long) row[0])
+                .toList();
+
+        // id로 Vote, Comment 조회
+        List<PostVote> allVotes = postVoteRepository.findVotesByPostIds(postIds);
+        List<Comment> allComments = commentRepository.findCommentsByPostIds(postIds);
+
+        // id별로 그룹핑
+        Map<Long, List<PostVote>> votesByPost = allVotes.stream()
+                .collect(Collectors.groupingBy(pv -> pv.getPost().getId()));
+
+        Map<Long, List<Comment>> commentsByPost = allComments.stream()
+                .collect(Collectors.groupingBy(c -> c.getPost().getId()));
+
+        // DTO로 래핑
+        return postData.stream()
+                .map(row -> new RecentHotPostDto(
+                        (Long) row[0],      // id
+                        (Integer) row[1],   // 좋아요 수
+                        (Integer) row[2],   // 싫어요 수
+                        votesByPost.getOrDefault((Long) row[0], List.of()),
+                        commentsByPost.getOrDefault((Long) row[0], List.of()),
+                        (LocalDateTime) row[3]
+                ))
                 .toList();
     }
 

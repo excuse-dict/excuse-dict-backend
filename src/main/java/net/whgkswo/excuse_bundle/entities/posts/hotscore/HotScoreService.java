@@ -6,6 +6,7 @@ import net.whgkswo.excuse_bundle.entities.posts.post_core.entity.Post;
 import net.whgkswo.excuse_bundle.entities.posts.post_core.entity.PostVote;
 import net.whgkswo.excuse_bundle.entities.vote.entity.VoteType;
 import net.whgkswo.excuse_bundle.lib.time.TimeHelper;
+import net.whgkswo.excuse_bundle.ranking.dto.RecentHotPostDto;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -41,11 +42,11 @@ public class HotScoreService {
 
 
     // 게시물의 Hot 스코어 계산
-    public int calculateHotScore(Post post){
+    public int calculateHotScore(RecentHotPostDto post){
         double hotScore = 0.0;
 
         // 최근 작성글일 수록 가중치 up
-        double timeWeight = calculateTimeWeight(post.getCreatedAt());
+        double timeWeight = calculateTimeWeight(post.createdAt());
 
         // 최근 추천 많을수록 가중치 보너스
         hotScore += calculateVoteScore(post, timeWeight);
@@ -67,7 +68,7 @@ public class HotScoreService {
     }
 
     // 댓글 점수: 최근 댓글이 많을수록 보너스
-    private double calculateCommentScore(Post post, double timeWeight) {
+    private double calculateCommentScore(RecentHotPostDto post, double timeWeight) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime oneDayAgo = now.minusMinutes(ONE_DAY_IN_MINUTES);
         LocalDateTime threeDaysAgo = now.minusMinutes(ONE_DAY_IN_MINUTES * 3);
@@ -75,7 +76,7 @@ public class HotScoreService {
         int recentCommentCount = 0; // 최근 1일간 댓글수
         int recent3DaysCommentsCount = 0; // 1일 ~ 3일간 댓글수
 
-        for (Comment comment : post.getComments()) {
+        for (Comment comment : post.comments()) {
             LocalDateTime createdAt = comment.getCreatedAt();
 
             if (createdAt.isAfter(oneDayAgo)) { // 최근 1일
@@ -86,7 +87,7 @@ public class HotScoreService {
         }
 
         // 그 외 댓글수
-        int baseCommentCount = post.getComments().size() - recentCommentCount - recent3DaysCommentsCount;
+        int baseCommentCount = post.comments().size() - recentCommentCount - recent3DaysCommentsCount;
 
         // 가중치 적용해 점수 합산
         double recentScore = getCommentScore(recentCommentCount, timeWeight * RECENT_WEIGHT); // 최근 1일
@@ -97,7 +98,7 @@ public class HotScoreService {
     }
 
     // 좋아요 점수: 최근 좋아요가 많을수록 보너스
-    private double calculateVoteScore(Post post, double timeWeight) {
+    private double calculateVoteScore(RecentHotPostDto post, double timeWeight) {
 
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime oneDayAgo = now.minusMinutes(ONE_DAY_IN_MINUTES);
@@ -106,7 +107,7 @@ public class HotScoreService {
         int recentVotesCount = 0; // 최근 1일간 순 좋아요 수
         int recent3DaysVotesCount = 0; // 1일 ~ 3일간 순 좋아요 수
 
-        for (PostVote vote : post.getVotes()) {
+        for (PostVote vote : post.votes()) {
             LocalDateTime createdAt = vote.getCreatedAt();
             int voteValue = vote.getVoteType().equals(VoteType.UPVOTE) ? 1 : -1;
 
@@ -118,7 +119,7 @@ public class HotScoreService {
         }
 
         // 그 외 순 좋아요 수
-        int netVotesCount = post.getUpvoteCount() - post.getDownvoteCount();
+        int netVotesCount = post.upvoteCount() - post.downvoteCount();
         int baseVotesCount = netVotesCount - recentVotesCount - recent3DaysVotesCount;
 
         // 가중치 적용해 점수 합산
