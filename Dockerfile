@@ -9,5 +9,8 @@ COPY build/libs/excuse_dict-0.0.1-SNAPSHOT.jar app.jar
 # 포트 노출
 EXPOSE 8081
 
+# JVM 메모리 제한
+ENV JAVA_OPTS="-Xms256m -Xmx384m -XX:MaxMetaspaceSize=128m -XX:+UseG1GC"
+
 # 애플리케이션 실행
-ENTRYPOINT ["java", "-jar", "app.jar", "--spring.profiles.active=prod"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar --spring.profiles.active=prod"]
