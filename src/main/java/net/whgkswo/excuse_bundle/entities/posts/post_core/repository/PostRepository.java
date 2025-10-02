@@ -3,8 +3,6 @@ package net.whgkswo.excuse_bundle.entities.posts.post_core.repository;
 import net.whgkswo.excuse_bundle.entities.posts.comments.entity.Comment;
 import net.whgkswo.excuse_bundle.entities.posts.post_core.dto.PostSearchDto;
 import net.whgkswo.excuse_bundle.entities.posts.post_core.entity.Post;
-import net.whgkswo.excuse_bundle.entities.posts.post_core.entity.PostVote;
-import net.whgkswo.excuse_bundle.ranking.dto.RecentHotPostDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -43,17 +41,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             nativeQuery = true)
     List<Object[]> findTopNetLikes(@Param("amount") int amount);
 
-    // 최근 n일간 게시글 조회
-    @Query(value = "SELECT p FROM Post p " +
-            "JOIN FETCH p.member m " +
-            "JOIN FETCH m.memberRank " +
-            "JOIN FETCH p.excuse e " +
-            "WHERE p.status = :status " +
-            "AND p.createdAt >= :startDateTime"
-    )
-    List<Post> findRecentPosts(@Param("status") Post.Status status,
-                               @Param("startDateTime") LocalDateTime startDateTime
-    );
 
     // Post 기본 정보 조회
     @Query("SELECT p.id, p.upvoteCount, p.downvoteCount, p.createdAt FROM Post p " +
