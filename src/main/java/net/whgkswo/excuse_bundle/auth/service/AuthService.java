@@ -2,14 +2,14 @@ package net.whgkswo.excuse_bundle.auth.service;
 
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_bundle.auth.jwt.principal.CustomPrincipal;
-import net.whgkswo.excuse_bundle.auth.jwt.token.tokenizer.JwtTokenizer;
 import net.whgkswo.excuse_bundle.auth.redis.RedisKey;
 import net.whgkswo.excuse_bundle.auth.redis.RedisKeyMapper;
 import net.whgkswo.excuse_bundle.auth.redis.RedisService;
-import net.whgkswo.excuse_bundle.auth.verify.VerificationCode;
 import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import net.whgkswo.excuse_bundle.entities.members.email.config.AdminEmailConfig;
+import net.whgkswo.excuse_bundle.entities.members.email.dto.EmailVerificationStateDto;
 import net.whgkswo.excuse_bundle.entities.members.email.dto.VerificationPurpose;
+import net.whgkswo.excuse_bundle.entities.members.email.service.EmailService;
 import net.whgkswo.excuse_bundle.exceptions.BadRequestException;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
@@ -26,28 +25,35 @@ public class AuthService {
     private final RedisService redisService;
     private final RedisKeyMapper redisKeyMapper;
     private final AdminEmailConfig adminEmailConfig;
+    private final EmailService emailService;
 
     // 메일 인증정보 만료 시간
     private static final int EMAIL_VERIFICATION_DURATION_SEC = 3600;
 
+    // 메일 인증 임시차단 유지 시간
+    private static final int VERIFICATION_BLOCK_DURATION_SEC = 1800;
+
+
     // 인증 코드 검증
     public void verifyCode(String email, String code, VerificationPurpose purpose){
+
+        // 이메일 차단 여부 확인
+        emailService.checkIsEmailBlocked(email);
+
+        // redis 키 준비
         RedisKey.Prefix prefix = redisKeyMapper.getVerificationCodePrefix(purpose);
         RedisKey key = new RedisKey(prefix, email);
 
-        Optional<VerificationCode> optionalCode = redisService.get(key, VerificationCode.class);
+        // 인증 코드와 남은 시도 횟수 조회
+        Optional<EmailVerificationStateDto> optionalState = redisService.get(key, EmailVerificationStateDto.class);
 
         // 인증 코드가 없거나 만료됨
-        if(optionalCode.isEmpty()) throw new BusinessLogicException(ExceptionType.VERIFICATION_CODE_EXPIRED);
+        if(optionalState.isEmpty()) throw new BusinessLogicException(ExceptionType.VERIFICATION_CODE_EXPIRED);
 
-        VerificationCode storedCode = optionalCode.get();
+        EmailVerificationStateDto verificationState = optionalState.get();
 
         // 코드가 일치하지 않음
-        if(!code.equals(storedCode.getCode())) {
-            // 남은 시도 횟수 차감
-            deductRemainingAttempts(key, storedCode);
-            throw new BusinessLogicException(ExceptionType.wrongVerificationCode(storedCode));
-        };
+        if(!code.equals(verificationState.code())) handleCodeViolation(verificationState, email, purpose);
 
         // 일치하면 레디스에서 인증코드 삭제
         redisService.remove(key);
@@ -57,17 +63,29 @@ public class AuthService {
         addVerificationToRedis(email, completePrefix);
     }
 
-    // 인증 코드 틀릴 시 남은 시도 횟수 차감
-    private void deductRemainingAttempts(RedisKey redisKey, VerificationCode code){
-        // 시도 횟수 소진 시 키 삭제
-        if(code.getRemainingAttempts() <= 1){ // 마지막 시도
-            redisService.remove(redisKey);
-            throw new BusinessLogicException(ExceptionType.WRONG_VERIFICATION_CODE_LAST);
+    // 인증 코드 틀렸을 때 실행
+    private void handleCodeViolation(EmailVerificationStateDto prevState, String email, VerificationPurpose purpose){
+        // 라스트 찬스였으면
+        if(prevState.failedAttempts() >= EmailVerificationStateDto.MAX_VERIFICATION_ATTEMPTS - 1){
+            // 30분 간 해당 이메일 접근 차단
+            RedisKey key = new RedisKey(RedisKey.Prefix.VERIFICATION_BLOCK, email);
+            redisService.put(key, true, VERIFICATION_BLOCK_DURATION_SEC);
+
+            // 기존 인증정보 삭제
+            redisService.remove(new RedisKey(redisKeyMapper.getVerificationCodePrefix(purpose), email));
+            redisService.remove(new RedisKey(redisKeyMapper.getVerificationCompletePrefix(purpose), email));
+
+            throw new BusinessLogicException(ExceptionType.VERIFICATION_ATTEMPTS_RAN_OUT);
         }
-        // 시도 횟수 차감
-        code.deductAttempts();
-        // 레디스에 다시 저장
-        redisService.update(redisKey, code, new BusinessLogicException(ExceptionType.VERIFICATION_CODE_EXPIRED));
+
+        EmailVerificationStateDto newState = prevState.plusFailedAttempt();
+
+        // 실패 횟수 증가시키고 ttl 갱신한 뒤 다시 저장
+        RedisKey.Prefix prefix = redisKeyMapper.getVerificationCodePrefix(purpose);
+        redisService.put(new RedisKey(prefix, email), newState, EmailService.CODE_DURATION_SEC);
+
+        // 클라이언트에 응답
+        throw new BusinessLogicException(ExceptionType.wrongVerificationCode(newState.getRemainingAttempts()));
     }
 
     // 이메일 인증 완료 정보 저장

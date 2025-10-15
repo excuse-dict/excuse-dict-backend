@@ -1,7 +1,5 @@
 package net.whgkswo.excuse_bundle.lib.random;
 
-import lombok.RequiredArgsConstructor;
-import net.whgkswo.excuse_bundle.auth.verify.VerificationCode;
 import org.springframework.stereotype.Component;
 
 import java.util.Random;

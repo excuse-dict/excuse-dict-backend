@@ -1,7 +1,7 @@
 package net.whgkswo.excuse_bundle.exceptions;
 
-import net.whgkswo.excuse_bundle.auth.verify.VerificationCode;
 import net.whgkswo.excuse_bundle.entities.vote.entity.VoteType;
+import net.whgkswo.excuse_bundle.lib.time.TimeHelper;
 
 public record ExceptionType(int status, String code, String message){
 
@@ -21,7 +21,7 @@ public record ExceptionType(int status, String code, String message){
     public static final ExceptionType RECAPTCHA_TOKEN_INVALID = ExceptionType.of(400, "RECAPTCHA_TOKEN_INVALID","잘못된 reCAPTCHA 토큰입니다. 페이지를 새로고침하거나 잠시 후에 시도해 주세요");
     public static final ExceptionType SELF_VOTE_NOT_ALLOWED = ExceptionType.of(400, "SELF_VOTE_NOT_ALLOWED", "자신의 게시글에 추천/비추천하실 수 없습니다.");
     public static final ExceptionType VERIFICATION_CODE_EXPIRED = ExceptionType.of(400, "VERIFICATION_CODE_EXPIRED","인증 코드가 발급되지 않았거나 만료되었습니다.");
-    public static final ExceptionType WRONG_VERIFICATION_CODE_LAST = ExceptionType.of(400, "WRONG_VERIFICATION_CODE_LAST","인증 코드가 틀립니다. 모든 시도 횟수를 소진하였습니다. 코드를 재발급해 주세요");
+    public static final ExceptionType VERIFICATION_ATTEMPTS_RAN_OUT = ExceptionType.of(400, "VERIFICATION_ATTEMPTS_RAN_OUT","인증 코드가 틀립니다. 모든 시도 횟수를 소진하여 30분 동안 해당 이메일의 인증이 제한됩니다.");
     public static final ExceptionType WRONG_CHARACTER_IN_NICKNAME = ExceptionType.of(400, "WRONG_CHARACTER_IN_NICKNAME","닉네임에 사용할 수 없는 문자가 있습니다.");
     public static final ExceptionType AUTHENTICATION_FAILED = ExceptionType.of(401, "AUTHENTICATION_FAILED", "인증에 실패하였습니다.");
     public static final ExceptionType ACCESS_TOKEN_INVALID = ExceptionType.of(401, "ACCESS_TOKEN_INVALID", "액세스 토큰이 유효하지 않습니다.");
@@ -45,14 +45,11 @@ public record ExceptionType(int status, String code, String message){
     public static final ExceptionType SERIALIZATION_FAILED = ExceptionType.of(500, "SERIALIZATION_FAILED","데이터 직렬화에 실패하였습니다.");
     public static final ExceptionType DESERIALIZATION_FAILED = ExceptionType.of(500, "DESERIALIZATION_FAILED","데이터 역직렬화에 실패하였습니다.");
     public static final ExceptionType RECAPTCHA_VERIFY_FAILED = ExceptionType.of(500, "RECAPTCHA_VERIFY_FAILED","reCAPTCHA 검증에 실패했습니다.");
-    public static final ExceptionType ES_QUERY_LOAD_FAILED = ExceptionType.of(500, "ES_QUERY_LOAD_FAILED", "엘라스틱서치 쿼리를 로드할 수 없습니다.");
-    public static final ExceptionType ES_SEARCH_FAILED = ExceptionType.of(500, "ES_SEARCH_FAILED", "엘라스틱 서치 검색 중 오류 발생");
-    public static final ExceptionType ES_SYNC_FAILED = ExceptionType.of(500, "ES_SYNC_FAILED", "엘라스틱 서치 데이터 동기화 중 오류 발생");
 
     // ㅡㅡㅡㅡㅡ 이 밑으로 동적 메시지들 ㅡㅡㅡㅡㅡ
 
-    public static ExceptionType wrongVerificationCode(VerificationCode code){
-        String message = String.format("인증 코드가 틀립니다. 다시 확인해 주세요. (남은 횟수: %d회)", code.getRemainingAttempts());
+    public static ExceptionType wrongVerificationCode(int remainingAttempts){
+        String message = String.format("인증 코드가 틀립니다. 다시 확인해 주세요. (남은 횟수: %d회)",remainingAttempts);
         return ExceptionType.of(400, "WRONG_VERIFICATION_CODE", message);
     }
 
@@ -83,5 +80,9 @@ public record ExceptionType(int status, String code, String message){
 
     public static ExceptionType tooManyGenerate(long remainingTime){
         return ExceptionType.of(429, "TOO_MANY_GENERATE", String.format("연속해서 핑계 생성기를 이용하실 수 없습니다. %d초 후 다시 시도해주세요", remainingTime));
+    }
+
+    public static ExceptionType verificationBlocked(long remainingTime){
+        return ExceptionType.of(429, "VERIFICATION_BLOCKED", String.format("반복적인 인증 실패로 임시 제한된 이메일입니다. %s 후 다시 시도해주세요", TimeHelper.formatSeconds((int) remainingTime)));
     }
 }

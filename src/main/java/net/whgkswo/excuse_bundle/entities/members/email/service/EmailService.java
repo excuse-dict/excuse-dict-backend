@@ -7,9 +7,8 @@ import net.whgkswo.excuse_bundle.auth.redis.RedisKey;
 import net.whgkswo.excuse_bundle.auth.redis.RedisKeyMapper;
 import net.whgkswo.excuse_bundle.auth.redis.RedisService;
 import net.whgkswo.excuse_bundle.auth.service.AuthService;
-import net.whgkswo.excuse_bundle.auth.verify.VerificationCode;
-import net.whgkswo.excuse_bundle.entities.members.core.entitiy.Member;
 import net.whgkswo.excuse_bundle.entities.members.core.repositoriy.MemberRepository;
+import net.whgkswo.excuse_bundle.entities.members.email.dto.EmailVerificationStateDto;
 import net.whgkswo.excuse_bundle.entities.members.email.dto.VerificationPurpose;
 import net.whgkswo.excuse_bundle.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_bundle.exceptions.ExceptionType;
@@ -21,7 +20,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -34,7 +32,7 @@ public class EmailService {
     private final RedisKeyMapper redisKeyMapper;
     private final RandomCodeGenerator randomCodeGenerator;
 
-    private static final int CODE_DURATION_SEC = 300; // 코드 유효기간
+    public static final int CODE_DURATION_SEC = 300; // 코드 유효기간
     private static final int CODE_RECREATION_COOLDOWN = 30; // 코드 재발급 최소 대기시간
     private static final int MIN_TTL_FOR_CODE_RECREATION = CODE_DURATION_SEC - CODE_RECREATION_COOLDOWN;
     private static final int VERIFICATION_CODE_LENGTH = 6;
@@ -49,6 +47,10 @@ public class EmailService {
     }
 
     public LocalDateTime sendVerificationEmail(String email, VerificationPurpose purpose){
+
+        // 이메일 차단 여부 확인
+        checkIsEmailBlocked(email);
+
         // redis 키 생성
         RedisKey.Prefix prefix = redisKeyMapper.getVerificationCodePrefix(purpose);
         RedisKey key = new RedisKey(prefix, email);
@@ -61,18 +63,33 @@ public class EmailService {
         }
 
         // 인증 코드 생성
-        VerificationCode code = new VerificationCode(randomCodeGenerator.generateRandomCode(VERIFICATION_CODE_LENGTH));
+        String code = randomCodeGenerator.generateRandomCode(VERIFICATION_CODE_LENGTH);
 
         // 코드 만료시간 계산
         LocalDateTime expiryTime = getCodeExpiryTime();
 
         // redis에 코드 저장(5분 후 만료)
-        redisService.put(key, code, CODE_DURATION_SEC);
+        Optional<EmailVerificationStateDto> optionalState = redisService.get(key, EmailVerificationStateDto.class); // 기존 코드 있으면
+        int failedAttempts = optionalState.isPresent() ? optionalState.get().failedAttempts() : 0; // 실패 횟수 유지
+        EmailVerificationStateDto state = new EmailVerificationStateDto(code, failedAttempts);
+
+        redisService.put(key, state, CODE_DURATION_SEC);
 
         // 메일 발송
         sendEmail(email, code, expiryTime);
 
         return expiryTime;
+    }
+
+    // 이메일 인증 접근 차단 여부 확인
+    public void checkIsEmailBlocked(String email){
+        RedisKey blockKey = new RedisKey(RedisKey.Prefix.VERIFICATION_BLOCK, email);
+        Optional<Long> optionalTtl = redisService.getTtlOfSecOptional(blockKey);
+
+        if(optionalTtl.isPresent()){
+            int remainingTime = optionalTtl.get().intValue();
+            throw new BusinessLogicException(ExceptionType.verificationBlocked(remainingTime));
+        }
     }
 
     // 관리자 메일 가져오기
@@ -81,16 +98,14 @@ public class EmailService {
     }
 
     // 메일 발송
-    private void sendEmail(String email, VerificationCode code, LocalDateTime expiryTime){
+    private void sendEmail(String email, String code, LocalDateTime expiryTime){
         try{
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            String codeValue = code.getCode();
-
             helper.setTo(email);
             helper.setSubject("[핑계사전] 메일 인증 코드");
-            helper.setText(createMail(codeValue, expiryTime), true);
+            helper.setText(createMail(code, expiryTime), true);
             helper.setFrom(getAdminEmail());
 
             // 메일 전송
