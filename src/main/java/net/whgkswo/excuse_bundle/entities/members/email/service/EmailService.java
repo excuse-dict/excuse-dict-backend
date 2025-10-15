@@ -40,6 +40,9 @@ public class EmailService {
     // 이메일 유효성 검사
     public void validateEmail(String email){
 
+        // 이메일 차단 여부 확인
+        checkIsEmailBlocked(email);
+
         // 이메일 중복 검사
         if(memberRepository.existsByEmail(email)) {
             throw new BusinessLogicException(ExceptionType.DUPLICATED_EMAIL);
