@@ -19,6 +19,7 @@ public class Member extends TimeStampedEntity {
 
     private String nickname;
 
+    @Column(unique = true) // unique 넣으면 내부적으로 인덱싱하여 중복 검사 최적화됨
     private String email;
 
     private String password;

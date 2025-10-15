@@ -32,7 +32,6 @@ public class EmailService {
     private final MemberRepository memberRepository;
     private final RedisService redisService;
     private final RedisKeyMapper redisKeyMapper;
-    private final AuthService authService;
     private final RandomCodeGenerator randomCodeGenerator;
 
     private static final int CODE_DURATION_SEC = 300; // 코드 유효기간
@@ -42,10 +41,10 @@ public class EmailService {
 
     // 이메일 유효성 검사
     public void validateEmail(String email){
-        List<Member> members = memberRepository.findAll();
+
         // 이메일 중복 검사
-        for(Member member : members){
-            if(member.getEmail().equals(email)) throw new BusinessLogicException(ExceptionType.DUPLICATED_EMAIL);
+        if(memberRepository.existsByEmail(email)) {
+            throw new BusinessLogicException(ExceptionType.DUPLICATED_EMAIL);
         }
     }
 
