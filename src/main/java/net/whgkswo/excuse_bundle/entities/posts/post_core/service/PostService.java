@@ -35,6 +35,7 @@ import net.whgkswo.excuse_bundle.search.words.similarity.MorphemeBasedSimilarity
 import net.whgkswo.excuse_bundle.search.words.similarity.Similarity;
 import net.whgkswo.excuse_bundle.search.words.WordService;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -222,6 +223,24 @@ public class PostService {
         return tagsByPostId.entrySet().stream()
                 .map(entry -> new PostTagSearchDto(entry.getKey(), entry.getValue()))
                 .toList();
+    }
+
+    // 특정 게시물을 포함한 페이지 반환
+    public Page<PostResponseDto> getPageIncludesHighlightedPost(PostHighlightCommand command){
+
+        int pageNumber = postRepository.findPageNumberByPostId(command.postId(), PostSearchRequestDto.DEFAULT_SIZE);
+        Pageable pageable = PageRequest.of(pageNumber, PostSearchRequestDto.DEFAULT_SIZE);
+
+        return getPosts(
+                new GetPostsCommand(
+                        pageable,
+                        null,
+                        command.memberId(),
+                        null,
+                        Collections.emptyList(),
+                        Collections.emptyList()
+                )
+        );
     }
 
     private Optional<Post> findPost(long postId){

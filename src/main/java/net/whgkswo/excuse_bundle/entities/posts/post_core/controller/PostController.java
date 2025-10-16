@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -94,6 +95,21 @@ public class PostController {
 
         return ResponseEntity.ok(
                 Response.of(new PageSearchResponseDto<>(posts, pageInfo))
+        );
+    }
+
+    // 게시물 id를 받아서 해당 게시물을 포함한 페이지 반환
+    @GetMapping("/{postId}/page")
+    public ResponseEntity<?> handleGetHighlightPost(@PathVariable long postId,
+                                                    @Nullable Authentication authentication){
+
+        Long memberId = null;
+        if(authService.isValidUser(authentication)) memberId = authService.getMemberIdFromAuthentication(authentication);
+
+        Page<PostResponseDto> posts = postService.getPageIncludesHighlightedPost(new PostHighlightCommand(postId, memberId));
+
+        return ResponseEntity.ok(
+                Response.of(new PageSearchResponseDto<>(posts, PageInfo.from(posts)))
         );
     }
 

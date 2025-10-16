@@ -32,6 +32,15 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     )
     Page<Post> findPostForPage(Pageable pageable, @Param("status") Post.Status status);
 
+    // 특정 게시물이 몇 번 페이지에 위치하는지 (최신순 정렬 기준)
+    @Query(value = "SELECT FLOOR(cnt / :pageSize) FROM (" + // 더 최근 게시물이 41개고 페이지 사이즈가 10이면 페이지 번호는 4
+                    "  SELECT COUNT(*) AS cnt FROM post p " + // 카운트 세기:
+                    "  WHERE p.created_at > (SELECT created_at FROM post WHERE id = :postId) " + // 해당 게시물보다 최신인 게시물
+                    "  AND p.status = 'ACTIVE'" + // 중 삭제된 게시물 빼고
+                    ") AS cnt_sq",
+            nativeQuery = true)
+    Integer findPageNumberByPostId(@Param("postId") long postId, @Param("pageSize") int pageSize);
+
     // 순수천수 Top 게시물 조회 (DTO 데이터)
     @Query(value = "SELECT p.id, (p.upvote_count - p.downvote_count) AS net_likes " +
             "FROM post p " +

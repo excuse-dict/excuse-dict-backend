@@ -15,12 +15,15 @@ public record PostSearchRequestDto(
         @Nullable List<String> excludedTags
 ) {
 
+    public static int DEFAULT_PAGE = 0;
+    public static int DEFAULT_SIZE = 10;
+
     public int pageOrDefault() {
-        return page == null ? 0 : page;
+        return page == null ? DEFAULT_PAGE : page;
     }
 
     public int sizeOrDefault() {
-        return size == null ? 10 : size;
+        return size == null ? DEFAULT_SIZE : size;
     }
 
     public List<String> includedTagsOrEmpty() {
