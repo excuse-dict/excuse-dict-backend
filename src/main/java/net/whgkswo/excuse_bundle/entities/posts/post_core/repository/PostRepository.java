@@ -32,6 +32,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     )
     Page<Post> findPostForPage(Pageable pageable, @Param("status") Post.Status status);
 
+    // 특정 게시물이 원하는 상태로 존재하는지 확인
+    boolean existsByIdAndStatus(long postId, Post.Status status);
+
     // 특정 게시물이 몇 번 페이지에 위치하는지 (최신순 정렬 기준)
     @Query(value = "SELECT FLOOR(cnt / :pageSize) FROM (" + // 더 최근 게시물이 41개고 페이지 사이즈가 10이면 페이지 번호는 4
                     "  SELECT COUNT(*) AS cnt FROM post p " + // 카운트 세기:
