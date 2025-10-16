@@ -14,6 +14,7 @@ import net.whgkswo.excuse_bundle.general.responses.Response;
 import net.whgkswo.excuse_bundle.general.responses.dtos.PageSearchResponseDto;
 import net.whgkswo.excuse_bundle.general.responses.dtos.SimpleBooleanDto;
 import net.whgkswo.excuse_bundle.general.responses.page.PageInfo;
+import net.whgkswo.excuse_bundle.ranking.scheduler.RankingScheduler;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -116,7 +117,7 @@ public class PostController {
     // 명예의 전당 게시글 조회
     @GetMapping("/hall-of-fame")
     public ResponseEntity<?> handleGetHallOfFame(@RequestParam(defaultValue = "0") int page,
-                                                 @RequestParam(defaultValue = "10") int size,
+                                                 @RequestParam(defaultValue = RankingScheduler.HALL_OF_FAME_SIZE_STR) int size,
                                                  @Nullable Authentication authentication){
 
         Long memberId = null;
@@ -134,7 +135,7 @@ public class PostController {
     // 주간 Top 게시물 조회
     @GetMapping("/weekly-top")
     public ResponseEntity<?> handleGetWeeklyTop(@RequestParam(defaultValue = "0") int page,
-                                                @RequestParam(defaultValue = "10") int size,
+                                                @RequestParam(defaultValue = RankingScheduler.WEEKLY_TOP_SIZE_STR) int size,
                                                 @Nullable Authentication authentication){
         Long memberId = null;
         if(authService.isValidUser(authentication)) memberId = authService.getMemberIdFromAuthentication(authentication);

@@ -9,8 +9,6 @@ import net.whgkswo.excuse_bundle.entities.posts.hotscore.PostIdWithHotScoreDto;
 import net.whgkswo.excuse_bundle.ranking.dto.TopNetLikesPostDto;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,9 +23,11 @@ public class RankingScheduler {
     private final RedisService redisService;
 
     private static final int HALL_OF_FAME_SIZE = 100;
+    public static final String HALL_OF_FAME_SIZE_STR = "100";
     public static final RedisKey HALL_OF_FAME_REDISKEY = new RedisKey(RedisKey.Prefix.HALL_OF_FAME, "posts");
 
     public static final int WEEKLY_TOP_SIZE = 20;
+    public static final String WEEKLY_TOP_SIZE_STR = "20";
     public static final RedisKey WEEKLY_TOP_REDISKEY = new RedisKey(RedisKey.Prefix.WEEKLY_TOP, "posts");
 
     @EventListener(ApplicationReadyEvent.class)
