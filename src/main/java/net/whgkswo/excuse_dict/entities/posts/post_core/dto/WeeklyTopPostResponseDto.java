@@ -1,0 +1,41 @@
+package net.whgkswo.excuse_dict.entities.posts.post_core.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import net.whgkswo.excuse_dict.entities.excuses.dto.ExcuseResponseDto;
+import net.whgkswo.excuse_dict.entities.members.core.dto.MemberResponseDto;
+import net.whgkswo.excuse_dict.entities.vote.dto.PostVoteDto;
+import net.whgkswo.excuse_dict.general.responses.dtos.Dto;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+public class WeeklyTopPostResponseDto extends PostResponseDto implements Dto {
+
+    private int hotScore;
+
+    public WeeklyTopPostResponseDto(
+            long postId,
+            MemberResponseDto author,
+            ExcuseResponseDto excuse,
+            int upvoteCount,
+            int downvoteCount,
+            int commentCount,
+            LocalDateTime createdAt,
+            LocalDateTime modifiedAt,
+            PostVoteDto myVote,
+            int hotScore,
+            List<String> matchedWords,
+            List<String> matchedTags) {
+
+        super(postId, author, excuse, upvoteCount, downvoteCount, commentCount, createdAt, modifiedAt, myVote, matchedWords, matchedTags);
+
+        this.hotScore = hotScore;
+    }
+}

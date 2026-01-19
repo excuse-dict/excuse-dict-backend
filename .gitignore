@@ -42,4 +42,7 @@ application-secret.yml
 # docker-dompose - 로컬용
 docker-compose.yml
 
+# 로그파일
+/logs
+
 .env

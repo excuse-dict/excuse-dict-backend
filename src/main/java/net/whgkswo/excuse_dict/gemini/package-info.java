@@ -1,0 +1,1 @@
+package net.whgkswo.excuse_dict.gemini;

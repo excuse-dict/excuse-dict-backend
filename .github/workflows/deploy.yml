@@ -51,6 +51,8 @@ jobs:
           script: |
             cd /home/ubuntu/app
             
+            mkdir -p /home/ubuntu/app/logs
+            
             cat > Dockerfile << 'EOF'
             FROM openjdk:17
             WORKDIR /app
@@ -67,6 +69,7 @@ jobs:
             docker run -d --name excuse-dict \
               --network host \
               --restart unless-stopped \
+              -v /home/ubuntu/app/logs:/app/logs \
               -e MYSQL_PASSWORD="${MYSQL_PASSWORD}" \
               -e GMAIL_USERNAME="${GMAIL_USERNAME}" \
               -e GMAIL_PASSWORD="${GMAIL_PASSWORD}" \

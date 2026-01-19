@@ -55,9 +55,6 @@ spring:
   web:
     resources:
       add-mappings: true
-#logging:
-  #level:
-    #org.hibernate.SQL: DEBUG
 management:
   endpoints:
     web:
