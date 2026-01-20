@@ -139,12 +139,15 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return true;
-        /*String path = request.getRequestURI();
+
+        String path = request.getRequestURI();
         String method = request.getMethod();
 
         if("OPTIONS".equals(method)) return true;
 
-        return !path.startsWith("/api");*/
+        // 제미나이는 필터 적용하면 프론트가 응답을 못 받는 버그 있음;;
+        if(path.contains("generate")) return true;
+
+        return !path.startsWith("/api");
     }
 }
