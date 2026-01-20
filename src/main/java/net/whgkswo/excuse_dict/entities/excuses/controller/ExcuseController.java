@@ -38,10 +38,7 @@ public class ExcuseController {
                                        Authentication authentication){
 
         // 비동기 요청시 스레드 간 Security Context가 유실되는 문제가 발생하여 동기로 전환
-        System.out.println("=== Controller Start ===");
         GenerateExcuseResponseDto result = excuseService.generateExcuseInSynchronous(dto.situation(), dto.recaptchaToken());
-        System.out.println("=== Controller Result: " + result);
-        System.out.println("=== Controller End ===");
         return result;
     }
 }

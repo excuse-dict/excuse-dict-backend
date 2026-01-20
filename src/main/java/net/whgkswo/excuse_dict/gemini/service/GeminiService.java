@@ -31,8 +31,6 @@ public class GeminiService {
         // API URL
         String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + apiKey;
 
-        log.info("Gemini API request: {}", requestBody);
-
         // POST 요청 전송
         return webClient
                 .post()
@@ -44,7 +42,6 @@ public class GeminiService {
                 .map(this::extractResponse)
                 .map(jsonHelper::clearJson)
                 .flatMap(text -> jsonHelper.deserializeMono(text, responseType))
-                .doOnSuccess(response -> log.info("Gemini API response: {}", response))
                 .onErrorResume(e -> {
                     log.error("Gemini API call failed, using fallback. Error type: {}, Message: {}",
                             e.getClass().getSimpleName(), e.getMessage(), e);
