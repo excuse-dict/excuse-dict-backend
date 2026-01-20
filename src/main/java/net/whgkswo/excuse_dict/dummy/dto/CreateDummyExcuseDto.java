@@ -21,4 +21,9 @@ public class CreateDummyExcuseDto extends GeminiFallbackProvider<CreateDummyExcu
     public CreateDummyExcuseDto getFallback() {
         return FALLBACK;
     }
+
+    @Override
+    public String toString() {
+        return excuses.toString();
+    }
 }
