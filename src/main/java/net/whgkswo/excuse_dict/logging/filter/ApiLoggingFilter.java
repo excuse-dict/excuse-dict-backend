@@ -144,9 +144,6 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
 
         if("OPTIONS".equals(method)) return true;
 
-        return path.startsWith("/health") ||
-                path.startsWith("/actuator") ||
-                path.startsWith("/favicon.ico") ||
-                path.startsWith("/static");
+        return !path.startsWith("/api");
     }
 }
