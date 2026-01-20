@@ -29,6 +29,11 @@
         </sift>
     </appender>
 
+    <logger name="net.whgkswo.excuse_dict.logging.filter.ApiLoggingFilter" level="INFO" additivity="false">
+        <appender-ref ref="SIFT"/>
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
     <!-- 스케줄러 로깅 -->
     <appender name="SCHEDULER_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}/scheduler/scheduler.log</file>
@@ -42,6 +47,30 @@
         </rollingPolicy>
     </appender>
 
+    <logger name="net.whgkswo.excuse_dict.dummy.scheduler" level="INFO" additivity="false">
+        <appender-ref ref="SCHEDULER_FILE"/>
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <!-- Gemini 로깅 -->
+    <appender name="GEMINI_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/gemini/gemini.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} - %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/gemini/%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>10GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <logger name="net.whgkswo.excuse_dict.gemini.service.GeminiService" level="INFO" additivity="false">
+        <appender-ref ref="GEMINI_FILE"/>
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <!-- 기타 로깅 -->
     <appender name="APP_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}/application.log</file>
         <encoder>
@@ -54,18 +83,6 @@
             <totalSizeCap>10GB</totalSizeCap>
         </rollingPolicy>
     </appender>
-
-    <!-- API 로그 -->
-    <logger name="net.whgkswo.excuse_dict.logging.filter.ApiLoggingFilter" level="INFO" additivity="false">
-        <appender-ref ref="SIFT"/>
-        <appender-ref ref="CONSOLE"/>
-    </logger>
-
-    <!-- 스케줄러 로그 -->
-    <logger name="net.whgkswo.excuse_dict.dummy.scheduler" level="INFO" additivity="false">
-        <appender-ref ref="SCHEDULER_FILE"/>
-        <appender-ref ref="CONSOLE"/>
-    </logger>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>

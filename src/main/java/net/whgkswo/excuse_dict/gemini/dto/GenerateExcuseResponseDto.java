@@ -20,4 +20,9 @@ public class GenerateExcuseResponseDto extends GeminiFallbackProvider<GenerateEx
     public GenerateExcuseResponseDto getFallback() {
         return FALLBACK;
     }
+
+    @Override
+    public String toString() {
+        return data.toString();
+    }
 }
