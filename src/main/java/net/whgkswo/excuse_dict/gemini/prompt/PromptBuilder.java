@@ -67,6 +67,7 @@ public class PromptBuilder {
     }
 
     public String buildPostPrompt(int amount){
+
         return String.format("""
                 당신은 창의적이고 재치있는 핑계 생성 전문가입니다.
                 

@@ -1,6 +1,7 @@
 package net.whgkswo.excuse_dict.gemini.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.whgkswo.excuse_dict.gemini.fallback.GeminiFallbackProvider;
 import net.whgkswo.excuse_dict.lib.json.JsonHelper;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +12,7 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GeminiService {
@@ -41,6 +43,8 @@ public class GeminiService {
                 .map(jsonHelper::clearJson)
                 .flatMap(text -> jsonHelper.deserializeMono(text, responseType))
                 .onErrorResume(e -> {
+                    log.error("Gemini API call failed, using fallback. Error type: {}, Message: {}",
+                            e.getClass().getSimpleName(), e.getMessage(), e);
                     try {
                         T fallback = responseType.getDeclaredConstructor().newInstance().getFallback();
                         return Mono.just(fallback);
