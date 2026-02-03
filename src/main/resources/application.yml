@@ -16,6 +16,11 @@ spring:
     name: excuse_dict
   profiles:
     include: secret # appllcation-secret.yml 임포팅
+  data:
+    redis:
+      host: 0.0.0.0
+      port: 6379
+      database: 0
   datasource:
     url: jdbc:mysql://${app.server.host}:13306/${spring.application.name}
     driver-class-name: com.mysql.cj.jdbc.Driver

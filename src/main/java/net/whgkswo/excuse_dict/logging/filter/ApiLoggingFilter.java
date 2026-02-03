@@ -145,7 +145,9 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
 
         if("OPTIONS".equals(method)) return true;
 
+        // TODO: 핑계 생성기 로깅 고치기
         // 제미나이는 필터 적용하면 프론트가 응답을 못 받는 버그 있음;;
+        // 로컬에선 되는데 배포환경에서만 안됨 (NginX 또는 Docker 문제?)
         if(path.contains("generate")) return true;
 
         return !path.startsWith("/api");

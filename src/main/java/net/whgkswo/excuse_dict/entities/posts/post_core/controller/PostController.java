@@ -26,6 +26,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.List;
 
 @RestController
 @RequestMapping(PostController.BASE_URL)
@@ -185,5 +186,15 @@ public class PostController {
         postService.deletePost(new DeleteCommand(postId, memberId));
 
         return ResponseEntity.noContent().build();
+    }
+
+    // 인기 검색어 조회
+    @GetMapping("/hot-keywords")
+    public ResponseEntity<?> handleGetHotKeywords(){
+        List<HotSearchKeywordDto> hotKeywords = postService.getHotSearchKeywords();
+
+        return ResponseEntity.ok(
+                Response.ofList(hotKeywords)
+        );
     }
 }

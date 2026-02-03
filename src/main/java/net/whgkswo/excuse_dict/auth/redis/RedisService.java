@@ -7,13 +7,13 @@ import net.whgkswo.excuse_dict.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_dict.exceptions.ExceptionType;
 import net.whgkswo.excuse_dict.lib.json.JsonHelper;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -143,5 +143,47 @@ public class RedisService {
         } catch (Exception e) {
             throw new BusinessLogicException(ExceptionType.REDIS_CONNECTION_LOST);
         }
+    }
+
+    // 저장 (Sorted Set)
+    public void putSortedSet(RedisKey key, double score, String value, int durationOfDay){
+        redisTemplate.opsForZSet().incrementScore(key.toString(), value, score);
+
+        redisTemplate.expire(key.toString(), durationOfDay, TimeUnit.DAYS);
+    }
+
+    // 일부 조회 (Sorted Set, 데이터만)
+    public Set<String> getSortedSetKey(RedisKey key, int amount, boolean isAscending){
+        return isAscending ?
+                redisTemplate.opsForZSet().range(key.toString(), 0, amount - 1)
+                : redisTemplate.opsForZSet().reverseRange(key.toString(), 0, amount - 1);
+    }
+
+    // 전부 조회 (Sorted Set, 데이터만)
+    public Set<String> getAllOfSortedSetKeys(RedisKey key, boolean isAscending){
+        return getSortedSetKey(key, -1, isAscending);
+    }
+
+    // 일부 조회 (Sorted Set, 키: 데이터, 값: 스코어)
+    public Map<String, Double> getSortedSetEntry(RedisKey key, int amount, boolean isAscending){
+
+        Set<ZSetOperations.TypedTuple<String>> tuples = isAscending ?
+                redisTemplate.opsForZSet().rangeWithScores(key.toString(), 0, amount - 1)
+                : redisTemplate.opsForZSet().reverseRangeWithScores(key.toString(), 0, amount - 1);
+
+        if(tuples == null) return Collections.emptyMap();
+
+        Map<String, Double> result = new LinkedHashMap<>();  // 순서 유지
+
+        for(ZSetOperations.TypedTuple<String> tuple : tuples){  // 순서 보장됨
+            result.put(tuple.getValue(), tuple.getScore());
+        }
+
+        return result;
+    }
+
+    // 전부 조회 (Sorted Set, 키: 데이터, 값: 스코어)
+    public Map<String, Double> getAllOfSortedSetEntries(RedisKey key, boolean isAscending){
+        return getSortedSetEntry(key, -1, isAscending);
     }
 }

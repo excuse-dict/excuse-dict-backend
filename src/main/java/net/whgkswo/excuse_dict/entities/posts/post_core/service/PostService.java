@@ -1,6 +1,8 @@
 package net.whgkswo.excuse_dict.entities.posts.post_core.service;
 
 import lombok.RequiredArgsConstructor;
+import net.whgkswo.excuse_dict.auth.redis.RedisKey;
+import net.whgkswo.excuse_dict.auth.redis.RedisKeyMapper;
 import net.whgkswo.excuse_dict.auth.redis.RedisService;
 import net.whgkswo.excuse_dict.entities.excuses.Excuse;
 import net.whgkswo.excuse_dict.entities.excuses.dto.UpdateExcuseCommand;
@@ -39,6 +41,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -64,6 +67,7 @@ public class PostService {
     private final ContainsSimilarityCalculator containsSimilarityCalculator;
 
     public static final double MIN_SIMILARITY = 0.5;
+    private static final int SEARCH_KEYWORD_EXPIRE_DAYS = 7;
 
     // 게시글 등록
     @Transactional
@@ -92,6 +96,9 @@ public class PostService {
         if(!hasTagFilter && !hasSearchFilter){
             return getPostsWithoutFiltering(command);
         }
+
+        // 검색어 카운트 증가
+        if(hasSearchFilter) addSearchCount(command.searchInput());
 
         // 있으면 메모리에 올려놓고 서비스에서 필터링
         return getPostsWithFiltering(command);
@@ -222,6 +229,31 @@ public class PostService {
         return tagsByPostId.entrySet().stream()
                 .map(entry -> new PostTagSearchDto(entry.getKey(), entry.getValue()))
                 .toList();
+    }
+
+    // 게시물 검색어 카운트 증가
+    public void addSearchCount(String searchInput){
+
+        String todayStr = LocalDate.now().toString();
+        RedisKey key = new RedisKey(RedisKey.Prefix.SEARCH, todayStr);
+
+        redisService.putSortedSet(key, 1, searchInput, SEARCH_KEYWORD_EXPIRE_DAYS);
+    }
+
+    // 인기 검색어 조회
+    public List<HotSearchKeywordDto> getHotSearchKeywords(){
+
+        String todayStr = LocalDate.now().toString();
+        RedisKey key = new RedisKey(RedisKey.Prefix.SEARCH, todayStr);
+
+        // 특정 날짜 검색어 기록
+        // TODO: 일단 오늘자 기록만 조회, n일 전 ~ 어제자까지의 누적지는 별도로 캐싱
+        List<HotSearchKeywordDto> hotKeywords = redisService.getAllOfSortedSetEntries(key, false)
+                .entrySet().stream()
+                .map(e -> new HotSearchKeywordDto(e.getKey(), e.getValue().intValue()))
+                .toList();
+
+        return hotKeywords;
     }
 
     // 특정 게시물을 포함한 페이지 반환
