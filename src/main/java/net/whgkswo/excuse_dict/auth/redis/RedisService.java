@@ -184,6 +184,6 @@ public class RedisService {
 
     // 전부 조회 (Sorted Set, 키: 데이터, 값: 스코어)
     public Map<String, Double> getAllOfSortedSetEntries(RedisKey key, boolean isAscending){
-        return getSortedSetEntry(key, -1, isAscending);
+        return getSortedSetEntry(key, 0, isAscending);
     }
 }
