@@ -8,6 +8,7 @@ import net.whgkswo.excuse_dict.entities.posts.post_core.dto.*;
 import net.whgkswo.excuse_dict.entities.posts.post_core.entity.Post;
 import net.whgkswo.excuse_dict.entities.posts.post_core.service.GetPostsCommand;
 import net.whgkswo.excuse_dict.entities.posts.post_core.service.PostService;
+import net.whgkswo.excuse_dict.entities.posts.search.dto.PostSearchRequestDto;
 import net.whgkswo.excuse_dict.entities.vote.dto.VoteRequestDto;
 import net.whgkswo.excuse_dict.general.dto.DeleteCommand;
 import net.whgkswo.excuse_dict.general.responses.Response;

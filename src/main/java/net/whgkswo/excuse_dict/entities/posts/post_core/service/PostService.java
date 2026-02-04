@@ -2,7 +2,6 @@ package net.whgkswo.excuse_dict.entities.posts.post_core.service;
 
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_dict.auth.redis.RedisKey;
-import net.whgkswo.excuse_dict.auth.redis.RedisKeyMapper;
 import net.whgkswo.excuse_dict.auth.redis.RedisService;
 import net.whgkswo.excuse_dict.entities.excuses.Excuse;
 import net.whgkswo.excuse_dict.entities.excuses.dto.UpdateExcuseCommand;
@@ -16,6 +15,8 @@ import net.whgkswo.excuse_dict.entities.posts.post_core.entity.Post;
 import net.whgkswo.excuse_dict.entities.posts.post_core.mapper.PostMapper;
 import net.whgkswo.excuse_dict.entities.posts.post_core.repository.PostRepository;
 import net.whgkswo.excuse_dict.entities.posts.post_core.entity.PostVote;
+import net.whgkswo.excuse_dict.entities.posts.search.dto.PostSearchDto;
+import net.whgkswo.excuse_dict.entities.posts.search.dto.PostSearchRequestDto;
 import net.whgkswo.excuse_dict.ranking.dto.RecentHotPostDto;
 import net.whgkswo.excuse_dict.ranking.dto.TopNetLikesPostDto;
 import net.whgkswo.excuse_dict.search.SearchResult;
@@ -67,7 +68,9 @@ public class PostService {
     private final ContainsSimilarityCalculator containsSimilarityCalculator;
 
     public static final double MIN_SIMILARITY = 0.5;
-    private static final int SEARCH_KEYWORD_EXPIRE_DAYS = 7;
+    public static final int SEARCH_KEYWORD_EXPIRE_DAYS = 7;
+    public static final int SEARCH_KEYWORD_MAX_SIZE = 10;
+    public static final String SEARCHED_KEYWORDS_LAST_DAYS_KEY = "SEARCHED_KEYWORDS_LAST_DAYS";
 
     // 게시글 등록
     @Transactional
@@ -237,23 +240,33 @@ public class PostService {
         String todayStr = LocalDate.now().toString();
         RedisKey key = new RedisKey(RedisKey.Prefix.SEARCH, todayStr);
 
-        redisService.putSortedSet(key, 1, searchInput, SEARCH_KEYWORD_EXPIRE_DAYS);
+        redisService.putSortedSet(key, searchInput, 1, SEARCH_KEYWORD_EXPIRE_DAYS);
     }
 
     // 인기 검색어 조회
     public List<HotSearchKeywordDto> getHotSearchKeywords(){
 
+        // 오늘자 기록
         String todayStr = LocalDate.now().toString();
         RedisKey key = new RedisKey(RedisKey.Prefix.SEARCH, todayStr);
 
-        // 특정 날짜 검색어 기록
-        // TODO: 일단 오늘자 기록만 조회, n일 전 ~ 어제자까지의 누적지는 별도로 캐싱
-        List<HotSearchKeywordDto> hotKeywords = redisService.getAllOfSortedSetEntries(key, false)
-                .entrySet().stream()
-                .map(e -> new HotSearchKeywordDto(e.getKey(), e.getValue().intValue()))
-                .toList();
+        Map<String, Double> todayKeywords = redisService.getAllOfSortedSetEntries(key, false);
 
-        return hotKeywords;
+        // 지난 일주일치(오늘 제외) 기록
+        RedisKey lastKey = new RedisKey(RedisKey.Prefix.SEARCH, PostService.SEARCHED_KEYWORDS_LAST_DAYS_KEY);
+        Map<String, Double> lastKeywords = redisService.getAllOfSortedSetEntries(lastKey, false);
+
+        // 합산
+        Map<String, Double> merged = new HashMap<>(lastKeywords);
+        todayKeywords.forEach((keyword, count) ->
+                merged.merge(keyword, count, Double::sum)
+        );
+
+        return merged.entrySet().stream()
+                .sorted(Map.Entry.<String, Double>comparingByValue().reversed())
+                .map(e -> new HotSearchKeywordDto(e.getKey(), e.getValue().intValue()))
+                .limit(SEARCH_KEYWORD_MAX_SIZE)
+                .toList();
     }
 
     // 특정 게시물을 포함한 페이지 반환

@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_dict.entities.posts.post_core.dto;
+package net.whgkswo.excuse_dict.entities.posts.search.dto;
 
 import jakarta.annotation.Nullable;
 import net.whgkswo.excuse_dict.search.SearchType;

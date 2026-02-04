@@ -1,7 +1,7 @@
 package net.whgkswo.excuse_dict.entities.posts.post_core.repository;
 
 import net.whgkswo.excuse_dict.entities.posts.comments.entity.Comment;
-import net.whgkswo.excuse_dict.entities.posts.post_core.dto.PostSearchDto;
+import net.whgkswo.excuse_dict.entities.posts.search.dto.PostSearchDto;
 import net.whgkswo.excuse_dict.entities.posts.post_core.entity.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

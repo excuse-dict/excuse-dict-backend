@@ -146,10 +146,11 @@ public class RedisService {
     }
 
     // 저장 (Sorted Set)
-    public void putSortedSet(RedisKey key, double score, String value, int durationOfDay){
-        redisTemplate.opsForZSet().incrementScore(key.toString(), value, score);
+    // key: set 식별자, value: set의 멤버, score: 멤버의 값
+    public void putSortedSet(RedisKey setKey, String memberKey, double score, int durationOfDay){
+        redisTemplate.opsForZSet().incrementScore(setKey.toString(), memberKey, score);
 
-        redisTemplate.expire(key.toString(), durationOfDay, TimeUnit.DAYS);
+        redisTemplate.expire(setKey.toString(), durationOfDay, TimeUnit.DAYS);
     }
 
     // 일부 조회 (Sorted Set, 데이터만)
