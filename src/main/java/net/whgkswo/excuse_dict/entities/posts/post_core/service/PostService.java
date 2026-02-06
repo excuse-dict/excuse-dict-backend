@@ -17,6 +17,8 @@ import net.whgkswo.excuse_dict.entities.posts.post_core.repository.PostRepositor
 import net.whgkswo.excuse_dict.entities.posts.post_core.entity.PostVote;
 import net.whgkswo.excuse_dict.entities.posts.search.dto.PostSearchDto;
 import net.whgkswo.excuse_dict.entities.posts.search.dto.PostSearchRequestDto;
+import net.whgkswo.excuse_dict.komoran.KomoranService;
+import net.whgkswo.excuse_dict.random.RandomHelper;
 import net.whgkswo.excuse_dict.ranking.dto.RecentHotPostDto;
 import net.whgkswo.excuse_dict.ranking.dto.TopNetLikesPostDto;
 import net.whgkswo.excuse_dict.search.SearchResult;
@@ -63,6 +65,7 @@ public class PostService {
     private final PageHelper pageHelper;
     private final HotScoreService hotScoreService;
     private final CommentRepository commentRepository;
+    private final KomoranService komoranService;
 
     private final MorphemeBasedSimilarityCalculator morphemeBasedSimilarityCalculator;
     private final ContainsSimilarityCalculator containsSimilarityCalculator;
@@ -70,7 +73,7 @@ public class PostService {
     public static final double MIN_SIMILARITY = 0.5;
     public static final int SEARCH_KEYWORD_EXPIRE_DAYS = 7;
     public static final int SEARCH_KEYWORD_MAX_SIZE = 10;
-    public static final String SEARCHED_KEYWORDS_LAST_DAYS_KEY = "SEARCHED_KEYWORDS_LAST_DAYS";
+    public static final String RECENT_SEARCHED_KEYWORDS_KEY = "SEARCHED_KEYWORDS_LAST_DAYS";
 
     // 게시글 등록
     @Transactional
@@ -249,11 +252,10 @@ public class PostService {
         // 오늘자 기록
         String todayStr = LocalDate.now().toString();
         RedisKey key = new RedisKey(RedisKey.Prefix.SEARCH, todayStr);
-
         Map<String, Double> todayKeywords = redisService.getAllOfSortedSetEntries(key, false);
 
         // 지난 일주일치(오늘 제외) 기록
-        RedisKey lastKey = new RedisKey(RedisKey.Prefix.SEARCH, PostService.SEARCHED_KEYWORDS_LAST_DAYS_KEY);
+        RedisKey lastKey = new RedisKey(RedisKey.Prefix.SEARCH, PostService.RECENT_SEARCHED_KEYWORDS_KEY);
         Map<String, Double> lastKeywords = redisService.getAllOfSortedSetEntries(lastKey, false);
 
         // 합산
@@ -262,7 +264,31 @@ public class PostService {
                 merged.merge(keyword, count, Double::sum)
         );
 
-        return merged.entrySet().stream()
+        // 없으면 더미 생성
+        Map<String, Double> keywords = merged.isEmpty() ? generateDummyKeywords() : merged;
+
+        return toHotSearchKeywordDtos(keywords);
+    }
+
+    // 랜덤 게시물 조회 후 검색어 추출
+    private Map<String, Double> generateDummyKeywords() {
+        List<Long> postIds = getRandomPostIds(5);
+        Map<String, Double> randomKeywords = new HashMap<>();
+        Random random = new Random();
+
+        for(Long postId : postIds){
+            String content = getPost(postId).getExcuse().getExcuse();
+            List<String> morphemes = komoranService.getMeaningfulMorphemes(content);
+            String keyword = morphemes.get(random.nextInt(morphemes.size()));
+            randomKeywords.put(keyword,
+                    (double) RandomHelper.getWeightedRandomValue(Map.of(1, 2, 2, 1, 3, 1)
+                    ));
+        }
+        return randomKeywords;
+    }
+
+    private List<HotSearchKeywordDto> toHotSearchKeywordDtos(Map<String, Double> keywords) {
+        return keywords.entrySet().stream()
                 .sorted(Map.Entry.<String, Double>comparingByValue().reversed())
                 .map(e -> new HotSearchKeywordDto(e.getKey(), e.getValue().intValue()))
                 .limit(SEARCH_KEYWORD_MAX_SIZE)

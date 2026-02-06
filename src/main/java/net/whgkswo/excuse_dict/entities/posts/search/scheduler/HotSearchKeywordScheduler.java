@@ -3,7 +3,6 @@ package net.whgkswo.excuse_dict.entities.posts.search.scheduler;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_dict.auth.redis.RedisKey;
 import net.whgkswo.excuse_dict.auth.redis.RedisService;
-import net.whgkswo.excuse_dict.entities.posts.post_core.dto.HotSearchKeywordDto;
 import net.whgkswo.excuse_dict.entities.posts.post_core.service.PostService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -37,7 +36,7 @@ public class HotSearchKeywordScheduler {
                     -> result.merge(keyword, count.intValue(), Integer::sum)); // 합산
         }
 
-        RedisKey key = new RedisKey(RedisKey.Prefix.SEARCH, PostService.SEARCHED_KEYWORDS_LAST_DAYS_KEY);
+        RedisKey key = new RedisKey(RedisKey.Prefix.SEARCH, PostService.RECENT_SEARCHED_KEYWORDS_KEY);
 
         // 기존 데이터 삭제하고 덮어씌우기
         redisService.remove(key);
