@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -147,44 +146,59 @@ public class RedisService {
 
     // 저장 (Sorted Set)
     // key: set 식별자, value: set의 멤버, score: 멤버의 값
-    public void putSortedSet(RedisKey setKey, String memberKey, double score, int durationOfDay){
+    public void putMemberToSortedSet(RedisKey setKey, String memberKey, double score, int durationOfDay){
         redisTemplate.opsForZSet().incrementScore(setKey.toString(), memberKey, score);
 
         redisTemplate.expire(setKey.toString(), durationOfDay, TimeUnit.DAYS);
     }
 
-    // 일부 조회 (Sorted Set, 데이터만)
-    public Set<String> getSortedSetKey(RedisKey key, int amount, boolean isAscending){
-        return isAscending ?
-                redisTemplate.opsForZSet().range(key.toString(), 0, amount - 1)
-                : redisTemplate.opsForZSet().reverseRange(key.toString(), 0, amount - 1);
-    }
-
-    // 전부 조회 (Sorted Set, 데이터만)
-    public Set<String> getAllOfSortedSetKeys(RedisKey key, boolean isAscending){
-        return getSortedSetKey(key, -1, isAscending);
-    }
-
     // 일부 조회 (Sorted Set, 키: 데이터, 값: 스코어)
-    public Map<String, Double> getSortedSetEntry(RedisKey key, int amount, boolean isAscending){
+    public Set<ZSetOperations.TypedTuple<String>> getSortedSetEntry(RedisKey key, int amount, boolean isAscending){
 
-        Set<ZSetOperations.TypedTuple<String>> tuples = isAscending ?
+         return isAscending ?
                 redisTemplate.opsForZSet().rangeWithScores(key.toString(), 0, amount - 1)
                 : redisTemplate.opsForZSet().reverseRangeWithScores(key.toString(), 0, amount - 1);
+    }
 
-        if(tuples == null) return Collections.emptyMap();
+    // 전부 조회 (Sorted Set, 키: 데이터, 값: 스코어)
+    public Set<ZSetOperations.TypedTuple<String>> getAllOfSortedSetEntries(RedisKey key, boolean isAscending){
+        return getSortedSetEntry(key, 0, isAscending);
+    }
+
+    public Map<String, Double> getSortedSetEntriesAsMap(RedisKey key, int amount, boolean isAscending){
+        return toMap(getSortedSetEntry(key, amount, isAscending));
+    }
+
+    public Map<String, Double> getAllOfSortedSetEntriesAsMap(RedisKey key, boolean isAscending){
+        return toMap(getAllOfSortedSetEntries(key, isAscending));
+    }
+
+    private Map<String, Double> toMap(Set<ZSetOperations.TypedTuple<String>> sortedSet){
+        if(sortedSet == null) return Collections.emptyMap();
 
         Map<String, Double> result = new LinkedHashMap<>();  // 순서 유지
 
-        for(ZSetOperations.TypedTuple<String> tuple : tuples){  // 순서 보장됨
+        for(ZSetOperations.TypedTuple<String> tuple : sortedSet){  // 순서 보장됨
             result.put(tuple.getValue(), tuple.getScore());
         }
 
         return result;
     }
 
-    // 전부 조회 (Sorted Set, 키: 데이터, 값: 스코어)
-    public Map<String, Double> getAllOfSortedSetEntries(RedisKey key, boolean isAscending){
-        return getSortedSetEntry(key, 0, isAscending);
+    // 다수의 Sorted Set을 합쳐서 상위 n개 반환
+    public Set<ZSetOperations.TypedTuple<String>> unionSortedSets(
+            RedisKey destKey,
+            List<RedisKey> sourceKeys,
+            int returnAmount,
+            int ttlOfDays
+    ) {
+        String[] keys = sourceKeys.stream()
+                .map(RedisKey::toString)
+                .toArray(String[]::new);
+
+        redisTemplate.opsForZSet().unionAndStore(keys[0], Arrays.asList(keys).subList(1, keys.length), destKey.toString());
+        redisTemplate.expire(destKey.toString(), ttlOfDays, TimeUnit.DAYS);
+
+        return redisTemplate.opsForZSet().reverseRangeWithScores(destKey.toString(), 0, returnAmount - 1);
     }
 }

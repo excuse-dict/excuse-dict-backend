@@ -1,4 +1,4 @@
-package net.whgkswo.excuse_dict.entities.posts.search.dto;
+package net.whgkswo.excuse_dict.search.dto;
 
 import net.whgkswo.excuse_dict.search.Searchable;
 
@@ -13,5 +13,5 @@ public record PostSearchDto(
 ) implements Searchable {
 
     public static final String PACKAGE_NAME =
-            "net.whgkswo.excuse_dict.entities.posts.search.dto.PostSearchDto";
+            "net.whgkswo.excuse_dict.search.dto.PostSearchDto";
 }

@@ -15,10 +15,10 @@ import net.whgkswo.excuse_dict.entities.posts.post_core.entity.Post;
 import net.whgkswo.excuse_dict.entities.posts.post_core.mapper.PostMapper;
 import net.whgkswo.excuse_dict.entities.posts.post_core.repository.PostRepository;
 import net.whgkswo.excuse_dict.entities.posts.post_core.entity.PostVote;
-import net.whgkswo.excuse_dict.entities.posts.search.dto.PostSearchDto;
-import net.whgkswo.excuse_dict.entities.posts.search.dto.PostSearchRequestDto;
+import net.whgkswo.excuse_dict.search.dto.HotSearchKeywordDto;
+import net.whgkswo.excuse_dict.search.dto.PostSearchDto;
+import net.whgkswo.excuse_dict.search.dto.PostSearchRequestDto;
 import net.whgkswo.excuse_dict.komoran.KomoranService;
-import net.whgkswo.excuse_dict.random.RandomHelper;
 import net.whgkswo.excuse_dict.ranking.dto.RecentHotPostDto;
 import net.whgkswo.excuse_dict.ranking.dto.TopNetLikesPostDto;
 import net.whgkswo.excuse_dict.search.SearchResult;
@@ -35,6 +35,7 @@ import net.whgkswo.excuse_dict.general.dto.DeleteCommand;
 import net.whgkswo.excuse_dict.pager.PageHelper;
 import net.whgkswo.excuse_dict.ranking.scheduler.RankingScheduler;
 import net.whgkswo.excuse_dict.ranking.service.RankingService;
+import net.whgkswo.excuse_dict.search.dto.PostTagSearchDto;
 import net.whgkswo.excuse_dict.search.words.similarity.ContainsSimilarityCalculator;
 import net.whgkswo.excuse_dict.search.words.similarity.MorphemeBasedSimilarityCalculator;
 import net.whgkswo.excuse_dict.search.words.similarity.Similarity;
@@ -47,6 +48,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
@@ -65,7 +67,6 @@ public class PostService {
     private final PageHelper pageHelper;
     private final HotScoreService hotScoreService;
     private final CommentRepository commentRepository;
-    private final KomoranService komoranService;
 
     private final MorphemeBasedSimilarityCalculator morphemeBasedSimilarityCalculator;
     private final ContainsSimilarityCalculator containsSimilarityCalculator;
@@ -243,7 +244,7 @@ public class PostService {
         String todayStr = LocalDate.now().toString();
         RedisKey key = new RedisKey(RedisKey.Prefix.SEARCH, todayStr);
 
-        redisService.putSortedSet(key, searchInput, 1, SEARCH_KEYWORD_EXPIRE_DAYS);
+        redisService.putMemberToSortedSet(key, searchInput, 1, SEARCH_KEYWORD_EXPIRE_DAYS);
     }
 
     // 인기 검색어 조회
@@ -252,11 +253,11 @@ public class PostService {
         // 오늘자 기록
         String todayStr = LocalDate.now().toString();
         RedisKey key = new RedisKey(RedisKey.Prefix.SEARCH, todayStr);
-        Map<String, Double> todayKeywords = redisService.getAllOfSortedSetEntries(key, false);
+        Map<String, Double> todayKeywords = redisService.getAllOfSortedSetEntriesAsMap(key, false);
 
         // 지난 일주일치(오늘 제외) 기록
         RedisKey lastKey = new RedisKey(RedisKey.Prefix.SEARCH, PostService.RECENT_SEARCHED_KEYWORDS_KEY);
-        Map<String, Double> lastKeywords = redisService.getAllOfSortedSetEntries(lastKey, false);
+        Map<String, Double> lastKeywords = redisService.getAllOfSortedSetEntriesAsMap(lastKey, false);
 
         // 합산
         Map<String, Double> merged = new HashMap<>(lastKeywords);
@@ -264,33 +265,23 @@ public class PostService {
                 merged.merge(keyword, count, Double::sum)
         );
 
-        // 없으면 더미 생성
-        Map<String, Double> keywords = merged.isEmpty() ? generateDummyKeywords() : merged;
-
-        return toHotSearchKeywordDtos(keywords);
-    }
-
-    // 랜덤 게시물 조회 후 검색어 추출
-    private Map<String, Double> generateDummyKeywords() {
-        List<Long> postIds = getRandomPostIds(5);
-        Map<String, Double> randomKeywords = new HashMap<>();
-        Random random = new Random();
-
-        for(Long postId : postIds){
-            String content = getPost(postId).getExcuse().getExcuse();
-            List<String> morphemes = komoranService.getMeaningfulMorphemes(content);
-            String keyword = morphemes.get(random.nextInt(morphemes.size()));
-            randomKeywords.put(keyword,
-                    (double) RandomHelper.getWeightedRandomValue(Map.of(1, 2, 2, 1, 3, 1)
-                    ));
+        // 어제까지 순위
+        Map<String, Integer> lastRanks = new HashMap<>();
+        int rank = 1;
+        for (String keyword : lastKeywords.keySet()) {
+            lastRanks.put(keyword, rank++);
         }
-        return randomKeywords;
-    }
 
-    private List<HotSearchKeywordDto> toHotSearchKeywordDtos(Map<String, Double> keywords) {
-        return keywords.entrySet().stream()
+        // 오늘 순위와 비교
+        AtomicInteger currentRank = new AtomicInteger(1);
+        return merged.entrySet().stream()
                 .sorted(Map.Entry.<String, Double>comparingByValue().reversed())
-                .map(e -> new HotSearchKeywordDto(e.getKey(), e.getValue().intValue()))
+                .map(e -> {
+                    Integer lastRank = lastRanks.get(e.getKey());
+                    Integer rankChange = lastRank == null? null : lastRank - currentRank.getAndIncrement();
+
+                    return new HotSearchKeywordDto(e.getKey(), e.getValue().intValue(), rankChange);
+                })
                 .limit(SEARCH_KEYWORD_MAX_SIZE)
                 .toList();
     }
