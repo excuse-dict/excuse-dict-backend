@@ -14,12 +14,14 @@ import net.whgkswo.excuse_dict.exceptions.ExceptionType;
 import net.whgkswo.excuse_dict.gemini.dto.GenerateExcuseResponseDto;
 import net.whgkswo.excuse_dict.gemini.prompt.PromptBuilder;
 import net.whgkswo.excuse_dict.gemini.service.GeminiService;
-import net.whgkswo.excuse_dict.komoran.KomoranService;
+import net.whgkswo.excuse_dict.komoran.KomoranHelper;
+import net.whgkswo.excuse_dict.search.SearchType;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -33,7 +35,7 @@ public class ExcuseService {
     private final GeminiService geminiService;
     private final PromptBuilder promptBuilder;
     private final RecaptchaService recaptchaService;
-    private final KomoranService komoranService;
+    private final KomoranHelper komoranHelper;
     private final ExcuseRepository excuseRepository;
 
     // 핑계 등록
@@ -50,8 +52,11 @@ public class ExcuseService {
         excuse.setTags(tags);
 
         // 형태소 저장
-        List<String> morphemes = komoranService.getMeaningfulMorphemes(situation + " " + excuseStr);
-        excuse.setMorphemes(new HashSet<>(morphemes));
+        List<String> situationMorphemes = komoranHelper.getMeaningfulMorphemes(situation);
+        excuse.setSituationMorphemes(new HashSet<>(situationMorphemes));
+
+        List<String> excuseMorphemes = komoranHelper.getMeaningfulMorphemes(excuseStr);
+        excuse.setExcuseMorphemes(new HashSet<>(excuseMorphemes));
 
         // post 등록하며 함께 등록되기 때문에 저장 없이 반환
         return excuse;
@@ -98,6 +103,17 @@ public class ExcuseService {
         return answer;
     }
 
+    public List<String> getMorphemes(SearchType searchType){
+        if(searchType == null) return Collections.emptyList();
+
+        return switch (searchType){
+            case SITUATION -> excuseRepository.findAllSituationMorphemes();
+            case EXCUSE -> excuseRepository.findAllExcuseMorphemes();
+            case SITUATION_AND_EXCUSE -> excuseRepository.findAllMorphemes();
+            default -> Collections.emptyList();
+        };
+    }
+
     // 형태소 필드 추가 전 데이터 마이그레이션
     @Async
     @Transactional
@@ -111,12 +127,14 @@ public class ExcuseService {
         int processed = 0;
         for (Excuse excuse : excuses) {
 
-            if (!excuse.getMorphemes().isEmpty()) continue;
+            if (!excuse.getSituationMorphemes().isEmpty()
+                    && !excuse.getExcuseMorphemes().isEmpty()) continue;
 
-            List<String> morphemes = komoranService.getMeaningfulMorphemes(
-                    excuse.getSituation() + " " + excuse.getExcuse()
-            );
-            excuse.setMorphemes(new HashSet<>(morphemes));
+            List<String> situationMorphemes = komoranHelper.getMeaningfulMorphemes(excuse.getSituation());
+            excuse.setSituationMorphemes(new HashSet<>(situationMorphemes));
+
+            List<String> excuseMorphemes = komoranHelper.getMeaningfulMorphemes(excuse.getExcuse());
+            excuse.setExcuseMorphemes(new HashSet<>(excuseMorphemes));
 
             processed++;
 

@@ -11,18 +11,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
-    // 경량화된 검색용 DTO 조회
-    @Query("SELECT new " + PostSearchDto.PACKAGE_NAME +
-            "(p.id, p.excuse.situation, p.excuse.excuse, p.member.nickname, p.createdAt) FROM Post p " +
-            "JOIN p.excuse JOIN p.member " +
-            "WHERE p.status = :status"
-    )
-    List<PostSearchDto> findAllSearchDtoByStatus(@Param("status") Post.Status status);
+    @EntityGraph(attributePaths = {"member", "member.memberRank", "excuse"})
+    @Query("SELECT p FROM Post p WHERE p.id IN :postIds")
+    List<Post> findAllByIdWithDetails(@Param("postIds") Collection<Long> postIds);
 
     // 게시물 목록용 (페이지)
     @EntityGraph(attributePaths = {"member", "member.memberRank", "excuse"})
@@ -116,4 +113,80 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "WHERE p.id IN :postIds AND p.status = :status")
     List<Object[]> findPostIdAndTagsLeftJoin(@Param("postIds") List<Long> postIds,
                                              @Param("status") Post.Status status);
+
+    // 태그 필터링용 - Post id와 태그만 조회 (전체 대상) - 태그 있는 것만
+    @Query("SELECT p.id, CONCAT(t.category, ':', t.value) FROM Post p " +
+            "JOIN p.excuse e " +
+            "JOIN e.tags t " +
+            "WHERE p.status = :status")
+    List<Object[]> findAllPostIdAndTagsInnerJoin(@Param("status") Post.Status status);
+
+    // 태그 필터링용 - Post id와 태그만 조회 (전체 대상) - 태그 없는 것도
+    @Query("SELECT p.id, CASE WHEN t.category IS NULL THEN NULL ELSE CONCAT(t.category, ':', t.value) END " +
+            "FROM Post p " +
+            "JOIN p.excuse e " +
+            "LEFT JOIN e.tags t " +
+            "WHERE p.status = :status")
+    List<Object[]> findAllPostIdAndTagsLeftJoin(@Param("status") Post.Status status);
+
+    // 태그 필터링
+    @Query("""
+    SELECT DISTINCT p.id
+    FROM Post p
+    JOIN p.excuse e
+    JOIN e.tags t
+    WHERE p.status = :status
+    AND (
+        :hasIncludedTags = false OR 
+        CONCAT(t.category, ':', t.value) IN :includedTags
+    )
+    AND (
+        :hasExcludedTags = false OR 
+        p.id NOT IN (
+            SELECT p2.id FROM Post p2
+            JOIN p2.excuse e2
+            JOIN e2.tags t2
+            WHERE CONCAT(t2.category, ':', t2.value) IN :excludedTags
+        )
+    )
+    """)
+    List<Long> findPostIdsByTagFilter(
+            @Param("status") Post.Status status,
+            @Param("includedTags") List<String> includedTags,
+            @Param("hasIncludedTags") boolean hasIncludedTags,
+            @Param("excludedTags") List<String> excludedTags,
+            @Param("hasExcludedTags") boolean hasExcludedTags
+    );
+
+    // 태그 필터링 + 페이징 (태그만 있을 때 사용)
+    @EntityGraph(attributePaths = {"member", "member.memberRank", "excuse"})
+    @Query("""
+        SELECT DISTINCT p
+        FROM Post p
+        JOIN p.excuse e
+        JOIN e.tags t
+        WHERE p.status = :status
+        AND (
+            :hasIncludedTags = false OR 
+            CONCAT(t.category, ':', t.value) IN :includedTags
+        )
+        AND (
+            :hasExcludedTags = false OR 
+            p.id NOT IN (
+                SELECT p2.id FROM Post p2
+                JOIN p2.excuse e2
+                JOIN e2.tags t2
+                WHERE CONCAT(t2.category, ':', t2.value) IN :excludedTags
+            )
+        )
+        ORDER BY p.createdAt DESC
+        """)
+        Page<Post> findPostsByTagFilter(
+            Pageable pageable,
+            @Param("status") Post.Status status,
+            @Param("includedTags") List<String> includedTags,
+            @Param("hasIncludedTags") boolean hasIncludedTags,
+            @Param("excludedTags") List<String> excludedTags,
+            @Param("hasExcludedTags") boolean hasExcludedTags
+    );
 }

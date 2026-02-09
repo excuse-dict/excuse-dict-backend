@@ -7,10 +7,10 @@ import net.whgkswo.excuse_dict.entities.posts.tags.entity.Tag;
 import net.whgkswo.excuse_dict.entities.posts.tags.repository.TagRepository;
 import net.whgkswo.excuse_dict.exceptions.BusinessLogicException;
 import net.whgkswo.excuse_dict.exceptions.ExceptionType;
-import net.whgkswo.excuse_dict.komoran.KomoranService;
+import net.whgkswo.excuse_dict.komoran.KomoranHelper;
 import net.whgkswo.excuse_dict.general.responses.page.PageUtil;
 import net.whgkswo.excuse_dict.search.words.similarity.Similarity;
-import net.whgkswo.excuse_dict.search.words.WordService;
+import net.whgkswo.excuse_dict.search.words.WordHelper;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
@@ -24,8 +24,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TagService {
     private final TagRepository tagRepository;
-    private final KomoranService komoranService;
-    private final WordService wordService;
 
     // 가중치 상수
     private static final double TAG_NAME_WEIGHT = 1.0;      // 태그명 직접 매치
@@ -107,21 +105,21 @@ public class TagService {
     private double calculateTotalMatchScore(String userInput, Tag tag) {
         double maxScore = 0.0;
 
-        List<String> morphemes = komoranService.getMeaningfulMorphemes(userInput);
+        List<String> morphemes = KomoranHelper.getMeaningfulMorphemes(userInput);
 
         // 태그명과 직접 매치 (최고 가중치)
-        Similarity tagNameSimilarity = wordService.calculateTextSimilarity(userInput, tag.getValue());
+        Similarity tagNameSimilarity = WordHelper.calculateTextSimilarity(userInput, tag.getValue());
         maxScore = Math.max(maxScore, tagNameSimilarity.similarityScore() * TAG_NAME_WEIGHT);
 
         // 태그 키워드와 매치
         if (tag.getTagKeywords() != null && !tag.getTagKeywords().isEmpty()) {
-            double tagKeywordScore = wordService.calculateKeywordMatchScore(morphemes, tag.getTagKeywords());
+            double tagKeywordScore = WordHelper.calculateKeywordMatchScore(morphemes, tag.getTagKeywords());
             maxScore = Math.max(maxScore, tagKeywordScore * TAG_KEYWORD_WEIGHT);
         }
 
         // 카테고리 키워드와 매치 (최저 가중치)
         if (tag.getCategory() != null) {
-            double categoryKeywordScore = wordService.calculateKeywordMatchScore(
+            double categoryKeywordScore = WordHelper.calculateKeywordMatchScore(
                     morphemes,
                     tag.getCategory().getCategoryKeywords()
             );

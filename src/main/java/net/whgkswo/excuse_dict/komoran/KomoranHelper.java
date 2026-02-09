@@ -14,9 +14,9 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class KomoranService {
+public class KomoranHelper {
 
-    private final Komoran komoran = new Komoran(DEFAULT_MODEL.LIGHT);
+    private static final Komoran KOMORAN = new Komoran(DEFAULT_MODEL.LIGHT);
 
     // 불용어 목록 (의미없는 단어들)
     private static final Set<String> STOP_WORDS = Set.of(
@@ -25,9 +25,9 @@ public class KomoranService {
     );
 
     // 사용자 입력을 분석해 의미있는 형태소 추출
-    public List<String> getMeaningfulMorphemes(String userInput) {
+    public static List<String> getMeaningfulMorphemes(String userInput) {
         try {
-            KomoranResult result = komoran.analyze(userInput);
+            KomoranResult result = KOMORAN.analyze(userInput);
 
             return result.getTokenList().stream()
                     .filter(token -> MeaningfulPosTag.isMeaningful(token.getPos()))  // 유용한 품사만
@@ -46,7 +46,7 @@ public class KomoranService {
     }
 
     // 불용어 체크
-    private boolean isStopWord(String word) {
+    private static boolean isStopWord(String word) {
         return STOP_WORDS.contains(word);
     }
 }

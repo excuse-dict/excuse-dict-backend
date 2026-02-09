@@ -7,6 +7,7 @@ import net.whgkswo.excuse_dict.entities.excuses.dto.ExcuseRequestDto;
 import net.whgkswo.excuse_dict.entities.posts.post_core.dto.*;
 import net.whgkswo.excuse_dict.entities.posts.post_core.entity.Post;
 import net.whgkswo.excuse_dict.entities.posts.post_core.service.GetPostsCommand;
+import net.whgkswo.excuse_dict.entities.posts.post_core.search.service.PostSearchService;
 import net.whgkswo.excuse_dict.entities.posts.post_core.service.PostService;
 import net.whgkswo.excuse_dict.search.dto.HotSearchKeywordDto;
 import net.whgkswo.excuse_dict.search.dto.PostSearchRequestDto;
@@ -36,6 +37,7 @@ import java.util.List;
 public class PostController {
     private final AuthService authService;
     private final PostService postService;
+    private final PostSearchService postSearchService;
 
     public static final String BASE_URL = "/api/v1/posts";
     public static final String BASE_URL_ANY = "/api/*/posts";
@@ -47,7 +49,7 @@ public class PostController {
         PageRequest pageRequest = PageRequest.of(0, 5);
 
         // 최근 게시물 5개
-        Page<PostResponseDto> recentPosts = postService.getPosts(new GetPostsCommand(pageRequest, null, null, null, Collections.emptyList(), Collections.emptyList()));
+        Page<PostResponseDto> recentPosts = postSearchService.getPosts(new GetPostsCommand(pageRequest, null, null, null, Collections.emptyList(), Collections.emptyList()));
         // 주간 TOP 게시물 5개
         Page<WeeklyTopPostResponseDto> weeklyTopPosts = postService.getWeeklyTopPosts(pageRequest, null);
         // 명예의 전당 게시물 5개
@@ -85,7 +87,7 @@ public class PostController {
         if(authService.isValidUser(authentication)) memberId = authService.getMemberIdFromAuthentication(authentication);
 
         Pageable pageable = PageRequest.of(dto.pageOrDefault(), dto.sizeOrDefault());
-        Page<PostResponseDto> posts = postService.getPosts(
+        Page<PostResponseDto> posts = postSearchService.getPosts(
                 new GetPostsCommand(
                     pageable,
                     dto.searchInput(),
@@ -109,7 +111,7 @@ public class PostController {
         Long memberId = null;
         if(authService.isValidUser(authentication)) memberId = authService.getMemberIdFromAuthentication(authentication);
 
-        Page<PostResponseDto> posts = postService.getPageIncludesHighlightedPost(new PostHighlightCommand(postId, memberId));
+        Page<PostResponseDto> posts = postSearchService.getPageIncludesHighlightedPost(new PostHighlightCommand(postId, memberId));
 
         return ResponseEntity.ok(
                 Response.of(new PageSearchResponseDto<>(posts, PageInfo.from(posts)))
@@ -193,7 +195,7 @@ public class PostController {
     // 인기 검색어 조회
     @GetMapping("/hot-keywords")
     public ResponseEntity<?> handleGetHotKeywords(){
-        List<HotSearchKeywordDto> hotKeywords = postService.getHotSearchKeywords();
+        List<HotSearchKeywordDto> hotKeywords = postSearchService.getHotSearchKeywords();
 
         return ResponseEntity.ok(
                 Response.ofList(hotKeywords)

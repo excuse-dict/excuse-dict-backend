@@ -3,8 +3,9 @@ package net.whgkswo.excuse_dict.search.scheduler;
 import lombok.RequiredArgsConstructor;
 import net.whgkswo.excuse_dict.auth.redis.RedisKey;
 import net.whgkswo.excuse_dict.auth.redis.RedisService;
+import net.whgkswo.excuse_dict.entities.posts.post_core.search.service.PostSearchService;
 import net.whgkswo.excuse_dict.entities.posts.post_core.service.PostService;
-import net.whgkswo.excuse_dict.komoran.KomoranService;
+import net.whgkswo.excuse_dict.komoran.KomoranHelper;
 import net.whgkswo.excuse_dict.random.RandomHelper;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -17,7 +18,7 @@ import java.util.*;
 public class SearchScheduler {
 
     private final PostService postService;
-    private final KomoranService komoranService;
+    private final KomoranHelper komoranHelper;
     private final RedisService redisService;
 
     // 일주일치 검색어 캐시 업데이트
@@ -27,13 +28,13 @@ public class SearchScheduler {
         List<RedisKey> keys = new ArrayList<>();
 
         // 어제부터 일주일
-        for(int i = 1; i <= PostService.SEARCH_KEYWORD_EXPIRE_DAYS; i++) {
+        for(int i = 1; i <= PostSearchService.SEARCH_KEYWORD_EXPIRE_DAYS; i++) {
             String dateStr = LocalDate.now().minusDays(i).toString();
             keys.add(new RedisKey(RedisKey.Prefix.SEARCH, dateStr));
         }
 
         // Redis에서 합산
-        RedisKey resultKey = new RedisKey(RedisKey.Prefix.SEARCH, PostService.RECENT_SEARCHED_KEYWORDS_KEY);
+        RedisKey resultKey = new RedisKey(RedisKey.Prefix.SEARCH, PostSearchService.RECENT_SEARCHED_KEYWORDS_KEY);
 
         redisService.remove(resultKey);  // 기존 데이터 삭제
         redisService.unionSortedSets(resultKey, keys, 0, 7);  // 합산해서 저장
@@ -59,7 +60,7 @@ public class SearchScheduler {
 
         for(Long postId : postIds){
             String content = postService.getPost(postId).getExcuse().getExcuse();
-            List<String> morphemes = komoranService.getMeaningfulMorphemes(content);
+            List<String> morphemes = komoranHelper.getMeaningfulMorphemes(content);
             String keyword = morphemes.get(random.nextInt(morphemes.size()));
             randomKeywords.put(keyword,
                     (double) RandomHelper.getWeightedRandomValue(Map.of(1, 2, 2, 1, 3, 1)

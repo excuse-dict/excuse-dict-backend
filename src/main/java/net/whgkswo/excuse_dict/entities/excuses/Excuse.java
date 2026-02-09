@@ -27,12 +27,21 @@ public class Excuse extends BaseEntity {
 
     @ElementCollection
     @CollectionTable(
-            name = "excuse_morpheme",
+            name = "excuse_situation_morpheme",
             joinColumns = @JoinColumn(name = "excuse_id"),
-            indexes = @Index(name = "idx_morpheme", columnList = "morpheme")
+            indexes = @Index(name = "idx_situation_morpheme", columnList = "morpheme")
     )
     @Column(name = "morpheme")
-    private Set<String> morphemes = new HashSet<>();
+    private Set<String> situationMorphemes = new HashSet<>();
+
+    @ElementCollection
+    @CollectionTable(
+            name = "excuse_excuse_morpheme",
+            joinColumns = @JoinColumn(name = "excuse_id"),
+            indexes = @Index(name = "idx_excuse_morpheme", columnList = "morpheme")
+    )
+    @Column(name = "morpheme")
+    private Set<String> excuseMorphemes = new HashSet<>();
 
     // Post <-> Excuse
     public void setPost(Post post){

@@ -11,7 +11,7 @@ import java.util.List;
 @Component
 public class PageHelper {
 
-    public <T> Page<T> paginate(List<T> contents, Pageable pageable){
+    public static <T> Page<T> paginate(List<T> contents, Pageable pageable){
         if(contents.isEmpty()) return Page.empty(pageable);
 
         int start = (int) pageable.getOffset();

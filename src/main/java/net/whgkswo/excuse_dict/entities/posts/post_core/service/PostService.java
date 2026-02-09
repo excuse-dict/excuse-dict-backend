@@ -1,7 +1,6 @@
 package net.whgkswo.excuse_dict.entities.posts.post_core.service;
 
 import lombok.RequiredArgsConstructor;
-import net.whgkswo.excuse_dict.auth.redis.RedisKey;
 import net.whgkswo.excuse_dict.auth.redis.RedisService;
 import net.whgkswo.excuse_dict.entities.excuses.Excuse;
 import net.whgkswo.excuse_dict.entities.excuses.dto.UpdateExcuseCommand;
@@ -15,14 +14,8 @@ import net.whgkswo.excuse_dict.entities.posts.post_core.entity.Post;
 import net.whgkswo.excuse_dict.entities.posts.post_core.mapper.PostMapper;
 import net.whgkswo.excuse_dict.entities.posts.post_core.repository.PostRepository;
 import net.whgkswo.excuse_dict.entities.posts.post_core.entity.PostVote;
-import net.whgkswo.excuse_dict.search.dto.HotSearchKeywordDto;
-import net.whgkswo.excuse_dict.search.dto.PostSearchDto;
-import net.whgkswo.excuse_dict.search.dto.PostSearchRequestDto;
-import net.whgkswo.excuse_dict.komoran.KomoranService;
 import net.whgkswo.excuse_dict.ranking.dto.RecentHotPostDto;
 import net.whgkswo.excuse_dict.ranking.dto.TopNetLikesPostDto;
-import net.whgkswo.excuse_dict.search.SearchResult;
-import net.whgkswo.excuse_dict.search.SearchType;
 import net.whgkswo.excuse_dict.entities.posts.hotscore.PostIdWithHotScoreDto;
 import net.whgkswo.excuse_dict.entities.posts.hotscore.HotScoreService;
 import net.whgkswo.excuse_dict.entities.vote.dto.PostVoteDto;
@@ -35,20 +28,13 @@ import net.whgkswo.excuse_dict.general.dto.DeleteCommand;
 import net.whgkswo.excuse_dict.pager.PageHelper;
 import net.whgkswo.excuse_dict.ranking.scheduler.RankingScheduler;
 import net.whgkswo.excuse_dict.ranking.service.RankingService;
-import net.whgkswo.excuse_dict.search.dto.PostTagSearchDto;
-import net.whgkswo.excuse_dict.search.words.similarity.ContainsSimilarityCalculator;
-import net.whgkswo.excuse_dict.search.words.similarity.MorphemeBasedSimilarityCalculator;
-import net.whgkswo.excuse_dict.search.words.similarity.Similarity;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
@@ -62,19 +48,9 @@ public class PostService {
     private final PostMapper postMapper;
     private final VoteMapper voteMapper;
     private final PostVoteRepository postVoteRepository;
-    private final PostDtoConverter postDtoConverter;
     private final RedisService redisService;
-    private final PageHelper pageHelper;
     private final HotScoreService hotScoreService;
     private final CommentRepository commentRepository;
-
-    private final MorphemeBasedSimilarityCalculator morphemeBasedSimilarityCalculator;
-    private final ContainsSimilarityCalculator containsSimilarityCalculator;
-
-    public static final double MIN_SIMILARITY = 0.5;
-    public static final int SEARCH_KEYWORD_EXPIRE_DAYS = 7;
-    public static final int SEARCH_KEYWORD_MAX_SIZE = 10;
-    public static final String RECENT_SEARCHED_KEYWORDS_KEY = "SEARCHED_KEYWORDS_LAST_DAYS";
 
     // 게시글 등록
     @Transactional
@@ -89,223 +65,6 @@ public class PostService {
         post.setMember(member);
 
         return postRepository.save(post);
-    }
-
-    // 게시글 리스트 조회
-    @Transactional(readOnly = true)
-    public Page<PostResponseDto> getPosts(GetPostsCommand command){
-
-        // 검색어와 태그 필터링 조건 있는지 확인
-        boolean hasTagFilter = !command.excludedTags().isEmpty() || !command.includedTags().isEmpty();
-        boolean hasSearchFilter = command.searchInput() != null && !command.searchInput().isBlank() && command.searchType() != null;
-
-        // 둘 다 없으면 DB에서 다이렉트 페이징
-        if(!hasTagFilter && !hasSearchFilter) return getPostsWithoutFiltering(command);
-
-        // 검색어 카운트 증가
-        if(hasSearchFilter) addSearchCount(command.searchInput());
-
-        // 있으면 메모리에 올려놓고 서비스에서 필터링
-        return getPostsWithFiltering(command);
-    }
-
-    // 태그로 필터링
-    private List<SearchResult<PostTagSearchDto>> filterByTags(List<PostTagSearchDto> posts, List<String> includedTags, List<String> excludedTags){
-
-        if(includedTags.isEmpty() && excludedTags.isEmpty()) {
-            return posts.stream()
-                    .map(post -> new SearchResult<>(post, Collections.emptyList()))
-                    .toList();
-        }
-
-        return posts.stream()
-                .map(dto -> {
-                    // 게시물에 붙은 태그 확인
-                    Set<String> postTags = dto.tags();
-
-                    // 제외 태그 - 하나라도 있으면 제외
-                    if(!excludedTags.isEmpty() && postTags.stream().anyMatch(excludedTags::contains)) {
-                        return null;
-                    }
-
-                    // 포함 태그 - 하나라도 있으면 포함
-                    List<String> matchedTags = Collections.emptyList();
-                    if(!includedTags.isEmpty()) {
-                        matchedTags = postTags.stream()
-                                .filter(includedTags::contains)
-                                .toList();
-
-                        // 매칭 안 됨
-                        if(matchedTags.isEmpty()) return null;
-
-                        return new SearchResult<>(dto, matchedTags);
-                    }
-
-                    return new SearchResult<>(dto, matchedTags);
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-    }
-
-    // 검색어나 태그 필터링 없을 때: DB 다이렉트 페이징
-    private Page<PostResponseDto> getPostsWithoutFiltering(GetPostsCommand command) {
-        Page<Post> postPage = postRepository.findPostForPage(command.pageable(), Post.Status.ACTIVE);
-
-        return postDtoConverter.convertPostsToResponseDtos(
-                postPage,
-                command.memberId(),
-                null,  // 매칭된 키워드 없음
-                null // 매칭된 태그 없음
-        );
-    }
-
-    // 검색어나 태그 필터링 있을 때: 메모리로 가져와서 필터링 후 직접 페이징
-    private Page<PostResponseDto> getPostsWithFiltering(GetPostsCommand command) {
-
-        // 검색용 dto 가볍게 조회
-        List<PostSearchDto> searchDtos = postRepository.findAllSearchDtoByStatus(Post.Status.ACTIVE);
-
-        // 검색어로 필터링
-        List<SearchResult<PostSearchDto>> searchedPosts = searchPosts(
-                command.searchInput(),
-                command.searchType(),
-                searchDtos
-        );
-
-        // 검색으로 필터링된 ID
-        List<Long> searchedPostIds = searchedPosts.stream()
-                .map(result -> result.searchedContent().id())
-                .toList();
-
-        // 게시물 별 매칭된 키워드
-        Map<Long, List<String>> matchedWordsMap = SearchResult.mapByMatchedWords(searchedPosts);
-
-        // 검색 결과에 태그로 추가 필터링 (하기 위한 dto 조회)
-        List<PostTagSearchDto> tagSearchDtos = getTagSearchDtos(searchedPostIds, !command.includedTags().isEmpty());
-
-        // 태그 필터링 실행
-        List<SearchResult<PostTagSearchDto>> tagFilteredResults = filterByTags(
-                tagSearchDtos,
-                command.includedTags(),
-                command.excludedTags()
-        );
-
-        // 게시물 별 매칭된 태그
-        Map<Long, List<String>> matchedTagsMap = SearchResult.mapByMatchedWords(tagFilteredResults);
-
-        // 검색 + 필터링된 게시물 실제 객체 가져오기
-        List<Long> postIdList = tagFilteredResults.stream()
-                .map(result -> result.searchedContent().id())
-                .toList();
-        List<Post> postList = getOrderedPostsFromIdList(postIdList);
-
-        // 응답 dto로 리패키징
-        List<PostResponseDto> responses = postDtoConverter.convertPostsToResponseDtos(
-                postList,
-                command.memberId(),
-                matchedWordsMap,
-                matchedTagsMap
-        );
-
-        return pageHelper.paginate(responses, command.pageable());
-    }
-
-    // 게시물 태그 필터링용 경량화 태그 조회
-    private List<PostTagSearchDto> getTagSearchDtos(List<Long> postIds, boolean hasIncludedTags) {
-
-        // '포함 태그' 조건이 비어 있다면 태그 없는 게시물도 가져와야 하지만, '포함 태그' 조건이 있을 경우 태그 없는 게시물은 자동으로 제외되기에
-        // 메모리에 굳이 모든 게시물을 다 올릴 필요가 없음. DB 조건부 호출로 최적화 가능
-        // Post Id와 tags 조회
-        List<Object[]> results = hasIncludedTags
-                ? postRepository.findPostIdAndTagsInnerJoin(postIds, Post.Status.ACTIVE)  // 포함 태그 있으면 INNER JOIN
-                : postRepository.findPostIdAndTagsLeftJoin(postIds, Post.Status.ACTIVE);  // 포함 태그 없으면 LEFT JOIN
-
-        // postId 별 태그 정보 그룹핑
-        Map<Long, Set<String>> tagsByPostId = new HashMap<>();
-
-        for (Object[] row : results) {
-            Long postId = ((Number) row[0]).longValue();
-            String tagValue = (String) row[1];
-
-            tagsByPostId.computeIfAbsent(postId, k -> new HashSet<>()).add(tagValue);
-        }
-
-        // DTO 생성
-        return tagsByPostId.entrySet().stream()
-                .map(entry -> new PostTagSearchDto(entry.getKey(), entry.getValue()))
-                .toList();
-    }
-
-    // 게시물 검색어 카운트 증가
-    public void addSearchCount(String searchInput){
-
-        String todayStr = LocalDate.now().toString();
-        RedisKey key = new RedisKey(RedisKey.Prefix.SEARCH, todayStr);
-
-        redisService.putMemberToSortedSet(key, searchInput, 1, SEARCH_KEYWORD_EXPIRE_DAYS);
-    }
-
-    // 인기 검색어 조회
-    public List<HotSearchKeywordDto> getHotSearchKeywords(){
-
-        // 오늘자 기록
-        String todayStr = LocalDate.now().toString();
-        RedisKey key = new RedisKey(RedisKey.Prefix.SEARCH, todayStr);
-        Map<String, Double> todayKeywords = redisService.getAllOfSortedSetEntriesAsMap(key, false);
-
-        // 지난 일주일치(오늘 제외) 기록
-        RedisKey lastKey = new RedisKey(RedisKey.Prefix.SEARCH, PostService.RECENT_SEARCHED_KEYWORDS_KEY);
-        Map<String, Double> lastKeywords = redisService.getAllOfSortedSetEntriesAsMap(lastKey, false);
-
-        // 합산
-        Map<String, Double> merged = new HashMap<>(lastKeywords);
-        todayKeywords.forEach((keyword, count) ->
-                merged.merge(keyword, count, Double::sum)
-        );
-
-        // 어제까지 순위
-        Map<String, Integer> lastRanks = new HashMap<>();
-        int rank = 1;
-        for (String keyword : lastKeywords.keySet()) {
-            lastRanks.put(keyword, rank++);
-        }
-
-        // 오늘 순위와 비교
-        AtomicInteger currentRank = new AtomicInteger(1);
-        return merged.entrySet().stream()
-                .sorted(Map.Entry.<String, Double>comparingByValue().reversed())
-                .map(e -> {
-                    Integer lastRank = lastRanks.get(e.getKey());
-                    Integer rankChange = lastRank == null? null : lastRank - currentRank.getAndIncrement();
-
-                    return new HotSearchKeywordDto(e.getKey(), e.getValue().intValue(), rankChange);
-                })
-                .limit(SEARCH_KEYWORD_MAX_SIZE)
-                .toList();
-    }
-
-    // 특정 게시물을 포함한 페이지 반환
-    public Page<PostResponseDto> getPageIncludesHighlightedPost(PostHighlightCommand command){
-
-        // 해당 게시물이 없음
-        if(!postRepository.existsByIdAndStatus(command.postId(), Post.Status.ACTIVE))
-            throw new BusinessLogicException(ExceptionType.POST_NOT_FOUND);
-
-        int pageNumber = postRepository.findPageNumberByPostId(command.postId(), PostSearchRequestDto.DEFAULT_SIZE);
-        Pageable pageable = PageRequest.of(pageNumber, PostSearchRequestDto.DEFAULT_SIZE);
-
-        Page<PostResponseDto> posts = getPosts(
-                new GetPostsCommand(
-                        pageable,
-                        null,
-                        command.memberId(),
-                        null,
-                        Collections.emptyList(),
-                        Collections.emptyList()
-                )
-        );
-
-        return posts;
     }
 
     private Optional<Post> findPost(long postId){
@@ -402,7 +161,7 @@ public class PostService {
                 })
                 .toList();
 
-        return pageHelper.paginate(dtos, pageable);
+        return PageHelper.paginate(dtos, pageable);
     }
 
     // 주간 top 게시글 조회
@@ -451,7 +210,7 @@ public class PostService {
                 })
                 .toList();
 
-        return pageHelper.paginate(dtos, pageable);
+        return PageHelper.paginate(dtos, pageable);
     }
 
     // 게시물 리스트로부터 특정 회원이 누른 추천/비추천을 게시물별로 반환
@@ -555,38 +314,5 @@ public class PostService {
         post.setStatus(Post.Status.DELETED);
 
         postRepository.save(post);
-    }
-
-    // 게시물 검색
-    List<SearchResult<PostSearchDto>> searchPosts(String searchInput, SearchType searchType, List<PostSearchDto> dtos){
-
-        // 검색어 없으면 전체 반환
-        if(searchInput == null || searchInput.isBlank() || searchType == null)
-            return dtos.stream()
-                    .map(dto -> new SearchResult<>(dto, Collections.emptyList()))
-                    .toList();
-
-        return dtos.stream()
-                .map(post -> { // 유사도 계산 후 유사도 포함 랩핑
-                    Similarity similarity = getPostSimilarity(post, searchInput, searchType);
-                    return Map.entry(post, similarity);
-                })
-                .filter(entry -> entry.getValue().similarityScore() > MIN_SIMILARITY)
-                .sorted((a, b) -> Double.compare(b.getValue().similarityScore(), a.getValue().similarityScore())) // 유사도순 정렬
-                .map(entry -> new SearchResult<>(entry.getKey(), entry.getValue().matchedWords())) // 다시 유사도 빼고 랩핑
-                .toList();
-    }
-
-    private Similarity getPostSimilarity(PostSearchDto dto, String searchInput, SearchType searchType){
-        return switch (searchType) {
-            case SITUATION -> morphemeBasedSimilarityCalculator.calculateSimilarity(dto.situation(), searchInput);
-            case EXCUSE -> morphemeBasedSimilarityCalculator.calculateSimilarity(dto.excuse(), searchInput);
-            case SITUATION_AND_EXCUSE -> {
-                Similarity sitSim = morphemeBasedSimilarityCalculator.calculateSimilarity(dto.situation(), searchInput);
-                Similarity excSim = morphemeBasedSimilarityCalculator.calculateSimilarity(dto.excuse(), searchInput);
-                yield sitSim.similarityScore() > excSim.similarityScore() ? sitSim : excSim;
-            }
-            case AUTHOR -> containsSimilarityCalculator.calculateSimilarity(dto.authorName(), searchInput, MIN_SIMILARITY);
-        };
     }
 }

@@ -2,7 +2,7 @@ package net.whgkswo.excuse_dict.search.words;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.whgkswo.excuse_dict.komoran.KomoranService;
+import net.whgkswo.excuse_dict.komoran.KomoranHelper;
 import net.whgkswo.excuse_dict.search.words.similarity.Similarity;
 import org.springframework.stereotype.Service;
 
@@ -13,9 +13,9 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class WordService {
+public class WordHelper {
 
-    private final KomoranService komoranService;
+    private final KomoranHelper komoranHelper;
 
     private static final double SIMILARITY_EXACTLY_SAME = 1.0;
 
@@ -23,7 +23,7 @@ public class WordService {
     private static final double MIN_SIMILARITY_THRESHOLD_MIN = 0.4; // 글자가 길어져도 최소 이것보단 유사해야 함
 
     // 형태소 입력으로 키워드와의 유사도 계산
-    public double calculateKeywordMatchScore(List<String> morphemes, Set<String> keywords){
+    public static double calculateKeywordMatchScore(List<String> morphemes, Set<String> keywords){
         if(morphemes.isEmpty() || keywords.isEmpty()){
             return 0.0;
         }
@@ -42,7 +42,7 @@ public class WordService {
     }
 
     // 두 단어 간 유사도 계산
-    private double calculateWordSimilarity(String wordA, String wordB) {
+    public static double calculateWordSimilarity(String wordA, String wordB) {
         if (wordA.equals(wordB)) return 1.0;
 
         // 자모 분해 (정확한 거리 계산을 위해)
@@ -60,7 +60,7 @@ public class WordService {
     }
 
     // 레벤슈타인 거리 계산
-    private int getLevenshteinDistance(List<Character> wordA, List<Character> wordB) {
+    private static int getLevenshteinDistance(List<Character> wordA, List<Character> wordB) {
         // 두 단어의 각 글자들을 분해해 2차원 배열로 펼침
         int[][] dp = new int[wordA.size() + 1][wordB.size() + 1];
 
@@ -82,7 +82,7 @@ public class WordService {
     }
 
     // 한글 자모 분해
-    private List<Character> decomposeKorean(String text) {
+    private static List<Character> decomposeKorean(String text) {
         List<Character> result = new ArrayList<>();
 
         for (char ch : text.toCharArray()) {
@@ -106,18 +106,18 @@ public class WordService {
     }
 
     // 두 텍스트 간 유사도 계산
-    public Similarity calculateTextSimilarity(String strA, String strB){
+    public static Similarity calculateTextSimilarity(String strA, String strB){
         if(strA == null || strA.isEmpty() || strB == null || strB.isEmpty()){ return Similarity.NO_MATCH; }
 
         // 형태소 단위로 분해
-        List<String> morphemesA = komoranService.getMeaningfulMorphemes(strA.toLowerCase());
-        List<String> morphemesB = komoranService.getMeaningfulMorphemes(strB.toLowerCase());
+        List<String> morphemesA = KomoranHelper.getMeaningfulMorphemes(strA.toLowerCase());
+        List<String> morphemesB = KomoranHelper.getMeaningfulMorphemes(strB.toLowerCase());
 
         return calculateMorphemesSimilarity(morphemesA, morphemesB);
     }
 
     // 형태소 리스트끼리 유사도 계산
-    private Similarity calculateMorphemesSimilarity(List<String> morphemesA, List<String> morphemesB){
+    private static Similarity calculateMorphemesSimilarity(List<String> morphemesA, List<String> morphemesB){
 
         if(morphemesA.isEmpty() || morphemesB.isEmpty()) return Similarity.NO_MATCH;
 
@@ -155,7 +155,7 @@ public class WordService {
     }
 
     // 글자 수에 따라 통과하기 위한 유사도 임계값 설정
-    private double getMinSimilarityThreshold(String strA, String strB){
+    private static double getMinSimilarityThreshold(String strA, String strB){
         // 두 단어 중 짧은 게 기준
         int minLength = Math.min(strA.length(), strB.length());
         // 단어가 길어질 수록 점점 관대해짐
