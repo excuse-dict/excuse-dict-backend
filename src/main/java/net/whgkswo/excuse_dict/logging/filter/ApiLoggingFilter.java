@@ -90,11 +90,9 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
         // 요청 로깅 시작
         log.info(SEPARATOR_START);
 
-        log.info("[{}] [API] {} {} {} - {}ms",
+        log.info("[{}] [API Request] {}",
                 method,
-                uri + (queryString != null ? "?" + queryString : ""),
-                status,
-                duration);
+                uri + (queryString != null ? "?" + queryString : ""));
 
         if (shouldLogRequestBody(method)) {
             String requestBody = getRequestBody(request);
@@ -107,10 +105,12 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
 
         if (!responseBody.isBlank()) {
             if (status >= 400) {
-                log.warn("[Response Body] Status: {}, Body: {}", status, responseBody);
+                log.warn("[Response] Status: {}, Duration: {}ms, Body: {}", status, duration, responseBody);
             } else {
-                log.info("[Response Body] Status: {}, Body: {}", status, responseBody);
+                log.info("[Response] Status: {}, Duration: {}ms, Body: {}", status, duration, responseBody);
             }
+        } else {
+            log.info("[Response] Status: {}, Duration: {}ms", status, duration);
         }
 
         // 요청 로깅 종료
@@ -150,6 +150,6 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
         // 로컬에선 되는데 배포환경에서만 안됨 (NginX 또는 Docker 문제?)
         if(path.contains("generate")) return true;
 
-        return !path.startsWith("/api");
+        return !path.startsWith("/api/v1");
     }
 }
