@@ -1,6 +1,7 @@
 package net.whgkswo.excuse_dict.auth.config;
 
 import lombok.RequiredArgsConstructor;
+import net.whgkswo.excuse_dict.admin.AdminController;
 import net.whgkswo.excuse_dict.auth.CustomAuthorityUtils;
 import net.whgkswo.excuse_dict.auth.controller.AuthController;
 import net.whgkswo.excuse_dict.auth.handler.MemberAuthenticationExceptionHandler;
@@ -47,6 +48,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers("/api/**") // API요청들은 CSRF 비활성화 (JWT토큰 사용)
                         .ignoringRequestMatchers("/h2/**") // h2도 예외
+                        .ignoringRequestMatchers("/admin/**")
                 )
                 // CORS 활성화
                 .cors(Customizer.withDefaults())
@@ -75,6 +77,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, PostController.BASE_URL_ANY + "/search").hasAnyRole("USER", "ADMIN", "ANONYMOUS") // 검색 조건 복잡해서 POST
                         .requestMatchers(GuestController.BASE_URL_ANY + "/**").permitAll() // 비회원용 컨트롤러
                         .requestMatchers(HttpMethod.POST, TagController.BASE_URL_ANY).permitAll() // 태그 조회는 누구나 가능, GET이 아니고 POST인 이유는 검색 조건이 복잡해서...
+                        .requestMatchers(AdminController.BASE_URL + "/**").permitAll() // 서버 내부 curl 요청으로 트리거, IP는 컨트롤러에서 체크
                         .anyRequest().authenticated() // 위에 명시하지 않은 요청은 전부 인증 필요
                 )
                 // 같은 도메인에서 iframe 허용 (h2가 iframe 사용)

@@ -100,9 +100,7 @@ public class PostService {
         boolean hasSearchFilter = command.searchInput() != null && !command.searchInput().isBlank() && command.searchType() != null;
 
         // 둘 다 없으면 DB에서 다이렉트 페이징
-        if(!hasTagFilter && !hasSearchFilter){
-            return getPostsWithoutFiltering(command);
-        }
+        if(!hasTagFilter && !hasSearchFilter) return getPostsWithoutFiltering(command);
 
         // 검색어 카운트 증가
         if(hasSearchFilter) addSearchCount(command.searchInput());

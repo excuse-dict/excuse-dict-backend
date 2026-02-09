@@ -25,6 +25,15 @@ public class Excuse extends BaseEntity {
     @OneToOne(mappedBy = "excuse")
     private Post post;
 
+    @ElementCollection
+    @CollectionTable(
+            name = "excuse_morpheme",
+            joinColumns = @JoinColumn(name = "excuse_id"),
+            indexes = @Index(name = "idx_morpheme", columnList = "morpheme")
+    )
+    @Column(name = "morpheme")
+    private Set<String> morphemes = new HashSet<>();
+
     // Post <-> Excuse
     public void setPost(Post post){
         this.post = post;
