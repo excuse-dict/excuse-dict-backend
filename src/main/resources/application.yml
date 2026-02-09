@@ -1,5 +1,6 @@
 server:
   port: 8081
+  address: 127.0.0.1
 
 admin:
   emails: ${ADMIN_EMAILS}
@@ -14,11 +15,9 @@ cors:
 spring:
   application:
     name: excuse_dict
-  profiles:
-    include: secret # appllcation-secret.yml 임포팅
   data:
     redis:
-      host: 0.0.0.0
+      host: 127.0.0.1
       port: 6379
       database: 0
   datasource:
