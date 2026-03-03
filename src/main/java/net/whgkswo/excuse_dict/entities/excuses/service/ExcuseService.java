@@ -64,14 +64,22 @@ public class ExcuseService {
 
     // 핑계 수정
     public void updateExcuse(Excuse excuse, UpdateExcuseCommand command){
-        command.situation().ifPresent(excuse::setSituation);
-        command.excuseStr().ifPresent(excuse::setExcuse);
-        command.tagKeys().ifPresent(tagKeys -> {
+        command.situation().ifPresent(situation -> {
+            excuse.setSituation(situation);
+            List<String> morphemes = komoranHelper.getMeaningfulMorphemes(situation);
+            excuse.setSituationMorphemes(new HashSet<>(morphemes));
+        });
+
+        command.excuseStr().ifPresent(excuseStr -> {
+            excuse.setExcuse(excuseStr);
+            List<String> morphemes = komoranHelper.getMeaningfulMorphemes(excuseStr);
+            excuse.setExcuseMorphemes(new HashSet<>(morphemes));
+        });
+
+        command.tagKeys().ifPresent(tagKeys ->
                 excuse.setTags(tagKeys.stream()
                         .map(tagService::tagKeyToTag)
-                        .collect(Collectors.toSet())
-                );
-            }
+                        .collect(Collectors.toSet()))
         );
     }
 
