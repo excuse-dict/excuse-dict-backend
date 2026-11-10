@@ -15,6 +15,8 @@ cors:
 spring:
   application:
     name: excuse_dict
+  config:
+    import: optional:file:.env[.properties]
   data:
     redis:
       host: 127.0.0.1
