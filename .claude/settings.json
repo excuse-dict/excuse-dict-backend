@@ -1,8 +1,23 @@
 {
   "permissions": {
+    "defaultMode": "default",
+    "allow": [
+      "Bash(./gradlew test *)",
+      "Bash(./gradlew build *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "PowerShell(./gradlew test *)",
+      "PowerShell(./gradlew build *)",
+      "PowerShell(git status *)",
+      "PowerShell(git diff *)",
+      "PowerShell(git log *)"
+    ],
     "deny": [
-      "Read(./.env)",
-      "Edit(./.env)"
+      "Read(/.env)",
+      "Edit(/.env)",
+      "Edit(/.claude/settings.json)",
+      "Edit(/.claude/settings.local.json)"
     ]
   }
 }
